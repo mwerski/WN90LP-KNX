@@ -67,131 +67,8 @@ Task task_sendPM10(60000, TASK_FOREVER, &sendPM10);
 Scheduler runner;
 #pragma endregion
 
-struct tm myTime;
-bool timeKnown = false;
-bool dateKnown = false;
 
-void timeCallback(GroupObject& go) {
-	if (go.value()) {
-		timeKnown = true;
-		myTime = KoAPP_Time.value();
-		unsigned short tmp_sec = myTime.tm_sec;
-		unsigned short tmp_min = myTime.tm_min;
-		unsigned short tmp_hour = myTime.tm_hour;
-		char buf[52];
-		sprintf(buf, "Time received from bus: %02d:%02d:%02d", tmp_hour, tmp_min, tmp_sec );
-		Serial.println(buf);
-		time_t t = now();
-		setTime(tmp_hour, tmp_min, tmp_sec, day(t), month(t), year(t));
-		if (dateKnown == true) {
-			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", day(t), month(t), year(t), tmp_hour, tmp_min, tmp_sec );
-			Serial.println(buf);
-		}
-	}
-}
 
-void dateCallback(GroupObject& go) {
-	if (go.value()) {
-		dateKnown = true;
-		myTime = KoAPP_Date.value();
-		unsigned short tmp_mday = myTime.tm_mday;
-		unsigned short tmp_mon = myTime.tm_mon;
-		unsigned short tmp_year = myTime.tm_year;
-		char buf[52];
-		sprintf(buf, "Date received from bus: %d.%d.%d", tmp_mday, tmp_mon, tmp_year );
-		Serial.println(buf);
-		time_t t = now();
-		setTime(hour(t), minute(t), second(t), tmp_mday, tmp_mon, tmp_year);
-		if (timeKnown == true) {
-			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, hour(t), minute(t), second(t) );
-			Serial.println(buf);
-		}
-	}
-}
-
-void dateTimeCallback(GroupObject& go) {
-	// Untested
-	if (go.value()) {
-		dateKnown = true;
-		timeKnown = true;
-		myTime = KoAPP_Date.value();
-		unsigned short tmp_sec = myTime.tm_sec;
-		unsigned short tmp_min = myTime.tm_min;
-		unsigned short tmp_hour = myTime.tm_hour;
-		unsigned short tmp_mday = myTime.tm_mday;
-		unsigned short tmp_mon = myTime.tm_mon;
-		unsigned short tmp_year = myTime.tm_year;
-		char buf[52];
-		sprintf(buf, "DateTime received from bus: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, tmp_hour, tmp_min, tmp_sec );
-		Serial.println(buf);
-		Serial.println("Setting/Adjusting system time");
-		setTime(tmp_hour, tmp_min, tmp_sec, tmp_mday, tmp_mon, tmp_year);
-	}
-}
-
-void callback_Temperature(GroupObject& go) {
- if (!go.value()) sendTemperature();
-}
-
-void callback_Temperature1(GroupObject& go) {
- if (!go.value()) sendTemperature1();
-}
-
-void callback_Dewpoint(GroupObject& go) {
- if (!go.value()) sendDewpoint();
-}
-
-void callback_Humidity(GroupObject& go) {
- if (!go.value()) sendHumidity();
-}
-
-void callback_WindSpeed(GroupObject& go) {
- if (!go.value()) sendWindSpeed();
-}
-
-void callback_GustSpeed(GroupObject& go) {
- if (!go.value()) sendGustSpeed();
-}
-
-void callback_WindDirection(GroupObject& go) {
- if (!go.value()) sendWindDirection();
-}
-
-void callback_Pressure(GroupObject& go) {
- if (!go.value()) sendPressure();
-}
-
-void callback_PressureTrend1(GroupObject& go) {
- if (!go.value()) sendPressureTrend1();
-}
-
-void callback_PressureTrend3(GroupObject& go) {
- if (!go.value()) sendPressureTrend3();
-}
-
-void callback_RainFall(GroupObject& go) {
- if (!go.value()) sendRainFall();
-}
-
-void callback_RainCounter(GroupObject& go) {
- if (!go.value()) sendRainCounter();
-}
-
-void callback_UVindex(GroupObject& go) {
- if (!go.value()) sendUVindex();
-}
-
-void callback_Brightness(GroupObject& go) {
- if (!go.value()) sendBrightness();
-}
-
-void callback_pm25(GroupObject& go) {
- if (!go.value()) sendPM25();
-}
-
-void callback_pm10(GroupObject& go) {
- if (!go.value()) sendPM10();
-}
 
 
 /*
@@ -453,7 +330,7 @@ void setup() {
 					KoAPP_Temperatur_1wire_DPT9.callback(callback_Temperature1);
 				}
 				KoAPP_Taupunkt_DPT9.dataPointType(Dpt(9, 1));
-				KoAPP_Taupunkt_DPT9.callback(callback_Dewpoint);
+				KoAPP_Taupunkt_DPT9.callback(callback_dewPoint);
 				break;
 			case 1:
 				KoAPP_Temperatur_DPT14.dataPointType(Dpt(14, 1));
@@ -463,7 +340,7 @@ void setup() {
 					KoAPP_Temperatur_1wire_DPT14.callback(callback_Temperature1);
 				}
 				KoAPP_Taupunkt_DPT14.dataPointType(Dpt(14, 1));
-				KoAPP_Taupunkt_DPT14.callback(callback_Dewpoint);
+				KoAPP_Taupunkt_DPT14.callback(callback_dewPoint);
 				break;
 		}
 
@@ -836,9 +713,9 @@ void setup() {
 		if (ParamAPP_DateTime_DPTs == 1) {
 			Serial.println("Receive time and date from different KOs, registering callbacks");
 			KoAPP_Time.dataPointType(DPT_TimeOfDay);
-			KoAPP_Time.callback(timeCallback);
+			KoAPP_Time.callback(callback_time);
 			KoAPP_Date.dataPointType(DPT_Date);
-			KoAPP_Date.callback(dateCallback);
+			KoAPP_Date.callback(callback_date);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_Time.requestObjectRead();
@@ -847,7 +724,7 @@ void setup() {
 		} else {
 			Serial.println("Receive time and date from a single KO, registering callback");
 			KoAPP_DateTime.dataPointType(DPT_DateTime);
-			KoAPP_DateTime.callback(dateTimeCallback);
+			KoAPP_DateTime.callback(callback_dateTime);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_DateTime.requestObjectRead();
