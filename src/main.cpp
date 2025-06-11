@@ -10,12 +10,16 @@
 #include <ModbusMaster.h>
 #include <PubSubClient.h>
 #include <Json.h>
-#include "knxprod.h"
-#include <knx.h>
+//#include "knxprod.h"
+//#include <knx.h>
 #include <RemoteDebug.h>
 #include <TimeLib.h>
 #include <uptime_formatter.h>
 #include <esp_task_wdt.h>
+#include "wn90.h"
+
+wn90 wn90();
+wn90.begin();
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -1024,16 +1028,6 @@ void sendWindSpeed() {
 	}
 }
 
-void sendWindSpeedBft() {
-	if (windSpeed.read) {
-		u_int8_t s = bft(windSpeed.value);
-		Serial.printf(" -> Sending wind speed in beaufort (%d) to bus\n", s);
-		KoAPP_Windspeed_Bft_DPT5.value(s);
-	} else {
-		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
-	}
-}
-
 void sendGustSpeed() {
 	if (gustSpeed.read) {
 		Serial.printf(" -> Sending gust speed in m/s (%0.2f) to bus\n", gustSpeed.value);
@@ -1046,6 +1040,7 @@ void sendGustSpeed() {
 	}
 }
 
+/*
 void sendGustSpeedBft() {
 	if (gustSpeed.read) {
 		u_int8_t s = bft(gustSpeed.value);
@@ -1056,6 +1051,16 @@ void sendGustSpeedBft() {
 	}
 }
 
+void sendWindSpeedBft() {
+	if (windSpeed.read) {
+		u_int8_t s = bft(windSpeed.value);
+		Serial.printf(" -> Sending wind speed in beaufort (%d) to bus\n", s);
+		KoAPP_Windspeed_Bft_DPT5.value(s);
+	} else {
+		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
+	}
+}
+*/
 void sendWindDirection() {
 	if (windDirection.read) {
 		Serial.printf(" -> Sending wind direction in ° (%d) to bus\n", windDirection.value);
