@@ -14761,6 +14761,124 @@
       },
       {
         "$type": "Kaenx.Creator.Models.ComObject, Kaenx.Creator.Share",
+        "UId": 39,
+        "Id": 38,
+        "Name": "WindSpeedBft DPT5",
+        "Text": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "Windgeschwindigkeit (Beaufort)",
+            "Preview": "Windgeschwindigkeit (Beaufort)"
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "Wind speed (Beaufort)",
+            "Preview": "Wind speed (Beaufort)"
+          }
+        ],
+        "TranslationText": false,
+        "FunctionText": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "Messwert",
+            "Preview": "Messwert"
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "Measurement",
+            "Preview": "Measurement"
+          }
+        ],
+        "TranslationFunctionText": false,
+        "Number": 14,
+        "FlagRead": true,
+        "FlagWrite": false,
+        "FlagTrans": true,
+        "FlagComm": true,
+        "FlagUpdate": false,
+        "FlagOnInit": false,
+        "TypeValue": null,
+        "HasDpt": true,
+        "HasDpts": false,
+        "ObjectSize": 8,
+        "SubTypeNumber": null,
+        "SubType": null,
+        "TypeNumber": "5",
+        "Type": {
+          "$type": "Kaenx.Creator.Models.DataPointType, Kaenx.Creator.Share",
+          "Name": "5.xxx 8-bit unsigned value",
+          "Number": "5",
+          "Size": 8,
+          "SubTypes": [
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.001 percentage (0..100%)",
+              "Number": "1",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.003 angle (degrees)",
+              "Number": "3",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.004 percentage (0..255%)",
+              "Number": "4",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.005 ratio (0..255)",
+              "Number": "5",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.006 tariff (0..255)",
+              "Number": "6",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.010 counter pulses (0..255)",
+              "Number": "10",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.100 fan stage (0..255)",
+              "Number": "100",
+              "ParentNumber": "5"
+            }
+          ]
+        },
+        "UseTextParameter": false,
+        "ParameterRef": -1
+      },
+      {
+        "$type": "Kaenx.Creator.Models.ComObject, Kaenx.Creator.Share",
         "UId": 14,
         "Id": 17,
         "Name": "GustSpeed DPT9",
@@ -14810,7 +14928,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 14,
+        "Number": 15,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -15023,7 +15141,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 14,
+        "Number": 15,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -15547,6 +15665,124 @@
       },
       {
         "$type": "Kaenx.Creator.Models.ComObject, Kaenx.Creator.Share",
+        "UId": 40,
+        "Id": 39,
+        "Name": "GustSpeedBft DPT5",
+        "Text": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "Windgeschwindigkeit in Böen (Beaufort)",
+            "Preview": "Windgeschwindigkeit in Böen (Beaufort)"
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "Gust speed (Beaufort)",
+            "Preview": "Gust speed (Beaufort)"
+          }
+        ],
+        "TranslationText": false,
+        "FunctionText": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "Messwert",
+            "Preview": "Messwert"
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "Measurement",
+            "Preview": "Measurement"
+          }
+        ],
+        "TranslationFunctionText": false,
+        "Number": 15,
+        "FlagRead": true,
+        "FlagWrite": false,
+        "FlagTrans": true,
+        "FlagComm": true,
+        "FlagUpdate": false,
+        "FlagOnInit": false,
+        "TypeValue": null,
+        "HasDpt": true,
+        "HasDpts": false,
+        "ObjectSize": 8,
+        "SubTypeNumber": null,
+        "SubType": null,
+        "TypeNumber": "5",
+        "Type": {
+          "$type": "Kaenx.Creator.Models.DataPointType, Kaenx.Creator.Share",
+          "Name": "5.xxx 8-bit unsigned value",
+          "Number": "5",
+          "Size": 8,
+          "SubTypes": [
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.001 percentage (0..100%)",
+              "Number": "1",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.003 angle (degrees)",
+              "Number": "3",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.004 percentage (0..255%)",
+              "Number": "4",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.005 ratio (0..255)",
+              "Number": "5",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.006 tariff (0..255)",
+              "Number": "6",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.010 counter pulses (0..255)",
+              "Number": "10",
+              "ParentNumber": "5"
+            },
+            {
+              "$type": "Kaenx.Creator.Models.DataPointSubType, Kaenx.Creator.Share",
+              "Name": "5.100 fan stage (0..255)",
+              "Number": "100",
+              "ParentNumber": "5"
+            }
+          ]
+        },
+        "UseTextParameter": false,
+        "ParameterRef": -1
+      },
+      {
+        "$type": "Kaenx.Creator.Models.ComObject, Kaenx.Creator.Share",
         "UId": 16,
         "Id": 19,
         "Name": "WindDir DPT9",
@@ -15596,7 +15832,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 15,
+        "Number": 17,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -15809,7 +16045,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 15,
+        "Number": 17,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -16382,7 +16618,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 16,
+        "Number": 18,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -16595,7 +16831,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 16,
+        "Number": 18,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -17168,7 +17404,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 17,
+        "Number": 19,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -17381,7 +17617,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 17,
+        "Number": 19,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -17954,7 +18190,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 18,
+        "Number": 20,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -18167,7 +18403,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 18,
+        "Number": 20,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -18740,7 +18976,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 19,
+        "Number": 21,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -18953,7 +19189,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 19,
+        "Number": 21,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -19526,7 +19762,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 20,
+        "Number": 22,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -19739,7 +19975,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 20,
+        "Number": 22,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -20312,7 +20548,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 21,
+        "Number": 23,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -20525,7 +20761,7 @@
           }
         ],
         "TranslationFunctionText": true,
-        "Number": 21,
+        "Number": 23,
         "FlagRead": true,
         "FlagWrite": false,
         "FlagTrans": true,
@@ -24012,6 +24248,162 @@
         "OverwriteFOI": false,
         "UseTextParameter": false,
         "ParameterRef": 0
+      },
+      {
+        "$type": "Kaenx.Creator.Models.ComObjectRef, Kaenx.Creator.Share",
+        "IsAutoGenerated": true,
+        "UId": 39,
+        "Id": 38,
+        "Name": "WindSpeedBft DPT5",
+        "Text": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "",
+            "Preview": ""
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "",
+            "Preview": ""
+          }
+        ],
+        "TranslationText": false,
+        "OverwriteText": false,
+        "FunctionText": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "",
+            "Preview": ""
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "",
+            "Preview": ""
+          }
+        ],
+        "TranslationFunctionText": false,
+        "OverwriteFunctionText": false,
+        "OverwriteDpt": false,
+        "OverwriteDpst": false,
+        "SubTypeNumber": null,
+        "SubType": null,
+        "TypeNumber": null,
+        "Type": null,
+        "OverwriteOS": false,
+        "ObjectSize": 1,
+        "ComObject": 39,
+        "FlagRead": false,
+        "OverwriteFR": false,
+        "FlagWrite": false,
+        "OverwriteFW": false,
+        "FlagTrans": false,
+        "OverwriteFT": false,
+        "FlagComm": true,
+        "OverwriteFC": false,
+        "FlagUpdate": false,
+        "OverwriteFU": false,
+        "FlagOnInit": false,
+        "OverwriteFOI": false,
+        "UseTextParameter": false,
+        "ParameterRef": 0
+      },
+      {
+        "$type": "Kaenx.Creator.Models.ComObjectRef, Kaenx.Creator.Share",
+        "IsAutoGenerated": true,
+        "UId": 40,
+        "Id": 39,
+        "Name": "GustSpeedBft DPT5",
+        "Text": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "",
+            "Preview": ""
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "",
+            "Preview": ""
+          }
+        ],
+        "TranslationText": false,
+        "OverwriteText": false,
+        "FunctionText": [
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "de-DE",
+              "Text": "Deutsch"
+            },
+            "Text": "",
+            "Preview": ""
+          },
+          {
+            "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
+            "Language": {
+              "$type": "Kaenx.Creator.Models.Language, Kaenx.Creator.Share",
+              "CultureCode": "en-US",
+              "Text": "Englisch"
+            },
+            "Text": "",
+            "Preview": ""
+          }
+        ],
+        "TranslationFunctionText": false,
+        "OverwriteFunctionText": false,
+        "OverwriteDpt": false,
+        "OverwriteDpst": false,
+        "SubTypeNumber": null,
+        "SubType": null,
+        "TypeNumber": null,
+        "Type": null,
+        "OverwriteOS": false,
+        "ObjectSize": 1,
+        "ComObject": 40,
+        "FlagRead": false,
+        "OverwriteFR": false,
+        "FlagWrite": false,
+        "OverwriteFW": false,
+        "FlagTrans": false,
+        "OverwriteFT": false,
+        "FlagComm": true,
+        "OverwriteFC": false,
+        "FlagUpdate": false,
+        "OverwriteFU": false,
+        "FlagOnInit": false,
+        "OverwriteFOI": false,
+        "UseTextParameter": false,
+        "ParameterRef": 0
       }
     ],
     "Memories": [
@@ -26694,9 +27086,9 @@
     "DefaultLanguage": "de-DE",
     "DefaultLanguageIndex": 0,
     "Name": "WN90LP Modbus KNX Gateway",
-    "ReplacesVersions": "1",
+    "ReplacesVersions": "2,1",
     "Script": "",
-    "NameText": "V 0.2 WN90LP Modbus KNX Gateway",
+    "NameText": "V 0.3 WN90LP Modbus KNX Gateway",
     "Text": [
       {
         "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
@@ -26719,7 +27111,7 @@
         "Preview": "WN90LP Modbus KNX gateway"
       }
     ],
-    "Number": 2,
+    "Number": 3,
     "AddressTableMaxCount": 65535,
     "AddressTableOffset": 0,
     "AddressMemoryId": -1,
@@ -26745,7 +27137,7 @@
     "LastParameterRefId": 56,
     "LastDynModuleId": 0,
     "LastDynSeparatorId": 0,
-    "HighestComNumber": 21
+    "HighestComNumber": 23
   },
   "Catalog": [
     {
