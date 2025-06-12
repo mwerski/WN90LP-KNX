@@ -1475,6 +1475,12 @@ unsigned long lastChange = 0;
 unsigned long delayTime  = 2000;
 
 void loop() {
+	while (WiFi.status() != WL_CONNECTED) {
+		Serial.print("WiFi lost, restarting...");
+		ESP.restart();
+		delay(5000);
+	}
+
 	time_t t = now();
 	server.handleClient();
 	ArduinoOTA.handle();
