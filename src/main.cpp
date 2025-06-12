@@ -27,9 +27,12 @@ void MQTTpublish();
 void sendTemperature();
 void sendTemperature1();
 void sendDewpoint();
+void sendFrostpoint();
 void sendHumidity();
 void sendWindSpeed();
 void sendGustSpeed();
+void sendWindSpeedBft();
+void sendGustSpeedBft();
 void sendWindDirection();
 void sendPressure();
 void sendPressureTrend1();
@@ -49,9 +52,12 @@ Task task_MQTTpublish(10000, TASK_FOREVER, &MQTTpublish);
 Task task_sendTemperature(60000, TASK_FOREVER, &sendTemperature);
 Task task_sendTemperature1(60000, TASK_FOREVER, &sendTemperature1);
 Task task_sendDewpoint(60000, TASK_FOREVER, &sendDewpoint);
+Task task_sendFrostpoint(60000, TASK_FOREVER, &sendFrostpoint);
 Task task_sendHumidity(60000, TASK_FOREVER, &sendHumidity);
 Task task_sendWindSpeed(60000, TASK_FOREVER, &sendWindSpeed);
 Task task_sendGustSpeed(60000, TASK_FOREVER, &sendGustSpeed);
+Task task_sendWindSpeedBft(60000, TASK_FOREVER, &sendWindSpeedBft);
+Task task_sendGustSpeedBft(60000, TASK_FOREVER, &sendGustSpeedBft);
 Task task_sendWindDirection(60000, TASK_FOREVER, &sendWindDirection);
 Task task_sendPressure(60000, TASK_FOREVER, &sendPressure);
 Task task_sendPressureTrend1(60000, TASK_FOREVER, &sendPressureTrend1);
@@ -71,7 +77,7 @@ struct tm myTime;
 bool timeKnown = false;
 bool dateKnown = false;
 
-void timeCallback(GroupObject& go) {
+void callbaack_time(GroupObject& go) {
 	if (go.value()) {
 		timeKnown = true;
 		myTime = KoAPP_Time.value();
@@ -90,7 +96,7 @@ void timeCallback(GroupObject& go) {
 	}
 }
 
-void dateCallback(GroupObject& go) {
+void callbaack_date(GroupObject& go) {
 	if (go.value()) {
 		dateKnown = true;
 		myTime = KoAPP_Date.value();
@@ -109,7 +115,7 @@ void dateCallback(GroupObject& go) {
 	}
 }
 
-void dateTimeCallback(GroupObject& go) {
+void callbaack_dateTime(GroupObject& go) {
 	// Untested
 	if (go.value()) {
 		dateKnown = true;
@@ -141,6 +147,10 @@ void callback_Dewpoint(GroupObject& go) {
  if (!go.value()) sendDewpoint();
 }
 
+void callback_Frostpoint(GroupObject& go) {
+ if (!go.value()) sendFrostpoint();
+}
+
 void callback_Humidity(GroupObject& go) {
  if (!go.value()) sendHumidity();
 }
@@ -151,6 +161,14 @@ void callback_WindSpeed(GroupObject& go) {
 
 void callback_GustSpeed(GroupObject& go) {
  if (!go.value()) sendGustSpeed();
+}
+
+void callback_WindSpeedBft(GroupObject& go) {
+ if (!go.value()) sendWindSpeedBft();
+}
+
+void callback_GustSpeedBft(GroupObject& go) {
+ if (!go.value()) sendGustSpeedBft();
 }
 
 void callback_WindDirection(GroupObject& go) {
@@ -193,6 +211,14 @@ void callback_pm10(GroupObject& go) {
  if (!go.value()) sendPM10();
 }
 
+void callback_pm25_normalized(GroupObject& go) {
+ if (!go.value()) sendPM25_normalized();
+}
+
+void callback_pm10_normalized(GroupObject& go) {
+ if (!go.value()) sendPM10_normalized();
+}
+
 
 /*
 char* hostname = "wn90";
@@ -221,7 +247,7 @@ struct netconfig {
 	IPAddress netmask;
 	IPAddress dns;
 	bool dhcp = true;
-	char*	hostname;
+	char*	hostname = "wn90";
 	bool mqtt = false;
 	char* mqttHost;
 	u_int16_t mqttPort = 1883;
@@ -258,6 +284,8 @@ wsdata temperature1; // temperature in degree celsius, measured via 1wire
 wsdata humidity; // relative humidity in percent
 wsdata windSpeed; // windspeed in m/s
 wsdata gustSpeed; // gust speed in m/s
+wsdata windSpeedBFT; // windspeed in beaufort
+wsdata gustSpeedBFT; // gust speed in beaufort
 wsdata windDirection; // wind direction in degrees
 wsdata pressure; // absolute pressure in hPa / mBar
 wsdata pressureTrend1; // gets measured and updated every 15 minutes, shows pressure differences from now to -1 hour, available after ~1 hour uptime
@@ -265,6 +293,7 @@ wsdata pressureTrend3; // gets measured every full hour, shows pressure differen
 wsdata rainFall; // rainfall in mm / liter - 0.1mm resolution
 wsdata rainCounter; // rainfall in mm / liter - 0.01mm resolution
 wsdata dewPoint; // dewpoint in degree celsius
+wsdata frostPoint; // frostpoint in degree celsius
 wsdata pm25; // PM2.5 value
 wsdata pm10; // PM10 value
 wsdata pm25_normalized; // humidity compensated PM2.5 value
@@ -295,6 +324,25 @@ double get_relchange(wsdata m) {
 	if (m.lastread && m.last != 0) return abs((m.value - m.last) / m.last * 100);
 	return NAN;
 }
+double frostpoint(float t, float f) {
+	// calculates frostpoint from given temperature and relative hjmidity
+	float a, b;
+  if (t >= 0) {
+    a = 7.5;
+    b = 237.3;
+  } else {
+    a = 9.5;
+    b = 266.5;
+  }
+  double sdd = 6.1078 * pow(10, (a*t)/(b+t));  // Sättigungsdampfdruck in hPa
+  double dd = sdd * (f/100);  // Dampfdruck in mBar
+  double v = log10(dd/6.1078);  // v-Parameter
+  double p = (b*v) / (a-v);  // Frostpunkttemperatur (°C)
+//	return dp;
+	double m = powf( 10.0f, 2 ); // truncate to x.yz
+	p = roundf( p * m ) / m;
+	return p;
+}
 double dewpoint(float t, float f) {
 	// calculates dewpoint from given temperature and relative hjmidity
 	float a, b;
@@ -308,11 +356,11 @@ double dewpoint(float t, float f) {
   double sdd = 6.1078 * pow(10, (a*t)/(b+t));  // Sättigungsdampfdruck in hPa
   double dd = sdd * (f/100);  // Dampfdruck in mBar
   double v = log10(dd/6.1078);  // v-Parameter
-  double dp = (b*v) / (a-v);  // Taupunkttemperatur (°C)
-//	return dp;
+  double p = (b*v) / (a-v);  // Taupunkttemperatur (°C)
+//	return p;
 	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	dp = roundf( dp * m ) / m;
-	return dp;
+	p = roundf( p * m ) / m;
+	return p;
 }
 u_int8_t bft(float s) {
 	if ( s >= 32.7 ) { return 12; } else
@@ -338,7 +386,7 @@ Json mqttMsg;
 void mqtt_reconnect() {
 	Serial.print("Attempting MQTT connection...");
 	// Attempt to connect
-	String client_id = net.hostname + String(WiFi.macAddress());
+	String client_id = net.hostname; //  + String(WiFi.macAddress());
 	if (mqttClient.connect(client_id.c_str(), net.mqttUser, net.mqttPass)) {
 		Serial.println("connected");
 	} else {
@@ -394,7 +442,7 @@ void setup() {
 		} else {
 			Serial.println("Deactivate hardware watchdog");
 		}
-		/*
+
 		if ( ParamAPP_UseDHCP == false ) {
 			// we are using a static IP config stored as KNX paramaeters
 			net.dhcp = false;
@@ -411,7 +459,7 @@ void setup() {
 		} else {
 			net.dhcp = true;
 		}
-		*/
+
 		net.hostname = (char *) ParamAPP_Hostname;
 		net.mqtt = ParamAPP_useMQTT;
 		if ( net.mqtt == true ) {
@@ -454,6 +502,8 @@ void setup() {
 				}
 				KoAPP_Taupunkt_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_Taupunkt_DPT9.callback(callback_Dewpoint);
+				KoAPP_Frostpunkt_DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_Frostpunkt_DPT9.callback(callback_Frostpoint);
 				break;
 			case 1:
 				KoAPP_Temperatur_DPT14.dataPointType(Dpt(14, 1));
@@ -464,6 +514,8 @@ void setup() {
 				}
 				KoAPP_Taupunkt_DPT14.dataPointType(Dpt(14, 1));
 				KoAPP_Taupunkt_DPT14.callback(callback_Dewpoint);
+				KoAPP_Frostpunkt_DPT14.dataPointType(Dpt(14, 1));
+				KoAPP_Frostpunkt_DPT14.callback(callback_Frostpoint);
 				break;
 		}
 
@@ -548,12 +600,20 @@ void setup() {
 				KoAPP_PM25_DPT9.callback(callback_pm25);
 				KoAPP_PM10_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_PM10_DPT9.callback(callback_pm10);
+				KoAPP_PM25_Normalized__DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_PM25_Normalized__DPT9.callback(callback_pm25_normalized);
+				KoAPP_PM10_Normalized__DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_PM10_Normalized__DPT9.callback(callback_pm10_normalized);
 				break;
 			case 1:
 				KoAPP_PM25_DPT14.dataPointType(Dpt(14, 1));
 				KoAPP_PM25_DPT14.callback(callback_pm25);
 				KoAPP_PM10_DPT14.dataPointType(Dpt(14, 1));
 				KoAPP_PM10_DPT14.callback(callback_pm10);
+				KoAPP_PM25_Normalized_DPT14.dataPointType(Dpt(14, 1));
+				KoAPP_PM25_Normalized_DPT14.callback(callback_pm25_normalized);
+				KoAPP_PM10_Normalized_DPT14.dataPointType(Dpt(14, 1));
+				KoAPP_PM10_Normalized_DPT14.callback(callback_pm10_normalized);
 				break;
 		}
 
@@ -636,11 +696,11 @@ void setup() {
   WiFiManager wifiManager;
   //wifiManager.resetSettings();
 
-/*	if ( net.dhcp == false ) {
+	if ( net.dhcp == false ) {
 		wifiManager.setSTAStaticIPConfig( net.ip, net.gateway, net.netmask, net.dns );
+		wifiManager.setHostname( net.hostname );
 		Serial.print("static setup: ");
 	}
-*/
 
   wifiManager.setConfigPortalTimeout(180);
 	if (!wifiManager.autoConnect("AutoConnectAP")) {
@@ -739,6 +799,9 @@ void setup() {
 			runner.addTask(task_sendDewpoint);
 			task_sendDewpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
 			task_sendDewpoint.enableDelayed(TASK_DELAY);
+			runner.addTask(task_sendFrostpoint);
+			task_sendFrostpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
+			task_sendFrostpoint.enableDelayed(TASK_DELAY);
 			if (ParamAPP_1wire_vorhanden) {
 				runner.addTask(task_sendTemperature1);
 				task_sendTemperature1.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
@@ -759,6 +822,12 @@ void setup() {
 			runner.addTask(task_sendGustSpeed);
 			task_sendGustSpeed.setInterval(ParamAPP_WindSpeed_Senden_zyklisch*1000);
 			task_sendGustSpeed.enableDelayed(TASK_DELAY);
+			runner.addTask(task_sendWindSpeedBft);
+			task_sendWindSpeedBft.setInterval(ParamAPP_WindSpeed_Senden_zyklisch*1000);
+			task_sendWindSpeedBft.enableDelayed(TASK_DELAY);
+			runner.addTask(task_sendGustSpeedBft);
+			task_sendGustSpeedBft.setInterval(ParamAPP_WindSpeed_Senden_zyklisch*1000);
+			task_sendGustSpeedBft.enableDelayed(TASK_DELAY);
 		}
 		if (ParamAPP_WindDir_Senden_zyklisch > 0) {
 			Serial.print("Send wind direction every "); Serial.print(ParamAPP_WindDir_Senden_zyklisch); Serial.println("s, enabling task");
@@ -836,9 +905,9 @@ void setup() {
 		if (ParamAPP_DateTime_DPTs == 1) {
 			Serial.println("Receive time and date from different KOs, registering callbacks");
 			KoAPP_Time.dataPointType(DPT_TimeOfDay);
-			KoAPP_Time.callback(timeCallback);
+			KoAPP_Time.callback(callbaack_time);
 			KoAPP_Date.dataPointType(DPT_Date);
-			KoAPP_Date.callback(dateCallback);
+			KoAPP_Date.callback(callbaack_date);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_Time.requestObjectRead();
@@ -847,7 +916,7 @@ void setup() {
 		} else {
 			Serial.println("Receive time and date from a single KO, registering callback");
 			KoAPP_DateTime.dataPointType(DPT_DateTime);
-			KoAPP_DateTime.callback(dateTimeCallback);
+			KoAPP_DateTime.callback(callbaack_dateTime);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_DateTime.requestObjectRead();
@@ -882,7 +951,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(0) != 0xFFFF ) { // BRIGHTNESS
 			light.value = node.getResponseBuffer(0) * 10;
 			light.read = true;
-			Serial.printf("Brightness..... %0.1f Lux (%0.1f: ∆%0.1f, ∆%0.1f%)", light.value, light.last, get_abschange(light), get_relchange(light));
+			Serial.printf("Brightness..... %0.1f Lux (%0.1f: ∆%0.1f, ∆%0.1f%%)", light.value, light.last, get_abschange(light), get_relchange(light));
 			if ( task_sendBrightness.canceled() ) task_sendBrightness.enableDelayed(TASK_DELAY);
 			if ( abs_change(light)) {
 				Serial.printf(" - value change (%0.1f) exceeded absolute threshold (%0.1f): ",get_abschange(light), light.abs_change);
@@ -897,7 +966,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(1) != 0xFFFF ) { // UVINDEX
 			uvIndex.value = node.getResponseBuffer(1) / 10.0;
 			uvIndex.read = true;
-			Serial.printf("UV Index....... %0.1f (%0.1f: ∆%0.1f, ∆%0.1f%)", uvIndex.value, uvIndex.last, get_abschange(uvIndex), get_relchange(uvIndex));
+			Serial.printf("UV Index....... %0.1f (%0.1f: ∆%0.1f, ∆%0.1f%%)", uvIndex.value, uvIndex.last, get_abschange(uvIndex), get_relchange(uvIndex));
 			if ( task_sendUVindex.canceled() ) task_sendUVindex.enableDelayed(TASK_DELAY);
 			if ( abs_change(uvIndex)) {
 				Serial.printf(" - value change (%0.1f) exceeded absolute threshold (%0.1f): ",get_abschange(uvIndex), uvIndex.abs_change);
@@ -912,7 +981,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(2) != 0xFFFF ) { // TEMPERATURE
 			temperature.value = node.getResponseBuffer(2) / 10.0 - 40;
 			temperature.read = true;
-			Serial.printf("Temperature.... %0.1f °C (%0.1f: ∆%0.1f, ∆%0.1f%)", temperature.value, temperature.last, get_abschange(temperature), get_relchange(temperature));
+			Serial.printf("Temperature.... %0.1f °C (%0.1f: ∆%0.1f, ∆%0.1f%%)", temperature.value, temperature.last, get_abschange(temperature), get_relchange(temperature));
 			if ( task_sendTemperature.canceled() ) task_sendTemperature.enableDelayed(TASK_DELAY);
 			if ( abs_change(temperature)) {
 				Serial.printf(" - value change (%0.1f) exceeded absolute threshold (%0.1f): ",get_abschange(temperature), temperature.abs_change);
@@ -927,7 +996,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(3) != 0xFFFF ) { // HUMIDITY
 			humidity.value = node.getResponseBuffer(3); 
 			humidity.read = true; 
-			Serial.printf("Humidity....... %0.0f % (%0.0f: ∆%0.0f, ∆%0.0f%)", humidity.value, humidity.last, get_abschange(humidity), get_relchange(humidity));
+			Serial.printf("Humidity....... %0.0f %% (%0.0f: ∆%0.0f, ∆%0.0f%%)", humidity.value, humidity.last, get_abschange(humidity), get_relchange(humidity));
 			if ( task_sendHumidity.canceled() ) task_sendHumidity.enableDelayed(TASK_DELAY);
 			if ( abs_change(humidity)) {
 				Serial.printf(" - value change (%0.0f) exceeded absolute threshold (%0.0f): ",get_abschange(humidity), humidity.abs_change);
@@ -942,7 +1011,9 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(4) != 0xFFFF ) { // WINDSPEED
 			windSpeed.value = node.getResponseBuffer(4) / 10.0;
 			windSpeed.read = true;
-			Serial.printf("Wind Speed..... %0.2f m/s (%0.2f: ∆%0.2f, ∆%0.2f%)", windSpeed.value, windSpeed.last, get_abschange(windSpeed), get_relchange(windSpeed));
+			windSpeedBFT.value = bft(windSpeed.value);
+			windSpeedBFT.read = true;
+			Serial.printf("Wind Speed..... %0.2f m/s (%0.2f: ∆%0.2f, ∆%0.2f%%)", windSpeed.value, windSpeed.last, get_abschange(windSpeed), get_relchange(windSpeed));
 			if ( task_sendWindSpeed.canceled() ) task_sendWindSpeed.enableDelayed(TASK_DELAY);
 			if ( abs_change(windSpeed)) {
 				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(windSpeed), windSpeed.abs_change);
@@ -957,7 +1028,9 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(5) != 0xFFFF ) { // GUSTSPEED
 			gustSpeed.value = node.getResponseBuffer(4) / 10.0;
 			gustSpeed.read = true;
-			Serial.printf("Gust Speed..... %0.2f m/s (%0.2f: ∆%0.2f, ∆%0.2f%)", gustSpeed.value, gustSpeed.last, get_abschange(gustSpeed), get_relchange(gustSpeed));
+			gustSpeedBFT.value = bft(gustSpeed.value);
+			gustSpeedBFT.read = true;
+			Serial.printf("Gust Speed..... %0.2f m/s (%0.2f: ∆%0.2f, ∆%0.2f%%)", gustSpeed.value, gustSpeed.last, get_abschange(gustSpeed), get_relchange(gustSpeed));
 			if ( task_sendGustSpeed.canceled() ) task_sendGustSpeed.enableDelayed(TASK_DELAY);
 			if ( abs_change(gustSpeed)) {
 				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(gustSpeed), gustSpeed.abs_change);
@@ -972,7 +1045,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(6) != 0xFFFF ) { // WINDDIRECTION
 			windDirection.value = node.getResponseBuffer(6);
 			windDirection.read = true;
-			Serial.printf("Wind Direction. %0.0f ° (%0.0f: ∆%0.0f, ∆%0.0f%)", windDirection.value, windDirection.last, get_abschange(windDirection), get_relchange(windDirection));
+			Serial.printf("Wind Direction. %0.0f ° (%0.0f: ∆%0.0f, ∆%0.0f%%)", windDirection.value, windDirection.last, get_abschange(windDirection), get_relchange(windDirection));
 			if ( task_sendWindDirection.canceled() ) task_sendWindDirection.enableDelayed(TASK_DELAY);
 			if ( abs_change(windDirection)) {
 				Serial.printf(" - value change (%0.0f) exceeded absolute threshold (%0.0f): ",get_abschange(windDirection), windDirection.abs_change);
@@ -987,7 +1060,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(7) != 0xFFFF ) { // RAINFALL
 			rainFall.value = node.getResponseBuffer(7) / 10.0;
 			rainFall.read = true;
-			Serial.printf("Rainfall....... %0.1f mm (%0.1f: ∆%0.1f, ∆%0.1f%)", rainFall.value, rainFall.last, get_abschange(rainFall), get_relchange(rainFall));
+			Serial.printf("Rainfall....... %0.1f mm (%0.1f: ∆%0.1f, ∆%0.1f%%)", rainFall.value, rainFall.last, get_abschange(rainFall), get_relchange(rainFall));
 			if ( task_sendRainFall.canceled() ) task_sendRainFall.enableDelayed(TASK_DELAY);
 			if ( abs_change(rainFall)) {
 				Serial.printf(" - value change (%0.1f) exceeded absolute threshold (%0.1f): ",get_abschange(rainFall), rainFall.abs_change);
@@ -1002,7 +1075,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(9) != 0xFFFF ) { // RAINCOUNTER
 			rainCounter.value = node.getResponseBuffer(9) / 100.0;
 			rainCounter.read = true;
-			Serial.printf("Raincounter.... %0.2f mm (%0.2f: ∆%0.2f, ∆%0.2f%)", rainCounter.value, rainCounter.last, get_abschange(rainCounter), get_relchange(rainCounter));
+			Serial.printf("Raincounter.... %0.2f mm (%0.2f: ∆%0.2f, ∆%0.2f%%)", rainCounter.value, rainCounter.last, get_abschange(rainCounter), get_relchange(rainCounter));
 			if ( task_sendRainCounter.canceled() ) task_sendRainCounter.enableDelayed(TASK_DELAY);
 			if ( abs_change(rainCounter)) {
 				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(rainCounter), rainCounter.abs_change);
@@ -1017,7 +1090,7 @@ uint8_t read_ws90() {
 		if ( node.getResponseBuffer(8) != 0xFFFF ) { // PRESSURE
 			pressure.value = node.getResponseBuffer(8) / 10.0;
 			pressure.read = true;
-			Serial.printf("Pressure....... %0.1f hPa (%0.1f: ∆%0.1f, ∆%0.1f%)", pressure.value, pressure.last, get_abschange(pressure), get_relchange(pressure));
+			Serial.printf("Pressure....... %0.1f hPa (%0.1f: ∆%0.1f, ∆%0.1f%%)", pressure.value, pressure.last, get_abschange(pressure), get_relchange(pressure));
 			if ( task_sendPressure.canceled() ) task_sendPressure.enableDelayed(TASK_DELAY);
 			if ( abs_change(pressure)) {
 				Serial.printf(" - value change (%0.1f) exceeded absolute threshold (%0.1f): ",get_abschange(pressure), pressure.abs_change);
@@ -1029,10 +1102,10 @@ uint8_t read_ws90() {
 				Serial.println();
 			}
 		}
-		if ( temperature.read && humidity.read ) { // DEWPOINT
+		if ( temperature.read && humidity.read ) { // DEWPOINT, FROSTPOINT
 			dewPoint.value = dewpoint (temperature.value, humidity.value);
 			dewPoint.read = true;
-			Serial.printf("Dewpoint....... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%)", dewPoint.value, dewPoint.last, get_abschange(dewPoint), get_relchange(dewPoint));
+			Serial.printf("Dewpoint....... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", dewPoint.value, dewPoint.last, get_abschange(dewPoint), get_relchange(dewPoint));
 			if ( task_sendDewpoint.canceled() ) task_sendDewpoint.enableDelayed(TASK_DELAY);
 			if ( abs_change(dewPoint)) {
 				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(dewPoint), dewPoint.abs_change);
@@ -1040,6 +1113,19 @@ uint8_t read_ws90() {
 			} else if ( rel_change(dewPoint)) {
 				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(dewPoint), dewPoint.rel_change);
 				sendDewpoint();
+			} else {
+				Serial.println();
+			}
+			frostPoint.value = frostpoint (temperature.value, humidity.value);
+			frostPoint.read = true;
+			Serial.printf("Frostpoint..... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", frostPoint.value, frostPoint.last, get_abschange(frostPoint), get_relchange(frostPoint));
+			if ( task_sendFrostpoint.canceled() ) task_sendFrostpoint.enableDelayed(TASK_DELAY);
+			if ( abs_change(frostPoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(frostPoint), frostPoint.abs_change);
+				sendFrostpoint();
+			} else if ( rel_change(dewPoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(frostPoint), frostPoint.rel_change);
+				sendFrostpoint();
 			} else {
 				Serial.println();
 			}
@@ -1119,9 +1205,21 @@ void sendDewpoint() {
 	}
 }
 
+void sendFrostpoint() {
+	if (frostPoint.read) {
+		Serial.printf(" -> Sending frostpoint in °C (%0.2f) to bus\n", frostPoint.value);
+		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Frostpunkt_DPT9.value(frostPoint.value) : KoAPP_Frostpunkt_DPT14.value(frostPoint.value);
+		frostPoint.last = dewPoint.value;
+		frostPoint.lastread = true;
+	} else {
+		Serial.println(" -- Frostpoint not yet available, won't send to bus - delay task");
+		task_sendFrostpoint.cancel();
+	}
+}
+
 void sendHumidity() {
 	if (humidity.read) {
-		Serial.printf(" -> Sending humidity in % (%d) to bus\n", humidity.value);
+		Serial.printf(" -> Sending humidity in %% (%d) to bus\n", humidity.value);
 		switch (ParamAPP_Feuchte_DPT) {
 			case 0: KoAPP_Feuchte_DPT6.value(humidity.value); break;
 			case 1: KoAPP_Feuchte_DPT9.value(humidity.value); break;
@@ -1147,16 +1245,6 @@ void sendWindSpeed() {
 	}
 }
 
-void sendWindSpeedBft() {
-	if (windSpeed.read) {
-		u_int8_t s = bft(windSpeed.value);
-		Serial.printf(" -> Sending wind speed in beaufort (%d) to bus\n", s);
-		KoAPP_Windspeed_Bft_DPT5.value(s);
-	} else {
-		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
-	}
-}
-
 void sendGustSpeed() {
 	if (gustSpeed.read) {
 		Serial.printf(" -> Sending gust speed in m/s (%0.2f) to bus\n", gustSpeed.value);
@@ -1173,9 +1261,19 @@ void sendGustSpeedBft() {
 	if (gustSpeed.read) {
 		u_int8_t s = bft(gustSpeed.value);
 		Serial.printf(" -> Sending gust speed in beaufort (%d) to bus\n", s);
-		KoAPP_Gustspeed_Bft_DPT5.value(s);
+		KoAPP_GustSpeed_BFT_DPT5.value(s);
 	} else {
 		Serial.println(" -- Gust speed in beaufort not yet available, won't send to bus");
+	}
+}
+
+void sendWindSpeedBft() {
+	if (windSpeed.read) {
+		u_int8_t s = bft(windSpeed.value);
+		Serial.printf(" -> Sending wind speed in beaufort (%d) to bus\n", s);
+		KoAPP_WindSpeed_BFT_DPT5.value(s);
+	} else {
+		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
 	}
 }
 
@@ -1222,7 +1320,7 @@ void sendPressureTrend3() {
 		pressureTrend3.last = pressureTrend3.value;
 		pressureTrend3.lastread = true;
 	} else {
-		Serial.println("3 hourly air pressure trend not yet available, won't send to bus - delay task");
+		Serial.println(" -- 3 hourly air pressure trend not yet available, won't send to bus - delay task");
 		task_sendPressureTrend3.cancel();
 	}
 }
@@ -1327,19 +1425,26 @@ void sendPM10_normalized() {
 
 void MQTTpublish() {
 	if ( temperature.read == true ) mqttMsg.add("temperature", temperature.value );
+	if ( temperature1.read == true ) mqttMsg.add("temperature1", temperature1.value );
 	if ( humidity.read == true ) mqttMsg.add("humidity", humidity.value );
 	if ( dewPoint.read == true ) mqttMsg.add("dewpoint", dewPoint.value );
+	if ( frostPoint.read == true ) mqttMsg.add("frostpoint", frostPoint.value );
 	if ( pressure.read == true ) mqttMsg.add("pressure", pressure.value );
 	if ( pressureTrend1.read == true ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
 	if ( pressureTrend3.read == true ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
-	if ( humidity.read == true ) mqttMsg.add("humidity", humidity.value );
 	if ( light.read == true ) mqttMsg.add("light", light.value );
 	if ( uvIndex.read == true ) mqttMsg.add("uvindex", uvIndex.value );
 	if ( windSpeed.read == true ) mqttMsg.add("windspeed", windSpeed.value );
 	if ( gustSpeed.read == true ) mqttMsg.add("gustspeed", gustSpeed.value );
+	if ( windSpeedBFT.read == true ) mqttMsg.add("windspeed_bft", windSpeedBFT.value );
+	if ( gustSpeedBFT.read == true ) mqttMsg.add("gustspeed_bft", gustSpeedBFT.value );
 	if ( windDirection.read == true ) mqttMsg.add("winddirection", windDirection.value );
 	if ( rainFall.read == true ) mqttMsg.add("rainfall", rainFall.value );
 	if ( rainCounter.read == true ) mqttMsg.add("raincounter", rainCounter.value );
+	if ( pm25.read == true ) mqttMsg.add("pm25", pm25.value );
+	if ( pm10.read == true ) mqttMsg.add("pm10", pm10.value );
+	if ( pm25_normalized.read == true ) mqttMsg.add("pm25_normalized", pm25_normalized.value );
+	if ( pm10_normalized.read == true ) mqttMsg.add("pm10_normalized", pm10_normalized.value );
 
 	if (!mqttClient.connected()) {
 	mqtt_reconnect();
@@ -1380,7 +1485,7 @@ void loop() {
 
 	}
 
-	if ( (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
+	if ( timeKnown && (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
 		updatePressureRingbuffer();
 		lastminute = minute(t);
 		// every 15 minutes
