@@ -28001,6 +28001,13 @@
                                 "Items": null
                               },
                               {
+                                "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                                "IsExpanded": false,
+                                "Name": "",
+                                "ComObjectRef": 45,
+                                "Items": null
+                              },
+                              {
                                 "$type": "Kaenx.Creator.Models.Dynamic.DynChooseBlock, Kaenx.Creator.Share",
                                 "IsExpanded": false,
                                 "Name": "",
@@ -28052,7 +28059,7 @@
                                 "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
                                 "IsExpanded": false,
                                 "Name": "",
-                                "ComObjectRef": 34,
+                                "ComObjectRef": 46,
                                 "Items": null
                               },
                               {
@@ -28569,6 +28576,20 @@
                         "IconId": 11,
                         "Access": 2,
                         "Cell": null,
+                        "Items": null
+                      },
+                      {
+                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                        "IsExpanded": false,
+                        "Name": "",
+                        "ComObjectRef": 44,
+                        "Items": null
+                      },
+                      {
+                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                        "IsExpanded": false,
+                        "Name": "",
+                        "ComObjectRef": 43,
                         "Items": null
                       }
                     ],
@@ -29685,7 +29706,7 @@
                             "$type": "Kaenx.Creator.Models.Dynamic.DynParaBlock, Kaenx.Creator.Share",
                             "IsExpanded": false,
                             "Id": 13,
-                            "Name": "Regen",
+                            "Name": "Feinstaub",
                             "Text": [
                               {
                                 "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
@@ -29836,6 +29857,20 @@
                                         "Name": "",
                                         "ComObjectRef": 37,
                                         "Items": null
+                                      },
+                                      {
+                                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                                        "IsExpanded": false,
+                                        "Name": "",
+                                        "ComObjectRef": 39,
+                                        "Items": null
+                                      },
+                                      {
+                                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                                        "IsExpanded": false,
+                                        "Name": "",
+                                        "ComObjectRef": 41,
+                                        "Items": null
                                       }
                                     ]
                                   },
@@ -29858,6 +29893,20 @@
                                         "IsExpanded": false,
                                         "Name": "",
                                         "ComObjectRef": 38,
+                                        "Items": null
+                                      },
+                                      {
+                                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                                        "IsExpanded": false,
+                                        "Name": "",
+                                        "ComObjectRef": 40,
+                                        "Items": null
+                                      },
+                                      {
+                                        "$type": "Kaenx.Creator.Models.Dynamic.DynComObject, Kaenx.Creator.Share",
+                                        "IsExpanded": false,
+                                        "Name": "",
+                                        "ComObjectRef": 42,
                                         "Items": null
                                       }
                                     ]
@@ -29922,9 +29971,9 @@
     "DefaultLanguage": "de-DE",
     "DefaultLanguageIndex": 0,
     "Name": "WN90LP Modbus KNX Gateway",
-    "ReplacesVersions": "1 2 3",
+    "ReplacesVersions": "3 4",
     "Script": "",
-    "NameText": "V 0.3 WN90LP Modbus KNX Gateway",
+    "NameText": "V 0.4 WN90LP Modbus KNX Gateway",
     "Text": [
       {
         "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
@@ -29947,7 +29996,7 @@
         "Preview": "WN90LP Modbus KNX gateway"
       }
     ],
-    "Number": 3,
+    "Number": 4,
     "AddressTableMaxCount": 65535,
     "AddressTableOffset": 0,
     "AddressMemoryId": -1,
