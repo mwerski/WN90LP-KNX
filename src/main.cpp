@@ -435,13 +435,6 @@ void setup() {
 	knx.setProgLedOnCallback(progLedOn);
 
 	if (knx.configured()) {
-		if ( ParamAPP_Watchdog ) {
-			Serial.printf("Enable hardware watchdog (%ds)\n", WDT_TIMEOUT);
-			esp_task_wdt_init(WDT_TIMEOUT,true);
-			esp_task_wdt_add(NULL); 
-		} else {
-			Serial.println("Deactivate hardware watchdog");
-		}
 
 		if ( ParamAPP_UseDHCP == false ) {
 			// we are using a static IP config stored as KNX paramaeters
@@ -723,6 +716,7 @@ void setup() {
 	ArduinoOTA
 		.onStart([]() {
 			String type;
+			esp_task_wdt_deinit();
 			if (ArduinoOTA.getCommand() == U_FLASH) {
 				type = "sketch";
 			} else {  // U_SPIFFS
@@ -769,6 +763,9 @@ void setup() {
 
 	server.begin();
 
+	ElegantOTA.onStart([]() {
+		esp_task_wdt_deinit();
+	});
 	ElegantOTA.begin(&server);
 
 	// MQTT
@@ -925,6 +922,14 @@ void setup() {
 		#pragma endregion
 	}
 
+	if ( ParamAPP_Watchdog ) {
+		Serial.printf("Enable hardware watchdog (%ds)\n", WDT_TIMEOUT);
+		esp_task_wdt_init(WDT_TIMEOUT,true);
+		esp_task_wdt_add(NULL); 
+	} else {
+		Serial.println("Deactivate hardware watchdog");
+	}
+
 
 }
 
@@ -947,6 +952,7 @@ uint8_t read_ws90() {
 		Serial.println("WDT timer reset");
 		Serial.print ("Uptime......... "); Serial.println( uptime_formatter::getUptime() );
 		Serial.print ("Localtime...... "); printLocaltime(true);
+		Serial.print ("AppVersion..... "); Serial.println( MAIN_ApplicationVersion );
 
 		if ( node.getResponseBuffer(0) != 0xFFFF ) { // BRIGHTNESS
 			light.value = node.getResponseBuffer(0) * 10;
@@ -1219,7 +1225,7 @@ void sendFrostpoint() {
 
 void sendHumidity() {
 	if (humidity.read) {
-		Serial.printf(" -> Sending humidity in %% (%d) to bus\n", humidity.value);
+		Serial.printf(" -> Sending humidity in %% (%0.0f) to bus\n", humidity.value);
 		switch (ParamAPP_Feuchte_DPT) {
 			case 0: KoAPP_Feuchte_DPT6.value(humidity.value); break;
 			case 1: KoAPP_Feuchte_DPT9.value(humidity.value); break;
@@ -1260,7 +1266,7 @@ void sendGustSpeed() {
 void sendGustSpeedBft() {
 	if (gustSpeed.read) {
 		u_int8_t s = bft(gustSpeed.value);
-		Serial.printf(" -> Sending gust speed in beaufort (%d) to bus\n", s);
+		Serial.printf(" -> Sending gust speed in beaufort (%0.0f) to bus\n", s);
 		KoAPP_GustSpeed_BFT_DPT5.value(s);
 	} else {
 		Serial.println(" -- Gust speed in beaufort not yet available, won't send to bus");
@@ -1270,7 +1276,7 @@ void sendGustSpeedBft() {
 void sendWindSpeedBft() {
 	if (windSpeed.read) {
 		u_int8_t s = bft(windSpeed.value);
-		Serial.printf(" -> Sending wind speed in beaufort (%d) to bus\n", s);
+		Serial.printf(" -> Sending wind speed in beaufort (%0.0f) to bus\n", s);
 		KoAPP_WindSpeed_BFT_DPT5.value(s);
 	} else {
 		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
@@ -1279,7 +1285,7 @@ void sendWindSpeedBft() {
 
 void sendWindDirection() {
 	if (windDirection.read) {
-		Serial.printf(" -> Sending wind direction in ° (%d) to bus\n", windDirection.value);
+		Serial.printf(" -> Sending wind direction in ° (%0.0f) to bus\n", windDirection.value);
 		(ParamAPP_WindDir_DPT == 0) ? KoAPP_WindDir_DPT9.value(windDirection.value) : KoAPP_WindDir_DPT14.value(windDirection.value);
 		windDirection.last = windDirection.value;
 		windDirection.lastread = true;
@@ -1363,7 +1369,7 @@ void sendUVindex() {
 
 void sendBrightness() {
 	if (light.read) {
-		Serial.printf(" -> Sending brightness in Lux (%d) to bus\n", light.value);
+		Serial.printf(" -> Sending brightness in Lux (%0.0f) to bus\n", light.value);
 		(ParamAPP_Helligkeit_DPT == 0) ? KoAPP_Helligkeit_DPT9.value(light.value) : KoAPP_Helligkeit_DPT14.value(light.value);
 		light.last = light.value;
 		light.lastread = true;
@@ -1485,7 +1491,7 @@ void loop() {
 
 	}
 
-	if ( timeKnown && (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
+	if ( timeKnown && dateKnown && (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
 		updatePressureRingbuffer();
 		lastminute = minute(t);
 		// every 15 minutes
