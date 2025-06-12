@@ -597,10 +597,10 @@ void setup() {
 				KoAPP_PM25_DPT9.callback(callback_pm25);
 				KoAPP_PM10_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_PM10_DPT9.callback(callback_pm10);
-				KoAPP_PM25_Normalized__DPT9.dataPointType(Dpt(9, 1));
-				KoAPP_PM25_Normalized__DPT9.callback(callback_pm25_normalized);
-				KoAPP_PM10_Normalized__DPT9.dataPointType(Dpt(9, 1));
-				KoAPP_PM10_Normalized__DPT9.callback(callback_pm10_normalized);
+				KoAPP_PM25_Normalized_DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_PM25_Normalized_DPT9.callback(callback_pm25_normalized);
+				KoAPP_PM10_Normalized_DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_PM10_Normalized_DPT9.callback(callback_pm10_normalized);
 				break;
 			case 1:
 				KoAPP_PM25_DPT14.dataPointType(Dpt(14, 1));
@@ -695,10 +695,10 @@ void setup() {
 
 	if ( net.dhcp == false ) {
 		wifiManager.setSTAStaticIPConfig( net.ip, net.gateway, net.netmask, net.dns );
-		wifiManager.setHostname( net.hostname );
 		Serial.print("static setup: ");
 	}
 
+	wifiManager.setHostname( net.hostname );
   wifiManager.setConfigPortalTimeout(180);
 	if (!wifiManager.autoConnect("AutoConnectAP")) {
     Serial.println("failed to connect and hit timeout");
