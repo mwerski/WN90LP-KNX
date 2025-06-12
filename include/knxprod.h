@@ -9,7 +9,7 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x04
+#define MAIN_ApplicationVersion 0x05
 #define MAIN_OrderNumber "p3-00012.1"
 #define MAIN_ParameterSize 239
 #define MAIN_MaxKoNumber 83
@@ -333,8 +333,8 @@
 #define APP_KoPM25_DPT14 80
 #define KoAPP_PM25_DPT14 knx.getGroupObject(APP_KoPM25_DPT14)
 //!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM25_Normalized__DPT9 81
-#define KoAPP_PM25_Normalized__DPT9 knx.getGroupObject(APP_KoPM25_Normalized__DPT9)
+#define APP_KoPM25_Normalized_DPT9 81
+#define KoAPP_PM25_Normalized_DPT9 knx.getGroupObject(APP_KoPM25_Normalized_DPT9)
 //!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
 #define APP_KoPM25_Normalized_DPT14 81
 #define KoAPP_PM25_Normalized_DPT14 knx.getGroupObject(APP_KoPM25_Normalized_DPT14)
@@ -345,8 +345,8 @@
 #define APP_KoPM10_DPT14 82
 #define KoAPP_PM10_DPT14 knx.getGroupObject(APP_KoPM10_DPT14)
 //!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM10_Normalized__DPT9 83
-#define KoAPP_PM10_Normalized__DPT9 knx.getGroupObject(APP_KoPM10_Normalized__DPT9)
+#define APP_KoPM10_Normalized_DPT9 83
+#define KoAPP_PM10_Normalized_DPT9 knx.getGroupObject(APP_KoPM10_Normalized_DPT9)
 //!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
 #define APP_KoPM10_Normalized_DPT14 83
 #define KoAPP_PM10_Normalized_DPT14 knx.getGroupObject(APP_KoPM10_Normalized_DPT14)
