@@ -9,7 +9,7 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x07
+#define MAIN_ApplicationVersion 0x04
 #define MAIN_OrderNumber "p3-00012.1"
 #define MAIN_ParameterSize 239
 #define MAIN_MaxKoNumber 83
