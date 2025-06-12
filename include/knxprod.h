@@ -9,7 +9,7 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x02
+#define MAIN_ApplicationVersion 0x03
 #define MAIN_OrderNumber "p3-00012.1"
 #define MAIN_ParameterSize 239
 #define MAIN_MaxKoNumber 83
@@ -245,6 +245,12 @@
 //!< Number: 22, Text: Taupunkt (°C), Function: Messwert
 #define APP_KoTaupunkt_DPT14 22
 #define KoAPP_Taupunkt_DPT14 knx.getGroupObject(APP_KoTaupunkt_DPT14)
+//!< Number: 23, Text: Frostpunkt(°C), Function: Messwert
+#define APP_KoFrostpunkt_DPT9 23
+#define KoAPP_Frostpunkt_DPT9 knx.getGroupObject(APP_KoFrostpunkt_DPT9)
+//!< Number: 23, Text: Frostpunkt (°C), Function: Messwert
+#define APP_KoFrostpunkt_DPT14 23
+#define KoAPP_Frostpunkt_DPT14 knx.getGroupObject(APP_KoFrostpunkt_DPT14)
 //!< Number: 30, Text: relative Feuchte (%), Function: Messwert
 #define APP_KoFeuchte_DPT6 30
 #define KoAPP_Feuchte_DPT6 knx.getGroupObject(APP_KoFeuchte_DPT6)
@@ -326,7 +332,7 @@
 //!< Number: 80, Text: PM2.5 Konzentration, Function: Messwert
 #define APP_KoPM25_DPT14 80
 #define KoAPP_PM25_DPT14 knx.getGroupObject(APP_KoPM25_DPT14)
-//!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert(, Function: Messwert
+//!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
 #define APP_KoPM25_Normalized__DPT9 81
 #define KoAPP_PM25_Normalized__DPT9 knx.getGroupObject(APP_KoPM25_Normalized__DPT9)
 //!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
@@ -338,7 +344,7 @@
 //!< Number: 82, Text: PM10 Konzentration, Function: Messwert
 #define APP_KoPM10_DPT14 82
 #define KoAPP_PM10_DPT14 knx.getGroupObject(APP_KoPM10_DPT14)
-//!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert(, Function: Messwert
+//!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
 #define APP_KoPM10_Normalized__DPT9 83
 #define KoAPP_PM10_Normalized__DPT9 knx.getGroupObject(APP_KoPM10_Normalized__DPT9)
 //!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
