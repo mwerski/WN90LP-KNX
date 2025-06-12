@@ -76,6 +76,9 @@ Scheduler runner;
 struct tm myTime;
 bool timeKnown = false;
 bool dateKnown = false;
+bool sensorfailure_wn90 = false;
+bool sensorfailure_1wire = false;
+bool sensorfailure_sds = false;
 
 void callbaack_time(GroupObject& go) {
 	if (go.value()) {
@@ -409,6 +412,7 @@ void progLedOn() {
 	pixels.show();
 }
 
+#pragma region setup
 void setup() {
 	Serial.begin(115200);
 
@@ -930,8 +934,8 @@ void setup() {
 		Serial.println("Deactivate hardware watchdog");
 	}
 
-
 }
+#pragma endregion
 
 void printLocaltime(bool newline=false) {
 	time_t t = now();
@@ -948,7 +952,7 @@ uint8_t read_ws90() {
 	uint8_t result = node.readHoldingRegisters( 0x165, c );
 
 	if (result == node.ku8MBSuccess) {
-		esp_task_wdt_reset(); // rest WDT timer
+		sensorfailure_sds = false;
 		Serial.println("WDT timer reset");
 		Serial.print ("Uptime......... "); Serial.println( uptime_formatter::getUptime() );
 		Serial.print ("Localtime...... "); printLocaltime(true);
@@ -1148,6 +1152,7 @@ uint8_t read_ws90() {
 	} else {
 		Serial.print("result = ");
 		Serial.println( result );
+		sensorfailure_wn90 = true;
 	}
 	return result;
 }
@@ -1475,6 +1480,8 @@ unsigned long lastChange = 0;
 unsigned long delayTime  = 2000;
 
 void loop() {
+	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
+
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print("WiFi lost, restarting...");
 		ESP.restart();
