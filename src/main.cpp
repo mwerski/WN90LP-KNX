@@ -16,10 +16,16 @@
 #include <TimeLib.h>
 #include <uptime_formatter.h>
 #include <esp_task_wdt.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
 #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE	// Default Debug Level
+
+OneWire ow(WIREPIN);
+DallasTemperature ds(&ow);
+DeviceAddress sensor;
 
 #pragma region Scheduler definitions and prototypes
 #include <TaskScheduler.h>
@@ -45,6 +51,9 @@ void sendPM25();
 void sendPM10();
 void sendPM25_normalized();
 void sendPM10_normalized();
+void request1wTemperature();
+void read1wTemperature();
+void sendHeartbeat();
 
 //Task task_updatePressureRingbuffer(RINGBUFFER_UPDATE, TASK_FOREVER, &updatePressureRingbuffer);	// update ringbuffer for trends of pressure readings
 #define TASK_DELAY 170	// delay in ms when enablinig a task
@@ -70,6 +79,9 @@ Task task_sendPM25_normalized(60000, TASK_FOREVER, &sendPM25_normalized);
 Task task_sendPM10_normalized(60000, TASK_FOREVER, &sendPM10_normalized);
 Task task_sendPM25(60000, TASK_FOREVER, &sendPM25);
 Task task_sendPM10(60000, TASK_FOREVER, &sendPM10);
+Task task_request1wTemperature(2000, TASK_FOREVER, &request1wTemperature);
+Task task_read1wTemperature(800, TASK_ONCE, &read1wTemperature);
+Task task_heartbeat(10000, TASK_FOREVER, &sendHeartbeat);
 Scheduler runner;
 #pragma endregion
 
@@ -79,6 +91,7 @@ bool dateKnown = false;
 bool sensorfailure_wn90 = false;
 bool sensorfailure_1wire = false;
 bool sensorfailure_sds = false;
+bool ow_awailable = false;
 
 void callbaack_time(GroupObject& go) {
 	if (go.value()) {
@@ -415,6 +428,7 @@ void progLedOn() {
 #pragma region setup
 void setup() {
 	Serial.begin(115200);
+	delay(2000);
 
 	pinMode(RS485_CON_PIN, OUTPUT);
 	pinMode(KEY_PIN, INPUT_PULLUP);
@@ -437,6 +451,10 @@ void setup() {
 	Serial.println(knx.configured());
 	knx.setProgLedOffCallback(progLedOff);
 	knx.setProgLedOnCallback(progLedOn);
+
+	Serial.println("Initializing scheduler");
+	runner.init();
+
 
 	if (knx.configured()) {
 
@@ -477,15 +495,54 @@ void setup() {
 		}
 
 		if (ParamAPP_Heartbeat > 0) {
-			Serial.print("Sende Neartbeat alle "); Serial.print(ParamAPP_Heartbeat); Serial.println("s");
+			Serial.print("Send heartbeat every "); Serial.print(ParamAPP_Heartbeat); Serial.println("s");
 			// ParamAPP_Heartbeat=10:
 			KoAPP_Heartbeat.dataPointType(Dpt(1, 1));
-			//runner.addTask(task_heartbeat);
-			//task_heartbeat.setInterval(ParamAPP_Heartbeat*1000);
-			//task_heartbeat.enable();
-			Serial.println("Task(s) enabled");
+			runner.addTask(task_heartbeat);
+			task_heartbeat.setInterval(ParamAPP_Heartbeat*1000);
+			task_heartbeat.enable();
+			Serial.println("Task enabled");
 		} else {
-			Serial.println("Sende keinen Heartbeat");
+			Serial.println("Send no heartbeat");
+		}
+
+		if (ParamAPP_1wire_vorhanden) {
+			Serial.println("1wire configured, locating sensor");
+			ds.begin();
+			u_int8_t ow_count = ds.getDeviceCount();
+			if (ow_count == 0) {
+				Serial.println("ERROR: no sensor found, disabling 1wire!");
+			} else {
+				if (ow_count > 1) {
+					Serial.println("WARNING: more than one sensor found, will only query the first one!");
+				} else {
+					Serial.println("1wire sensor found");
+				}
+				if (ds.isParasitePowerMode()) {
+					Serial.println("WARNING: parasite power is ON, it is recommended not to use parasite power mode!");
+				} else {
+					Serial.println("Parasite power mode is off");
+				}
+				if (!ds.getAddress(sensor, 0)) {
+					Serial.println("ERROR: unable to find address for sensor 0");
+				} else {
+					ds.setResolution(sensor, 12);
+					Serial.print("Sensor address is ");
+					for (uint8_t i = 0; i < 8; i++) {
+						if (sensor[i] < 16) Serial.print("0");
+						Serial.print(sensor[i], HEX);
+					}
+				}
+				Serial.print(", sensor resolution is ");
+				Serial.println(ds.getResolution(sensor), DEC);
+				ow_awailable = true;
+				Serial.println("Enabling 1wire task");
+				runner.addTask(task_read1wTemperature);
+				runner.addTask(task_request1wTemperature);
+				task_request1wTemperature.enable();
+			}
+		} else {
+			Serial.println("1wire disabled");
 		}
 
 		Serial.println("Defining DPTs and callbacks");
@@ -780,9 +837,6 @@ void setup() {
 
 	// initialize ringbuffer
 	for (u_int8_t i=0; i<RINGBUFFERSIZE; i++) { pressureRing[i] = NAN; }
-
-	Serial.println("Initializing scheduler");
-	runner.init();
 
 	if ( net.mqtt == true ) {
 		runner.addTask(task_MQTTpublish);
@@ -1180,6 +1234,11 @@ void updatePressureRingbuffer() {
 }
 
 #pragma region KNX functions
+void sendHeartbeat() {
+	Serial.println(" -> Sending heartbeat to bus");
+	KoAPP_Heartbeat.value(1);
+}
+
 void sendTemperature() {
 	if (temperature.read) {
 		Serial.printf(" -> Sending temperature in °C (%0.2f) to bus\n", temperature.value);
@@ -1307,7 +1366,7 @@ void sendPressure() {
 		pressure.last = pressure.value;
 		pressure.lastread = true;
 	} else {
-		Serial.println(" -  Air pressure not yet available, won't send to bus - delay task");
+		Serial.println(" -- Air pressure not yet available, won't send to bus - delay task");
 		task_sendPressure.cancel();
 	}
 }
@@ -1434,47 +1493,77 @@ void sendPM10_normalized() {
 #pragma endregion
 
 
+char* toCharArray(String str) {
+	return &str[0];
+}
+
 void MQTTpublish() {
-	if ( temperature.read == true ) mqttMsg.add("temperature", temperature.value );
-	if ( temperature1.read == true ) mqttMsg.add("temperature1", temperature1.value );
-	if ( humidity.read == true ) mqttMsg.add("humidity", humidity.value );
-	if ( dewPoint.read == true ) mqttMsg.add("dewpoint", dewPoint.value );
-	if ( frostPoint.read == true ) mqttMsg.add("frostpoint", frostPoint.value );
-	if ( pressure.read == true ) mqttMsg.add("pressure", pressure.value );
-	if ( pressureTrend1.read == true ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
-	if ( pressureTrend3.read == true ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
-	if ( light.read == true ) mqttMsg.add("light", light.value );
-	if ( uvIndex.read == true ) mqttMsg.add("uvindex", uvIndex.value );
-	if ( windSpeed.read == true ) mqttMsg.add("windspeed", windSpeed.value );
-	if ( gustSpeed.read == true ) mqttMsg.add("gustspeed", gustSpeed.value );
-	if ( windSpeedBFT.read == true ) mqttMsg.add("windspeed_bft", windSpeedBFT.value );
-	if ( gustSpeedBFT.read == true ) mqttMsg.add("gustspeed_bft", gustSpeedBFT.value );
-	if ( windDirection.read == true ) mqttMsg.add("winddirection", windDirection.value );
-	if ( rainFall.read == true ) mqttMsg.add("rainfall", rainFall.value );
-	if ( rainCounter.read == true ) mqttMsg.add("raincounter", rainCounter.value );
-	if ( pm25.read == true ) mqttMsg.add("pm25", pm25.value );
-	if ( pm10.read == true ) mqttMsg.add("pm10", pm10.value );
-	if ( pm25_normalized.read == true ) mqttMsg.add("pm25_normalized", pm25_normalized.value );
-	if ( pm10_normalized.read == true ) mqttMsg.add("pm10_normalized", pm10_normalized.value );
+	if ( temperature.read ) mqttMsg.add("temperature", temperature.value );
+	if ( temperature1.read ) mqttMsg.add("temperature1", temperature1.value );
+	if ( humidity.read ) mqttMsg.add("humidity", humidity.value );
+	if ( dewPoint.read ) mqttMsg.add("dewpoint", dewPoint.value );
+	if ( frostPoint.read ) mqttMsg.add("frostpoint", frostPoint.value );
+	if ( pressure.read ) mqttMsg.add("pressure", pressure.value );
+	if ( pressureTrend1.read ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
+	if ( pressureTrend3.read ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
+	if ( light.read ) mqttMsg.add("light", light.value );
+	if ( uvIndex.read ) mqttMsg.add("uvindex", uvIndex.value );
+	if ( windSpeed.read ) mqttMsg.add("windspeed", windSpeed.value );
+	if ( gustSpeed.read ) mqttMsg.add("gustspeed", gustSpeed.value );
+	if ( windSpeedBFT.read ) mqttMsg.add("windspeed_bft", windSpeedBFT.value );
+	if ( gustSpeedBFT.read ) mqttMsg.add("gustspeed_bft", gustSpeedBFT.value );
+	if ( windDirection.read ) mqttMsg.add("winddirection", windDirection.value );
+	if ( rainFall.read ) mqttMsg.add("rainfall", rainFall.value );
+	if ( rainCounter.read ) mqttMsg.add("raincounter", rainCounter.value );
+	if ( pm25.read ) mqttMsg.add("pm25", pm25.value );
+	if ( pm10.read ) mqttMsg.add("pm10", pm10.value );
+	if ( pm25_normalized.read ) mqttMsg.add("pm25_normalized", pm25_normalized.value );
+	if ( pm10_normalized.read ) mqttMsg.add("pm10_normalized", pm10_normalized.value );
+
+	mqttMsg.add("wifi_rssi", WiFi.RSSI());
 
 	if (!mqttClient.connected()) {
 	mqtt_reconnect();
 	}
-
+String msg = "WTF???";
 	if (mqttClient.connected()) {
-		String msg = mqttMsg.toString();
+		mqttClient.setBufferSize(1024);
+/*		String msg = mqttMsg.toString();
 		uint16_t msgLength = msg.length() + 1;
 		if (msgLength > 10) {
 			// only publish if messgae is not empty
-			Serial.println("Publish results to MQTT broker");
+			Serial.print("Publish results to MQTT broker "); Serial.println(net.mqttTopic);
 			char msgChar[msgLength];
 			msg.toCharArray(msgChar, msgLength);
 			mqttClient.publish(net.mqttTopic, msgChar );
 		}
-	}
-
+		*/
+		if (mqttMsg.size() > 0) mqttClient.publish(net.mqttTopic,toCharArray(mqttMsg.toString()) );
+	// mqttClient.publish(net.mqttTopic,toCharArray(msg) );	}
 	Serial.println();
+	}
 }
+
+
+void request1wTemperature() {
+	Serial.println("Requesting 1wire temperature");
+	ds.setWaitForConversion(false);
+	ds.requestTemperaturesByAddress(sensor);
+	task_read1wTemperature.restartDelayed();
+}
+
+void read1wTemperature() {
+	double temp = ds.getTempC(sensor);
+//	task_read1wTemperature.disable();
+	if (temp == DEVICE_DISCONNECTED_C) {
+    Serial.println("ERROR: Could not read 1wire temperature");
+    return;
+  }
+	Serial.printf("1wire temperature received: %0.2f°C\n",temp);
+	temperature1.value = temp;
+	temperature1.read = true;
+}
+
 
 unsigned long lastChange = 0;
 unsigned long delayTime  = 2000;
@@ -1494,13 +1583,14 @@ void loop() {
 	ElegantOTA.loop();
 	runner.execute();
 	knx.loop();
+	if (ParamAPP_useMQTT) mqttClient.loop();
 //	if(!knx.configured()) return;
 
 
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
 		read_ws90();
-
+		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
 
 	}
 

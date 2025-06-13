@@ -9,6 +9,7 @@
 #define RS485_TX_ENABLE         HIGH
 #define RS485_RX_ENABLE         LOW
 #define NUMPIXELS               1
+#define WIREPIN									11
 
 #if CONFIG_IDF_TARGET_ESP32C3
 
