@@ -18,10 +18,14 @@
 #include <esp_task_wdt.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <esp_sds011.h>
+#include <SoftwareSerial.h>
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
 #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE	// Default Debug Level
+#define SDS_PIN_RX 35
+#define SDS_PIN_TX 38
 
 OneWire ow(WIREPIN);
 DallasTemperature ds(&ow);
@@ -54,6 +58,8 @@ void sendPM10_normalized();
 void request1wTemperature();
 void read1wTemperature();
 void sendHeartbeat();
+void start_SDS();
+void read_SDS();
 
 //Task task_updatePressureRingbuffer(RINGBUFFER_UPDATE, TASK_FOREVER, &updatePressureRingbuffer);	// update ringbuffer for trends of pressure readings
 #define TASK_DELAY 170	// delay in ms when enablinig a task
@@ -82,6 +88,8 @@ Task task_sendPM10(60000, TASK_FOREVER, &sendPM10);
 Task task_request1wTemperature(2000, TASK_FOREVER, &request1wTemperature);
 Task task_read1wTemperature(800, TASK_ONCE, &read1wTemperature);
 Task task_heartbeat(10000, TASK_FOREVER, &sendHeartbeat);
+Task task_startSDS(120000, TASK_FOREVER, &start_SDS);
+Task task_readSDS(1000, 30, &read_SDS);
 Scheduler runner;
 #pragma endregion
 
@@ -425,10 +433,109 @@ void progLedOn() {
 	pixels.show();
 }
 
+#pragma region Particle sensor
+bool is_SDS_running = true;
+constexpr int pm_tablesize = 20;
+int sds_readings;
+int pm25_table[pm_tablesize];
+int pm10_table[pm_tablesize];
+EspSoftwareSerial::UART serialSDS;
+Sds011Async< EspSoftwareSerial::UART > sds011(serialSDS);
+
+void SDS2sleep(bool s) {	// starts or stops the fan
+	if (s) {
+		Serial.println("Putting SDS011 to sleep");
+	} else {
+		Serial.println("Waking up SDS011");
+	}
+	if (sds011.set_sleep(s)) { is_SDS_running = !s; }
+}
+
+void start_SDS() {
+	Serial.println("TASK: Starting SDS011 readings");
+	SDS2sleep(false);
+	task_readSDS.restartDelayed(30000);
+}
+
+void read_SDS() {
+	Serial.println("TASK: Reading SDS011");
+	sds011.on_query_data_auto_completed([](int n) {
+		Serial.println(F("Begin Handling SDS011 query data"));
+		int pm25r;
+		int pm10r;
+		Serial.print(F("readings = ")); Serial.println(n);
+		if (sds011.filter_data(n, pm25_table, pm10_table, pm25r, pm10r) && !isnan(pm10r) && !isnan(pm25r)) {
+			Serial.print(F("PM10: "));
+			Serial.println(float(pm10r) / 10);
+			Serial.print(F("PM2.5: "));
+			Serial.println(float(pm25r) / 10);
+			pm25.value = pm25r/10.0;
+			pm25.read = true;
+			if ( task_sendPM25.canceled() ) task_sendPM25.enableDelayed(TASK_DELAY);
+			if ( abs_change(pm25)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25), pm25.abs_change);
+				sendPM25();
+			} else if ( rel_change(pm25)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25), pm25.rel_change);
+				sendPM25();
+			} else {
+				Serial.println();
+			}
+			pm10.value = pm10r/10.0;
+			pm10.read = true;
+			if ( task_sendPM10.canceled() ) task_sendPM10.enableDelayed(TASK_DELAY);
+			if ( abs_change(pm10)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10), pm10.abs_change);
+				sendPM10();
+			} else if ( rel_change(pm10)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10), pm10.rel_change);
+				sendPM10();
+			} else {
+				Serial.println();
+			}
+			if (humidity.read) {
+				pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
+				pm25_normalized.read = true;
+				if ( task_sendPM25_normalized.canceled() ) task_sendPM25_normalized.enableDelayed(TASK_DELAY);
+				if ( abs_change(pm25_normalized)) {
+					Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25_normalized), pm25_normalized.abs_change);
+					sendPM25_normalized();
+				} else if ( rel_change(pm25_normalized)) {
+					Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25_normalized), pm25_normalized.rel_change);
+					sendPM25_normalized();
+				} else {
+					Serial.println();
+				}
+				pm10_normalized.value = normalizePM10(pm10.value, humidity.value);
+				pm10_normalized.read = true;
+				if ( task_sendPM10_normalized.canceled() ) task_sendPM10_normalized.enableDelayed(TASK_DELAY);
+				if ( abs_change(pm10_normalized)) {
+					Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10_normalized), pm10_normalized.abs_change);
+					sendPM10_normalized();
+				} else if ( rel_change(pm10_normalized)) {
+					Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10_normalized), pm10_normalized.rel_change);
+					sendPM10_normalized();
+				} else {
+					Serial.println();
+				}
+			}
+		}
+		Serial.println(F("End Handling SDS011 query data"));
+		SDS2sleep(true);
+		task_readSDS.disable();
+	});
+	if (!sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table)) {
+//		Serial.println(F("measurement capture start failed"));
+	}
+	sds011.perform_work();
+}
+#pragma endregion
+
+
 #pragma region setup
 void setup() {
 	Serial.begin(115200);
-	delay(2000);
+	delay (2000);
 
 	pinMode(RS485_CON_PIN, OUTPUT);
 	pinMode(KEY_PIN, INPUT_PULLUP);
@@ -505,6 +612,37 @@ void setup() {
 		} else {
 			Serial.println("Send no heartbeat");
 		}
+
+		if (ParamAPP_Feinstaubsensor_vorhanden) {
+			Serial.println("Particle sensor configured, locating device");
+			serialSDS.begin(9600, SWSERIAL_8N1, SDS_PIN_RX, SDS_PIN_TX, false, 192);
+/*			String firmware_version;
+			uint16_t device_id;
+			if (!sds011.device_info(firmware_version, device_id)) {
+				Serial.println("ERROR: Sensor not found, disabling SDS011 routines!");
+//			} else {
+				Serial.print("SDS011 sensor found, firmware version"); 
+				Serial.print(firmware_version);
+				Serial.print(", deviceID");
+				Serial.println(device_id, 16); */
+				SDS2sleep(true);;
+				Sds011::Report_mode report_mode;
+				if (!sds011.get_data_reporting_mode(report_mode)) {
+					Serial.println(F("Sds011::get_data_reporting_mode() failed"));
+				}
+				if (Sds011::REPORT_ACTIVE != report_mode) {
+					Serial.println(F("Turning on Sds011::REPORT_ACTIVE reporting mode"));
+					if (!sds011.set_data_reporting_mode(Sds011::REPORT_ACTIVE)) {
+						Serial.println(F("Sds011::set_data_reporting_mode(Sds011::REPORT_ACTIVE) failed"));
+					}
+				}
+				Serial.println("Registering tasks");
+				runner.addTask(task_startSDS);
+				runner.addTask(task_readSDS);
+				task_startSDS.enable();
+			}
+
+		
 
 		if (ParamAPP_1wire_vorhanden) {
 			Serial.println("1wire configured, locating sensor");
@@ -999,7 +1137,7 @@ void printLocaltime(bool newline=false) {
 	if (newline == true) Serial.println();
 }
 
-uint8_t read_ws90() {
+uint8_t read_wn90() {
 	Serial.println("------------------------------------------------------------");
 	Serial.println("Read weather station data");
 	uint8_t c=10;
@@ -1522,10 +1660,8 @@ void MQTTpublish() {
 
 	mqttMsg.add("wifi_rssi", WiFi.RSSI());
 
-	if (!mqttClient.connected()) {
-	mqtt_reconnect();
-	}
-String msg = "WTF???";
+	if (!mqttClient.connected()) mqtt_reconnect();
+
 	if (mqttClient.connected()) {
 		mqttClient.setBufferSize(1024);
 /*		String msg = mqttMsg.toString();
@@ -1562,6 +1698,16 @@ void read1wTemperature() {
 	Serial.printf("1wire temperature received: %0.2f°C\n",temp);
 	temperature1.value = temp;
 	temperature1.read = true;
+	if ( task_sendTemperature1.canceled() ) task_sendTemperature1.enableDelayed(TASK_DELAY);
+	if ( abs_change(temperature1)) {
+		Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(temperature1), temperature1.abs_change);
+		sendTemperature1();
+	} else if ( rel_change(temperature1)) {
+		Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(temperature1), temperature1.rel_change);
+		sendTemperature1();
+	} else {
+		Serial.println();
+	}
 }
 
 
@@ -1569,6 +1715,7 @@ unsigned long lastChange = 0;
 unsigned long delayTime  = 2000;
 
 void loop() {
+
 	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
 
 	while (WiFi.status() != WL_CONNECTED) {
@@ -1589,7 +1736,7 @@ void loop() {
 
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
-		read_ws90();
+		read_wn90();
 		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
 
 	}
