@@ -20,6 +20,7 @@
 #include <DallasTemperature.h>
 #include <esp_sds011.h>
 #include <SoftwareSerial.h>
+#include "SDS011.h"
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -440,8 +441,10 @@ int sds_readings;
 int pm25_table[pm_tablesize];
 int pm10_table[pm_tablesize];
 EspSoftwareSerial::UART serialSDS;
-Sds011Async< EspSoftwareSerial::UART > sds011(serialSDS);
+// Sds011Async< EspSoftwareSerial::UART > sds011(serialSDS);
+SDS011 sds(serialSDS);
 
+/*
 void SDS2sleep(bool s) {	// starts or stops the fan
 	if (s) {
 		Serial.println("Putting SDS011 to sleep");
@@ -529,6 +532,7 @@ void read_SDS() {
 	}
 	sds011.perform_work();
 }
+	*/
 #pragma endregion
 
 
@@ -616,15 +620,32 @@ void setup() {
 		if (ParamAPP_Feinstaubsensor_vorhanden) {
 			Serial.println("Particle sensor configured, locating device");
 			serialSDS.begin(9600, SWSERIAL_8N1, SDS_PIN_RX, SDS_PIN_TX, false, 192);
-/*			String firmware_version;
-			uint16_t device_id;
-			if (!sds011.device_info(firmware_version, device_id)) {
-				Serial.println("ERROR: Sensor not found, disabling SDS011 routines!");
-//			} else {
-				Serial.print("SDS011 sensor found, firmware version"); 
-				Serial.print(firmware_version);
-				Serial.print(", deviceID");
-				Serial.println(device_id, 16); */
+  Serial.println("getting firmware version");
+  bool mode = false;
+  float p25 = 0, p10 = 0;
+  bool sleepMode = false;
+  int per = 0;
+  byte ver[3] = {0};
+  
+  sds.getMode(&mode);
+  delay(100);
+  sds.getData(&p25, &p10);
+  delay(100);
+  sds.getSleepMode(&sleepMode);
+  delay(100);
+  sds.getWorkingPeriod(&per);
+  delay(100);
+  sds.getFirmwareVersion(ver);
+
+  Serial.println("mode: " + String(mode));
+  Serial.println("data: p2.5: " + String(p25) + ", p10: " + String(p10));
+  Serial.println("sleepmode: " + String(sleepMode));
+  Serial.println("period: " + String(per));
+  Serial.println("version: " + String(ver[2]) + "/" + String(ver[1]) + "/" + String(ver[0]));
+  delay(50000);
+
+			/*
+
 				SDS2sleep(true);;
 				Sds011::Report_mode report_mode;
 				if (!sds011.get_data_reporting_mode(report_mode)) {
@@ -640,6 +661,7 @@ void setup() {
 				runner.addTask(task_startSDS);
 				runner.addTask(task_readSDS);
 				task_startSDS.enable();
+				*/
 			}
 
 		
