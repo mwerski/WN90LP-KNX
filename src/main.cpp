@@ -18,9 +18,8 @@
 #include <esp_task_wdt.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <esp_sds011.h>
+#include "NovaSDS011.h"
 #include <SoftwareSerial.h>
-#include "SDS011.h"
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -59,7 +58,6 @@ void sendPM10_normalized();
 void request1wTemperature();
 void read1wTemperature();
 void sendHeartbeat();
-void start_SDS();
 void read_SDS();
 
 //Task task_updatePressureRingbuffer(RINGBUFFER_UPDATE, TASK_FOREVER, &updatePressureRingbuffer);	// update ringbuffer for trends of pressure readings
@@ -89,8 +87,7 @@ Task task_sendPM10(60000, TASK_FOREVER, &sendPM10);
 Task task_request1wTemperature(2000, TASK_FOREVER, &request1wTemperature);
 Task task_read1wTemperature(800, TASK_ONCE, &read1wTemperature);
 Task task_heartbeat(10000, TASK_FOREVER, &sendHeartbeat);
-Task task_startSDS(120000, TASK_FOREVER, &start_SDS);
-Task task_readSDS(1000, 30, &read_SDS);
+Task task_readSDS(30000, TASK_FOREVER, &read_SDS);
 Scheduler runner;
 #pragma endregion
 
@@ -101,6 +98,7 @@ bool sensorfailure_wn90 = false;
 bool sensorfailure_1wire = false;
 bool sensorfailure_sds = false;
 bool ow_awailable = false;
+bool sds_available = false;
 
 void callbaack_time(GroupObject& go) {
 	if (go.value()) {
@@ -435,104 +433,71 @@ void progLedOn() {
 }
 
 #pragma region Particle sensor
-bool is_SDS_running = true;
-constexpr int pm_tablesize = 20;
-int sds_readings;
-int pm25_table[pm_tablesize];
-int pm10_table[pm_tablesize];
-EspSoftwareSerial::UART serialSDS;
-// Sds011Async< EspSoftwareSerial::UART > sds011(serialSDS);
-SDS011 sds(serialSDS);
-
-/*
-void SDS2sleep(bool s) {	// starts or stops the fan
-	if (s) {
-		Serial.println("Putting SDS011 to sleep");
-	} else {
-		Serial.println("Waking up SDS011");
-	}
-	if (sds011.set_sleep(s)) { is_SDS_running = !s; }
-}
-
-void start_SDS() {
-	Serial.println("TASK: Starting SDS011 readings");
-	SDS2sleep(false);
-	task_readSDS.restartDelayed(30000);
-}
+NovaSDS011 sds011;
 
 void read_SDS() {
 	Serial.println("TASK: Reading SDS011");
-	sds011.on_query_data_auto_completed([](int n) {
-		Serial.println(F("Begin Handling SDS011 query data"));
-		int pm25r;
-		int pm10r;
-		Serial.print(F("readings = ")); Serial.println(n);
-		if (sds011.filter_data(n, pm25_table, pm10_table, pm25r, pm10r) && !isnan(pm10r) && !isnan(pm25r)) {
-			Serial.print(F("PM10: "));
-			Serial.println(float(pm10r) / 10);
-			Serial.print(F("PM2.5: "));
-			Serial.println(float(pm25r) / 10);
-			pm25.value = pm25r/10.0;
-			pm25.read = true;
-			if ( task_sendPM25.canceled() ) task_sendPM25.enableDelayed(TASK_DELAY);
-			if ( abs_change(pm25)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25), pm25.abs_change);
-				sendPM25();
-			} else if ( rel_change(pm25)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25), pm25.rel_change);
-				sendPM25();
+	double pm25r, pm10r;
+  if (sds011.queryData(pm25r, pm10r) == QueryError::no_error) {
+		Serial.println(F("Reading available, begin handling SDS011 query data"));
+		Serial.print(F("PM10: "));
+		Serial.println(float(pm10r));
+		Serial.print(F("PM2.5: "));
+		Serial.println(float(pm25r));
+		pm25.value = pm25r;
+		pm25.read = true;
+		if ( task_sendPM25.canceled() ) task_sendPM25.enableDelayed(TASK_DELAY);
+		if ( abs_change(pm25)) {
+			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25), pm25.abs_change);
+			sendPM25();
+		} else if ( rel_change(pm25)) {
+			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25), pm25.rel_change);
+			sendPM25();
+		} else {
+			Serial.println();
+		}
+		pm10.value = pm10r;
+		pm10.read = true;
+		if ( task_sendPM10.canceled() ) task_sendPM10.enableDelayed(TASK_DELAY);
+		if ( abs_change(pm10)) {
+			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10), pm10.abs_change);
+			sendPM10();
+		} else if ( rel_change(pm10)) {
+			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10), pm10.rel_change);
+			sendPM10();
+		} else {
+			Serial.println();
+		}
+		if (humidity.read) {
+			pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
+			pm25_normalized.read = true;
+			if ( task_sendPM25_normalized.canceled() ) task_sendPM25_normalized.enableDelayed(TASK_DELAY);
+			if ( abs_change(pm25_normalized)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25_normalized), pm25_normalized.abs_change);
+				sendPM25_normalized();
+			} else if ( rel_change(pm25_normalized)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25_normalized), pm25_normalized.rel_change);
+				sendPM25_normalized();
 			} else {
 				Serial.println();
 			}
-			pm10.value = pm10r/10.0;
-			pm10.read = true;
-			if ( task_sendPM10.canceled() ) task_sendPM10.enableDelayed(TASK_DELAY);
-			if ( abs_change(pm10)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10), pm10.abs_change);
-				sendPM10();
-			} else if ( rel_change(pm10)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10), pm10.rel_change);
-				sendPM10();
+			pm10_normalized.value = normalizePM10(pm10.value, humidity.value);
+			pm10_normalized.read = true;
+			if ( task_sendPM10_normalized.canceled() ) task_sendPM10_normalized.enableDelayed(TASK_DELAY);
+			if ( abs_change(pm10_normalized)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10_normalized), pm10_normalized.abs_change);
+				sendPM10_normalized();
+			} else if ( rel_change(pm10_normalized)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10_normalized), pm10_normalized.rel_change);
+				sendPM10_normalized();
 			} else {
 				Serial.println();
-			}
-			if (humidity.read) {
-				pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
-				pm25_normalized.read = true;
-				if ( task_sendPM25_normalized.canceled() ) task_sendPM25_normalized.enableDelayed(TASK_DELAY);
-				if ( abs_change(pm25_normalized)) {
-					Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25_normalized), pm25_normalized.abs_change);
-					sendPM25_normalized();
-				} else if ( rel_change(pm25_normalized)) {
-					Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25_normalized), pm25_normalized.rel_change);
-					sendPM25_normalized();
-				} else {
-					Serial.println();
-				}
-				pm10_normalized.value = normalizePM10(pm10.value, humidity.value);
-				pm10_normalized.read = true;
-				if ( task_sendPM10_normalized.canceled() ) task_sendPM10_normalized.enableDelayed(TASK_DELAY);
-				if ( abs_change(pm10_normalized)) {
-					Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10_normalized), pm10_normalized.abs_change);
-					sendPM10_normalized();
-				} else if ( rel_change(pm10_normalized)) {
-					Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10_normalized), pm10_normalized.rel_change);
-					sendPM10_normalized();
-				} else {
-					Serial.println();
-				}
 			}
 		}
 		Serial.println(F("End Handling SDS011 query data"));
-		SDS2sleep(true);
-		task_readSDS.disable();
-	});
-	if (!sds011.query_data_auto_async(pm_tablesize, pm25_table, pm10_table)) {
-//		Serial.println(F("measurement capture start failed"));
 	}
-	sds011.perform_work();
 }
-	*/
+
 #pragma endregion
 
 
@@ -619,51 +584,20 @@ void setup() {
 
 		if (ParamAPP_Feinstaubsensor_vorhanden) {
 			Serial.println("Particle sensor configured, locating device");
-			serialSDS.begin(9600, SWSERIAL_8N1, SDS_PIN_RX, SDS_PIN_TX, false, 192);
-  Serial.println("getting firmware version");
-  bool mode = false;
-  float p25 = 0, p10 = 0;
-  bool sleepMode = false;
-  int per = 0;
-  byte ver[3] = {0};
-  
-  sds.getMode(&mode);
-  delay(100);
-  sds.getData(&p25, &p10);
-  delay(100);
-  sds.getSleepMode(&sleepMode);
-  delay(100);
-  sds.getWorkingPeriod(&per);
-  delay(100);
-  sds.getFirmwareVersion(ver);
-
-  Serial.println("mode: " + String(mode));
-  Serial.println("data: p2.5: " + String(p25) + ", p10: " + String(p10));
-  Serial.println("sleepmode: " + String(sleepMode));
-  Serial.println("period: " + String(per));
-  Serial.println("version: " + String(ver[2]) + "/" + String(ver[1]) + "/" + String(ver[0]));
-  delay(50000);
-
-			/*
-
-				SDS2sleep(true);;
-				Sds011::Report_mode report_mode;
-				if (!sds011.get_data_reporting_mode(report_mode)) {
-					Serial.println(F("Sds011::get_data_reporting_mode() failed"));
-				}
-				if (Sds011::REPORT_ACTIVE != report_mode) {
-					Serial.println(F("Turning on Sds011::REPORT_ACTIVE reporting mode"));
-					if (!sds011.set_data_reporting_mode(Sds011::REPORT_ACTIVE)) {
-						Serial.println(F("Sds011::set_data_reporting_mode(Sds011::REPORT_ACTIVE) failed"));
-					}
-				}
-				Serial.println("Registering tasks");
-				runner.addTask(task_startSDS);
+			sds011.begin(SDS_PIN_RX, SDS_PIN_TX);
+			SDS011Version sds_version = sds011.getVersionDate();
+			if (sds_version.valid) {
+				Serial.println("SDS011 Firmware Vesion: " + String(sds_version.year) + "-" + String(sds_version.month) + "-" + String(sds_version.day));
+				sds_available = true;
+				Serial.println("Setting duty cacle to 5 minutes");
+				sds011.setDutyCycle(5);
+				Serial.println("Registering task");
 				runner.addTask(task_readSDS);
-				task_startSDS.enable();
-				*/
+				task_readSDS.enable();
+			} else {
+				Serial.println("ERROR: Sensor not found, disabling SDS011 routines!");
 			}
-
+		}
 		
 
 		if (ParamAPP_1wire_vorhanden) {
@@ -1698,7 +1632,7 @@ void MQTTpublish() {
 		*/
 		if (mqttMsg.size() > 0) mqttClient.publish(net.mqttTopic,toCharArray(mqttMsg.toString()) );
 	// mqttClient.publish(net.mqttTopic,toCharArray(msg) );	}
-	Serial.println();
+//	Serial.println();
 	}
 }
 
@@ -1722,13 +1656,11 @@ void read1wTemperature() {
 	temperature1.read = true;
 	if ( task_sendTemperature1.canceled() ) task_sendTemperature1.enableDelayed(TASK_DELAY);
 	if ( abs_change(temperature1)) {
-		Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(temperature1), temperature1.abs_change);
+		Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): \n",get_abschange(temperature1), temperature1.abs_change);
 		sendTemperature1();
 	} else if ( rel_change(temperature1)) {
-		Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(temperature1), temperature1.rel_change);
+		Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): \n",get_relchange(temperature1), temperature1.rel_change);
 		sendTemperature1();
-	} else {
-		Serial.println();
 	}
 }
 
@@ -1753,7 +1685,6 @@ void loop() {
 	runner.execute();
 	knx.loop();
 	if (ParamAPP_useMQTT) mqttClient.loop();
-//	if(!knx.configured()) return;
 
 
 	if (millis()-lastChange >= delayTime) {

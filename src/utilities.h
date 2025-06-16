@@ -29,8 +29,8 @@
 #define RS485_TX_PIN            3
 #define RS485_CON_PIN           4
 
-#define RS232_RX_PIN            42
-#define RS232_TX_PIN            41
+#define RS232_RX_PIN            35
+#define RS232_TX_PIN            38
 #define LED_PIN                 1
 #define KEY_PIN                 5
 #define BOOT_PIN                0
