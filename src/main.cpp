@@ -322,10 +322,16 @@ wsdata pm10; // PM10 value
 wsdata pm25_normalized; // humidity compensated PM2.5 value
 wsdata pm10_normalized; // humidity compensated PM10 value
 double normalizePM25(double pm25, double humidity) {
-  return pm25/(1.0+0.48756*pow((humidity/100.0), 8.60068));
+	double p = pm25/(1.0+0.48756*pow((humidity/100.0), 8.60068));
+	double m = powf( 10.0f, 2 ); // truncate to x.yz
+	p = roundf( p * m ) / m;
+	return p;
 }
 double normalizePM10(double pm10, double humidity) {
-  return pm10/(1.0+0.81559*pow((humidity/100.0), 5.83411));
+	double p = pm10/(1.0+0.81559*pow((humidity/100.0), 5.83411));
+	double m = powf( 10.0f, 2 ); // truncate to x.yz
+	p = roundf( p * m ) / m;
+	return p;
 }
 bool abs_change(wsdata m) {
 	if ( m.abs_change != 0 && m.lastread != 0 ) {
@@ -495,6 +501,8 @@ void read_SDS() {
 			}
 		}
 		Serial.println(F("End Handling SDS011 query data"));
+	} else {
+		Serial.println("ERROR: could not fetch SDS011 readings");
 	}
 }
 
@@ -589,8 +597,8 @@ void setup() {
 			if (sds_version.valid) {
 				Serial.println("SDS011 Firmware Vesion: " + String(sds_version.year) + "-" + String(sds_version.month) + "-" + String(sds_version.day));
 				sds_available = true;
-				Serial.println("Setting duty cacle to 5 minutes");
-				sds011.setDutyCycle(5);
+				Serial.println("Setting duty cacle to 2 minutes");
+				sds011.setDutyCycle(2);
 				Serial.println("Registering task");
 				runner.addTask(task_readSDS);
 				task_readSDS.enable();
@@ -1165,6 +1173,14 @@ uint8_t read_wn90() {
 			} else {
 				Serial.println();
 			}
+/*			if (pm25.read) {
+				pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
+				pm25_normalized.read = true;
+			}
+			if (pm10.read) {
+				pm10_normalized.value = normalizePM25(pm10.value, humidity.value);
+				pm10_normalized.read = true;
+			} */
 		}
 		if ( node.getResponseBuffer(4) != 0xFFFF ) { // WINDSPEED
 			windSpeed.value = node.getResponseBuffer(4) / 10.0;
@@ -1591,7 +1607,23 @@ char* toCharArray(String str) {
 	return &str[0];
 }
 
+String getChipID() {
+  String id;
+  uint64_t chipid;
+  char ssid[13];
+  chipid = ESP.getEfuseMac();
+  uint16_t chip = (uint16_t)(chipid >> 32);
+  snprintf(ssid, 13, "%04X%08X", chip, (uint32_t)chipid);
+  for ( int i = 0; i < 12; i++){
+    id += String(ssid[i]);
+  }
+  return String(id);
+}
+
 void MQTTpublish() {
+	mqttMsg.add("chip_id", getChipID());
+	mqttMsg.add("wifi_rssi", WiFi.RSSI());
+
 	if ( temperature.read ) mqttMsg.add("temperature", temperature.value );
 	if ( temperature1.read ) mqttMsg.add("temperature1", temperature1.value );
 	if ( humidity.read ) mqttMsg.add("humidity", humidity.value );
@@ -1613,8 +1645,6 @@ void MQTTpublish() {
 	if ( pm10.read ) mqttMsg.add("pm10", pm10.value );
 	if ( pm25_normalized.read ) mqttMsg.add("pm25_normalized", pm25_normalized.value );
 	if ( pm10_normalized.read ) mqttMsg.add("pm10_normalized", pm10_normalized.value );
-
-	mqttMsg.add("wifi_rssi", WiFi.RSSI());
 
 	if (!mqttClient.connected()) mqtt_reconnect();
 
