@@ -454,50 +454,42 @@ void read_SDS() {
 		pm25.read = true;
 		if ( task_sendPM25.canceled() ) task_sendPM25.enableDelayed(TASK_DELAY);
 		if ( abs_change(pm25)) {
-			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25), pm25.abs_change);
+			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): \n",get_abschange(pm25), pm25.abs_change);
 			sendPM25();
 		} else if ( rel_change(pm25)) {
-			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25), pm25.rel_change);
+			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): \n",get_relchange(pm25), pm25.rel_change);
 			sendPM25();
-		} else {
-			Serial.println();
 		}
 		pm10.value = pm10r;
 		pm10.read = true;
 		if ( task_sendPM10.canceled() ) task_sendPM10.enableDelayed(TASK_DELAY);
 		if ( abs_change(pm10)) {
-			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10), pm10.abs_change);
+			Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): \n",get_abschange(pm10), pm10.abs_change);
 			sendPM10();
 		} else if ( rel_change(pm10)) {
-			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10), pm10.rel_change);
+			Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): \n",get_relchange(pm10), pm10.rel_change);
 			sendPM10();
-		} else {
-			Serial.println();
 		}
 		if (humidity.read) {
 			pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
 			pm25_normalized.read = true;
 			if ( task_sendPM25_normalized.canceled() ) task_sendPM25_normalized.enableDelayed(TASK_DELAY);
 			if ( abs_change(pm25_normalized)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm25_normalized), pm25_normalized.abs_change);
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): \n",get_abschange(pm25_normalized), pm25_normalized.abs_change);
 				sendPM25_normalized();
 			} else if ( rel_change(pm25_normalized)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm25_normalized), pm25_normalized.rel_change);
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): \n",get_relchange(pm25_normalized), pm25_normalized.rel_change);
 				sendPM25_normalized();
-			} else {
-				Serial.println();
 			}
 			pm10_normalized.value = normalizePM10(pm10.value, humidity.value);
 			pm10_normalized.read = true;
 			if ( task_sendPM10_normalized.canceled() ) task_sendPM10_normalized.enableDelayed(TASK_DELAY);
 			if ( abs_change(pm10_normalized)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(pm10_normalized), pm10_normalized.abs_change);
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): \n",get_abschange(pm10_normalized), pm10_normalized.abs_change);
 				sendPM10_normalized();
 			} else if ( rel_change(pm10_normalized)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(pm10_normalized), pm10_normalized.rel_change);
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): \n",get_relchange(pm10_normalized), pm10_normalized.rel_change);
 				sendPM10_normalized();
-			} else {
-				Serial.println();
 			}
 		}
 		Serial.println(F("End Handling SDS011 query data"));
