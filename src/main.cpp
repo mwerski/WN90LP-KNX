@@ -20,6 +20,7 @@
 #include <DallasTemperature.h>
 #include "NovaSDS011.h"
 #include <SoftwareSerial.h>
+#include "ringBuffer.h"
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -321,6 +322,14 @@ wsdata pm25; // PM2.5 value
 wsdata pm10; // PM10 value
 wsdata pm25_normalized; // humidity compensated PM2.5 value
 wsdata pm10_normalized; // humidity compensated PM10 value
+/*
+Es existieren 2 Ringbuffer mit jeweils 12 Elementen zur Speicherung der rainfall sowie raincounter Werte im 5 Minuten Takt (Minutenarray oder MA)
+Desweiteren existieren 2 Ringbuffer mit jeweils 72 Elementen in denen rainfall und raincounter jeweils stuendlich gespeichert werden (Stundenarray oder SA)
+Zusaetzlich existieren 2 T-Werte, die jeweils um Mitternacht auf 0 gesetzt werden. Die aktuelle Regenmenge abzueglich dieses Wertes ergibt die Tages-Regenmenge.
+*/
+ringBuffer<uint16_t> rainfallSA(72), raincounterSA(72), rainfallMA(12), raincounterMA(12);
+u_int16_t rainfallT, raincounterT;
+
 double normalizePM25(double pm25, double humidity) {
 	double p = pm25/(1.0+0.48756*pow((humidity/100.0), 8.60068));
 	double m = powf( 10.0f, 2 ); // truncate to x.yz
