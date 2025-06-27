@@ -35594,9 +35594,9 @@
     "DefaultLanguage": "de-DE",
     "DefaultLanguageIndex": 0,
     "Name": "WN90LP Modbus KNX Gateway",
-    "ReplacesVersions": "5 6 7",
+    "ReplacesVersions": "3 4 5 6 7 8",
     "Script": "",
-    "NameText": "V 0.7 WN90LP Modbus KNX Gateway",
+    "NameText": "V 0.8 WN90LP Modbus KNX Gateway",
     "Text": [
       {
         "$type": "Kaenx.Creator.Models.Translation, Kaenx.Creator.Share",
@@ -35619,7 +35619,7 @@
         "Preview": "WN90LP Modbus KNX gateway"
       }
     ],
-    "Number": 7,
+    "Number": 8,
     "AddressTableMaxCount": 65535,
     "AddressTableOffset": 0,
     "AddressMemoryId": -1,
