@@ -10,7 +10,7 @@
 #include <ModbusMaster.h>
 #include <PubSubClient.h>
 #include <Json.h>
-#include "knxprod.h"
+#include <knxprod.h>
 #include <knx.h>
 #include <RemoteDebug.h>
 #include <TimeLib.h>
@@ -41,6 +41,7 @@ void sendTemperature1();
 void senddewpoint();
 void sendfrostpoint();
 void sendHumidity();
+void sendAbsHumidity();
 void sendWindSpeed();
 void sendGustSpeed();
 void sendWindSpeedBft();
@@ -180,6 +181,10 @@ void callback_Humidity(GroupObject& go) {
  if (!go.value()) sendHumidity();
 }
 
+void callback_AbsHumidity(GroupObject& go) {
+ if (!go.value()) sendAbsHumidity();
+}
+
 void callback_WindSpeed(GroupObject& go) {
  if (!go.value()) sendWindSpeed();
 }
@@ -307,6 +312,7 @@ wsdata light; // brightness in Lux
 wsdata temperature; // temperature in degree celsius
 wsdata temperature1; // temperature in degree celsius, measured via 1wire
 wsdata humidity; // relative humidity in percent
+wsdata abshumidity; // absolute humidity in grams per qubic meter
 wsdata windSpeed; // windspeed in m/s
 wsdata gustSpeed; // gust speed in m/s
 wsdata windSpeedBFT; // windspeed in beaufort
@@ -1191,20 +1197,14 @@ uint8_t read_wn90() {
 			if ( abs_change(humidity)) {
 				Serial.printf(" - value change (%0.0f) exceeded absolute threshold (%0.0f): ",get_abschange(humidity), humidity.abs_change);
 				sendHumidity();
+				sendAbsHumidity();
 			} else if ( rel_change(humidity)) {
 				Serial.printf(" - value change (%0.0f) exceeded relative threshold (%0.0f): ",get_relchange(humidity), humidity.rel_change);
 				sendHumidity();
+				sendAbsHumidity();
 			} else {
 				Serial.println();
 			}
-/*			if (pm25.read) {
-				pm25_normalized.value = normalizePM25(pm25.value, humidity.value);
-				pm25_normalized.read = true;
-			}
-			if (pm10.read) {
-				pm10_normalized.value = normalizePM25(pm10.value, humidity.value);
-				pm10_normalized.read = true;
-			} */
 		}
 		if ( node.getResponseBuffer(4) != 0xFFFF ) { // WINDSPEED
 			windSpeed.value = node.getResponseBuffer(4) / 10.0;
@@ -1300,7 +1300,7 @@ uint8_t read_wn90() {
 				Serial.println();
 			}
 		}
-		if ( temperature.read && humidity.read ) { // dewpoint, frostpoint
+		if ( temperature.read && humidity.read ) { // dewpoint, frostpoint, absolute humidity
 //			dewpoint.value = dewpoint (temperature.value, humidity.value);
 			dewpoint.value = dewPoint (temperature.value, humidity.value);
 			dewpoint.read = true;
@@ -1322,9 +1322,21 @@ uint8_t read_wn90() {
 			if ( abs_change(frostpoint)) {
 				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(frostpoint), frostpoint.abs_change);
 				sendfrostpoint();
-			} else if ( rel_change(dewpoint)) {
+			} else if ( rel_change(frostpoint)) {
 				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(frostpoint), frostpoint.rel_change);
 				sendfrostpoint();
+			} else {
+				Serial.println();
+			}
+			abshumidity.value = absoluteHumidity( temperature.value, humidity.value );
+			abshumidity.read = true;
+			Serial.printf("abs humidity... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", abshumidity.value, abshumidity.last, get_abschange(abshumidity), get_relchange(abshumidity));
+			if ( abs_change(abshumidity)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(abshumidity), abshumidity.abs_change);
+				sendAbsHumidity();
+			} else if ( rel_change(abshumidity)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(abshumidity), abshumidity.rel_change);
+				sendAbsHumidity();
 			} else {
 				Serial.println();
 			}
@@ -1435,6 +1447,20 @@ void sendHumidity() {
 	} else {
 		Serial.println(" -- Humidity not yet available, won't send to bus - delay task");
 		task_sendHumidity.cancel();
+	}
+}
+
+void sendAbsHumidity() {
+	if (humidity.read && temperature.read) {
+		float absH = absoluteHumidity( temperature.value, humidity.value );
+		Serial.printf(" -> Sending absolute humidity in g/m3 (%0.0f) to bus\n", humidity.value);
+		switch (ParamAPP_Feuchte_DPT) {
+			case 0: KoAPP_Feuchte_DPT6.value(absH); break;
+			case 1: KoAPP_Feuchte_DPT9.value(absH); break;
+			case 2: KoAPP_Feuchte_DPT14.value(absH); break;
+		}
+	} else {
+		Serial.println(" -- Absolute humidity not yet available, won't send to bus");
 	}
 }
 
