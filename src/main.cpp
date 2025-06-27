@@ -21,6 +21,7 @@
 #include "NovaSDS011.h"
 #include <SoftwareSerial.h>
 #include "ringBuffer.h"
+#include <temperature.h>
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -37,8 +38,8 @@ DeviceAddress sensor;
 void MQTTpublish();
 void sendTemperature();
 void sendTemperature1();
-void sendDewpoint();
-void sendFrostpoint();
+void senddewpoint();
+void sendfrostpoint();
 void sendHumidity();
 void sendWindSpeed();
 void sendGustSpeed();
@@ -66,8 +67,8 @@ void read_SDS();
 Task task_MQTTpublish(10000, TASK_FOREVER, &MQTTpublish);
 Task task_sendTemperature(60000, TASK_FOREVER, &sendTemperature);
 Task task_sendTemperature1(60000, TASK_FOREVER, &sendTemperature1);
-Task task_sendDewpoint(60000, TASK_FOREVER, &sendDewpoint);
-Task task_sendFrostpoint(60000, TASK_FOREVER, &sendFrostpoint);
+Task task_senddewpoint(60000, TASK_FOREVER, &senddewpoint);
+Task task_sendfrostpoint(60000, TASK_FOREVER, &sendfrostpoint);
 Task task_sendHumidity(60000, TASK_FOREVER, &sendHumidity);
 Task task_sendWindSpeed(60000, TASK_FOREVER, &sendWindSpeed);
 Task task_sendGustSpeed(60000, TASK_FOREVER, &sendGustSpeed);
@@ -167,12 +168,12 @@ void callback_Temperature1(GroupObject& go) {
  if (!go.value()) sendTemperature1();
 }
 
-void callback_Dewpoint(GroupObject& go) {
- if (!go.value()) sendDewpoint();
+void callback_dewpoint(GroupObject& go) {
+ if (!go.value()) senddewpoint();
 }
 
-void callback_Frostpoint(GroupObject& go) {
- if (!go.value()) sendFrostpoint();
+void callback_frostpoint(GroupObject& go) {
+ if (!go.value()) sendfrostpoint();
 }
 
 void callback_Humidity(GroupObject& go) {
@@ -316,8 +317,8 @@ wsdata pressureTrend1; // gets measured and updated every 15 minutes, shows pres
 wsdata pressureTrend3; // gets measured every full hour, shows pressure differences from now to -3 hours, available after ~3 hours uptime
 wsdata rainFall; // rainfall in mm / liter - 0.1mm resolution
 wsdata rainCounter; // rainfall in mm / liter - 0.01mm resolution
-wsdata dewPoint; // dewpoint in degree celsius
-wsdata frostPoint; // frostpoint in degree celsius
+wsdata dewpoint; // dewpoint in degree celsius
+wsdata frostpoint; // frostpoint in degree celsius
 wsdata pm25; // PM2.5 value
 wsdata pm10; // PM10 value
 wsdata pm25_normalized; // humidity compensated PM2.5 value
@@ -362,7 +363,7 @@ double get_relchange(wsdata m) {
 	if (m.lastread && m.last != 0) return abs((m.value - m.last) / m.last * 100);
 	return NAN;
 }
-double frostpoint(float t, float f) {
+double frostPoint(float t, float f) {
 	// calculates frostpoint from given temperature and relative hjmidity
 	float a, b;
   if (t >= 0) {
@@ -381,7 +382,8 @@ double frostpoint(float t, float f) {
 	p = roundf( p * m ) / m;
 	return p;
 }
-double dewpoint(float t, float f) {
+
+/* double dewpoint(float t, float f) {
 	// calculates dewpoint from given temperature and relative hjmidity
 	float a, b;
   if (t >= 0) {
@@ -400,6 +402,27 @@ double dewpoint(float t, float f) {
 	p = roundf( p * m ) / m;
 	return p;
 }
+	*/
+
+
+	/*
+https://github.com/RobTillaart/Temperature?tab=readme-ov-file
+
+
+Windchill (in °C) = 13.12 + 0.6215 * Temperatur(°C) - 11.37 * Windgeschwindigkeit(km/h)^0.16 + 0.3965 * Temperatur(°C) * Windgeschwindigkeit(km/h)^0.16
+float Windchill  = 35.74 + 0.6215*T - 35.75*pow(V,0.16) + 0.4275*T*pow(V,0.16);
+
+
+// Funktion zur Berechnung des Hitzeindex (THSW)
+float heatIndex(float temperature, float humidity) {
+  float hic = 0.5 * (temperature + 61.0 + ((temperature - 68.0) * 1.2) + (humidity * 0.094));
+  if (hic > 79) {
+    hic = -42.379 + 2.04901523 * temperature + 10.14333127 * humidity - 0.22475541 * temperature * humidity - 0.00683783 * pow(temperature, 2) - 0.05481717 * pow(humidity, 2) + 0.00122874 * pow(temperature, 2) * humidity + 0.00085282 * temperature * pow(humidity, 2) - 0.00000199 * pow(temperature, 2) * pow(humidity, 2);
+  }
+  return hic;
+}
+
+*/
 u_int8_t bft(float s) {
 	if ( s >= 32.7 ) { return 12; } else
 	if ( s >= 28.5 ) { return 11; } else
@@ -658,9 +681,9 @@ void setup() {
 					KoAPP_Temperatur_1wire_DPT9.callback(callback_Temperature1);
 				}
 				KoAPP_Taupunkt_DPT9.dataPointType(Dpt(9, 1));
-				KoAPP_Taupunkt_DPT9.callback(callback_Dewpoint);
+				KoAPP_Taupunkt_DPT9.callback(callback_dewpoint);
 				KoAPP_Frostpunkt_DPT9.dataPointType(Dpt(9, 1));
-				KoAPP_Frostpunkt_DPT9.callback(callback_Frostpoint);
+				KoAPP_Frostpunkt_DPT9.callback(callback_frostpoint);
 				break;
 			case 1:
 				KoAPP_Temperatur_DPT14.dataPointType(Dpt(14, 1));
@@ -670,9 +693,9 @@ void setup() {
 					KoAPP_Temperatur_1wire_DPT14.callback(callback_Temperature1);
 				}
 				KoAPP_Taupunkt_DPT14.dataPointType(Dpt(14, 1));
-				KoAPP_Taupunkt_DPT14.callback(callback_Dewpoint);
+				KoAPP_Taupunkt_DPT14.callback(callback_dewpoint);
 				KoAPP_Frostpunkt_DPT14.dataPointType(Dpt(14, 1));
-				KoAPP_Frostpunkt_DPT14.callback(callback_Frostpoint);
+				KoAPP_Frostpunkt_DPT14.callback(callback_frostpoint);
 				break;
 		}
 
@@ -805,8 +828,8 @@ void setup() {
 		temperature.rel_change = ParamAPP_Temperatur_Senden_Wertaenderung_relativ;
 		temperature1.abs_change = ParamAPP_Temperatur_Senden_Wertaenderung_absolut;
 		temperature1.rel_change = ParamAPP_Temperatur_Senden_Wertaenderung_relativ;
-		dewPoint.abs_change = ParamAPP_Temperatur_Senden_Wertaenderung_absolut;
-		dewPoint.rel_change = ParamAPP_Temperatur_Senden_Wertaenderung_relativ;
+		dewpoint.abs_change = ParamAPP_Temperatur_Senden_Wertaenderung_absolut;
+		dewpoint.rel_change = ParamAPP_Temperatur_Senden_Wertaenderung_relativ;
 		humidity.abs_change = ParamAPP_Feuchte_Senden_Wertaenderung_absolut;
 		humidity.rel_change = ParamAPP_Feuchte_Senden_Wertaenderung_relativ;
 		windSpeed.abs_change = ParamAPP_WindSpeed_Senden_Wertaenderung_absolut;
@@ -954,12 +977,12 @@ void setup() {
 			runner.addTask(task_sendTemperature);
 			task_sendTemperature.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
 			task_sendTemperature.enableDelayed(TASK_DELAY);
-			runner.addTask(task_sendDewpoint);
-			task_sendDewpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
-			task_sendDewpoint.enableDelayed(TASK_DELAY);
-			runner.addTask(task_sendFrostpoint);
-			task_sendFrostpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
-			task_sendFrostpoint.enableDelayed(TASK_DELAY);
+			runner.addTask(task_senddewpoint);
+			task_senddewpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
+			task_senddewpoint.enableDelayed(TASK_DELAY);
+			runner.addTask(task_sendfrostpoint);
+			task_sendfrostpoint.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
+			task_sendfrostpoint.enableDelayed(TASK_DELAY);
 			if (ParamAPP_1wire_vorhanden) {
 				runner.addTask(task_sendTemperature1);
 				task_sendTemperature1.setInterval(ParamAPP_Temperatur_Senden_zyklisch*1000);
@@ -1277,30 +1300,31 @@ uint8_t read_wn90() {
 				Serial.println();
 			}
 		}
-		if ( temperature.read && humidity.read ) { // DEWPOINT, FROSTPOINT
-			dewPoint.value = dewpoint (temperature.value, humidity.value);
-			dewPoint.read = true;
-			Serial.printf("Dewpoint....... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", dewPoint.value, dewPoint.last, get_abschange(dewPoint), get_relchange(dewPoint));
-			if ( task_sendDewpoint.canceled() ) task_sendDewpoint.enableDelayed(TASK_DELAY);
-			if ( abs_change(dewPoint)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(dewPoint), dewPoint.abs_change);
-				sendDewpoint();
-			} else if ( rel_change(dewPoint)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(dewPoint), dewPoint.rel_change);
-				sendDewpoint();
+		if ( temperature.read && humidity.read ) { // dewpoint, frostpoint
+//			dewpoint.value = dewpoint (temperature.value, humidity.value);
+			dewpoint.value = dewPoint (temperature.value, humidity.value);
+			dewpoint.read = true;
+			Serial.printf("dewpoint....... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", dewpoint.value, dewpoint.last, get_abschange(dewpoint), get_relchange(dewpoint));
+			if ( task_senddewpoint.canceled() ) task_senddewpoint.enableDelayed(TASK_DELAY);
+			if ( abs_change(dewpoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(dewpoint), dewpoint.abs_change);
+				senddewpoint();
+			} else if ( rel_change(dewpoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(dewpoint), dewpoint.rel_change);
+				senddewpoint();
 			} else {
 				Serial.println();
 			}
-			frostPoint.value = frostpoint (temperature.value, humidity.value);
-			frostPoint.read = true;
-			Serial.printf("Frostpoint..... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", frostPoint.value, frostPoint.last, get_abschange(frostPoint), get_relchange(frostPoint));
-			if ( task_sendFrostpoint.canceled() ) task_sendFrostpoint.enableDelayed(TASK_DELAY);
-			if ( abs_change(frostPoint)) {
-				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(frostPoint), frostPoint.abs_change);
-				sendFrostpoint();
-			} else if ( rel_change(dewPoint)) {
-				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(frostPoint), frostPoint.rel_change);
-				sendFrostpoint();
+			frostpoint.value = frostPoint (temperature.value, humidity.value);
+			frostpoint.read = true;
+			Serial.printf("frostpoint..... %0.2f °C (%0.2f: ∆%0.2f, ∆%0.2f%%)", frostpoint.value, frostpoint.last, get_abschange(frostpoint), get_relchange(frostpoint));
+			if ( task_sendfrostpoint.canceled() ) task_sendfrostpoint.enableDelayed(TASK_DELAY);
+			if ( abs_change(frostpoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded absolute threshold (%0.2f): ",get_abschange(frostpoint), frostpoint.abs_change);
+				sendfrostpoint();
+			} else if ( rel_change(dewpoint)) {
+				Serial.printf(" - value change (%0.2f) exceeded relative threshold (%0.2f): ",get_relchange(frostpoint), frostpoint.rel_change);
+				sendfrostpoint();
 			} else {
 				Serial.println();
 			}
@@ -1374,27 +1398,27 @@ void sendTemperature1() {
 	}
 }
 
-void sendDewpoint() {
-	if (dewPoint.read) {
-		Serial.printf(" -> Sending dewpoint in °C (%0.2f) to bus\n", dewPoint.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Taupunkt_DPT9.value(dewPoint.value) : KoAPP_Taupunkt_DPT14.value(dewPoint.value);
-		dewPoint.last = dewPoint.value;
-		dewPoint.lastread = true;
+void senddewpoint() {
+	if (dewpoint.read) {
+		Serial.printf(" -> Sending dewpoint in °C (%0.2f) to bus\n", dewpoint.value);
+		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Taupunkt_DPT9.value(dewpoint.value) : KoAPP_Taupunkt_DPT14.value(dewpoint.value);
+		dewpoint.last = dewpoint.value;
+		dewpoint.lastread = true;
 	} else {
-		Serial.println(" -- Dewpoint not yet available, won't send to bus - delay task");
-		task_sendDewpoint.cancel();
+		Serial.println(" -- dewpoint not yet available, won't send to bus - delay task");
+		task_senddewpoint.cancel();
 	}
 }
 
-void sendFrostpoint() {
-	if (frostPoint.read) {
-		Serial.printf(" -> Sending frostpoint in °C (%0.2f) to bus\n", frostPoint.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Frostpunkt_DPT9.value(frostPoint.value) : KoAPP_Frostpunkt_DPT14.value(frostPoint.value);
-		frostPoint.last = dewPoint.value;
-		frostPoint.lastread = true;
+void sendfrostpoint() {
+	if (frostpoint.read) {
+		Serial.printf(" -> Sending frostpoint in °C (%0.2f) to bus\n", frostpoint.value);
+		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Frostpunkt_DPT9.value(frostpoint.value) : KoAPP_Frostpunkt_DPT14.value(frostpoint.value);
+		frostpoint.last = dewpoint.value;
+		frostpoint.lastread = true;
 	} else {
-		Serial.println(" -- Frostpoint not yet available, won't send to bus - delay task");
-		task_sendFrostpoint.cancel();
+		Serial.println(" -- frostpoint not yet available, won't send to bus - delay task");
+		task_sendfrostpoint.cancel();
 	}
 }
 
@@ -1628,8 +1652,8 @@ void MQTTpublish() {
 	if ( temperature.read ) mqttMsg.add("temperature", temperature.value );
 	if ( temperature1.read ) mqttMsg.add("temperature1", temperature1.value );
 	if ( humidity.read ) mqttMsg.add("humidity", humidity.value );
-	if ( dewPoint.read ) mqttMsg.add("dewpoint", dewPoint.value );
-	if ( frostPoint.read ) mqttMsg.add("frostpoint", frostPoint.value );
+	if ( dewpoint.read ) mqttMsg.add("dewpoint", dewpoint.value );
+	if ( frostpoint.read ) mqttMsg.add("frostpoint", frostpoint.value );
 	if ( pressure.read ) mqttMsg.add("pressure", pressure.value );
 	if ( pressureTrend1.read ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
 	if ( pressureTrend3.read ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
