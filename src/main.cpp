@@ -1613,6 +1613,8 @@ void loop() {
 	ElegantOTA.loop();
 	runner.execute();
 	knx.loop();
+	if(!knx.configured()) return;
+	
 	if (ParamAPP_useMQTT) mqttClient.loop();
 
 
