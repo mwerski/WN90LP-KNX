@@ -22,6 +22,7 @@
 #include <SoftwareSerial.h>
 #include <ringBuffer.h>
 #include <temperature.h>
+#include <NonBlockingModbusMaster.h>
 
 #define WDT_TIMEOUT 10 // Task Watchdog Timeout
 #define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
@@ -211,6 +212,12 @@ bool RS485mode = true;
 void RS485_Mode(int Mode);
 void RS485_TX();
 void RS485_RX();
+const long baudrate = 9600;
+NonBlockingModbusMaster nbModbusMaster;
+const int MAX_RETRIES = 1; // retry once if timeout
+unsigned int slaveId = 0x90;
+unsigned int address = 0;
+unsigned int qty = 4;
 
 struct netconfig {
 	IPAddress ip;
@@ -489,11 +496,20 @@ void setup() {
 	pinMode(KEY_PIN, INPUT_PULLUP);
 	Serial485.begin(RS485_BAUD, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN, true);
 	// communicate with Modbus slave ID 144 over Serial (port 0)
-  node.preTransmission(RS485_TX);
+/*  node.preTransmission(RS485_TX);
   node.postTransmission(RS485_RX);
   node.begin(0x90, Serial485);
 	RS485_Mode(RS485_TX_ENABLE);
-	delay(20);
+	delay(20); */
+	// MODBUS over serial line specification and implementation guide V1.02
+  // Paragraph 2.5.1.1 MODBUS Message RTU Framing
+  // https://modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
+  float bitduration = 1.f / baudrate;
+  float charlen = 10.0f; // 8 bits + 1 stop, parity ?
+  float preDelayBR = bitduration * charlen * 3.5f * 1e6  + 1; // in us
+  float postDelayBR = bitduration * charlen * 3.5f * 1e6 + 1; // in us
+  // ~3.28ms (4ms) for 9600 baud, or 0.84ms (1ms) for 34800 baud
+	nbModbusMaster.initialize(Serial485, preDelayBR, postDelayBR); // default timeout 2000ms (2sec)
 
 	#pragma region KNX stuff
 	knx.buttonPin(5);
@@ -979,13 +995,15 @@ void printLocaltime(bool newline=false) {
 	if (newline == true) Serial.println();
 }
 
-uint8_t read_wn90() {
+void read_wn90(NonBlockingModbusMaster &node) {
 	Serial.println("------------------------------------------------------------");
-	Serial.println("Read weather station data");
-	uint8_t c=10;
-	uint8_t result = node.readHoldingRegisters( 0x165, c );
+	Serial.println("Process weather station data");
+//	uint8_t c=10;
+//	uint8_t result = node.readHoldingRegisters( 0x165, c );
 
-	if (result == node.ku8MBSuccess) {
+	int err = node.getError(); // 0 for OK
+	//if (result == node.ku8MBSuccess) {
+	if (!err) {
 		sensorfailure_sds = false;
 		Serial.println("WDT timer reset");
 		Serial.print ("Uptime......... "); Serial.println( uptime_formatter::getUptime() );
@@ -1199,11 +1217,11 @@ uint8_t read_wn90() {
 		}
 
 	} else {
-		Serial.print("result = ");
-		Serial.println( result );
+		Serial.print("Modbus Error: ");
+		Serial.println( err );
 		sensorfailure_wn90 = true;
 	}
-	return result;
+//	return result;
 }
 
 void RS485_Mode(int Mode) {
@@ -1600,7 +1618,7 @@ unsigned long delayTime  = 2000;
 void loop() {
 
 	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
-
+esp_task_wdt_reset();
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print("WiFi lost, restarting...");
 		ESP.restart();
@@ -1614,16 +1632,21 @@ void loop() {
 	runner.execute();
 	knx.loop();
 	if(!knx.configured()) return;
-	
+
 	if (ParamAPP_useMQTT) mqttClient.loop();
 
 
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
-		read_wn90();
+		nbModbusMaster.readHoldingRegisters(slaveId, 0x165, 10, read_wn90);
+		//read_wn90();
 		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
 
 	}
+
+	if (nbModbusMaster.justFinished()) {
+    Serial.println(" Finished.");
+  }
 
 	if ( timeKnown && dateKnown && (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
 		updatePressureRingbuffer();
