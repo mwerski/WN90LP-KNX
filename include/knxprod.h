@@ -9,9 +9,9 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x06
+#define MAIN_ApplicationVersion 0x07
 #define MAIN_OrderNumber "p3-00012.1"
-#define MAIN_ParameterSize 240
+#define MAIN_ParameterSize 246
 #define MAIN_MaxKoNumber 83
 
 
@@ -83,7 +83,7 @@
 #define APP_Feuchte_DPT		0x0003
 #define APP_Feuchte_DPT_Shift	1
 #define APP_Feuchte_DPT_Mask	0x0003
-// Offset: 3, BitOffset: 5, Size: 2 Bit, Text: Sende Feuchte als
+// Offset: 3, BitOffset: 5, Size: 2 Bit, Text: Sende relative Feuchte als
 #define ParamAPP_Feuchte_DPT ((uint32_t)((knx.paramByte(APP_Feuchte_DPT) >> APP_Feuchte_DPT_Shift) & APP_Feuchte_DPT_Mask))
 #define APP_Feuchte_Senden_zyklisch		0x008E
 #define APP_Feuchte_Senden_zyklisch_Shift	4
@@ -215,6 +215,20 @@
 #define APP_SDS_DutyCycle		0x00EF
 // Offset: 239, Size: 8 Bit (1 Byte), Text: Sensor Duty Cycle
 #define ParamAPP_SDS_DutyCycle ((uint32_t)((knx.paramByte(APP_SDS_DutyCycle))))
+#define APP_Feuchte_Absolut_DPT		0x0094
+// Offset: 148, BitOffset: 7, Size: 1 Bit, Text: Sende absolute Feuchte als
+#define ParamAPP_Feuchte_Absolut_DPT knx.paramBit(APP_Feuchte_Absolut_DPT, 7)
+#define APP_Feuchte_Absolut_Senden_zyklisch		0x00F0
+#define APP_Feuchte_Absolut_Senden_zyklisch_Shift	4
+#define APP_Feuchte_Absolut_Senden_zyklisch_Mask	0x0FFF
+// Offset: 240, Size: 12 Bit, Text: Sende absolute Feuchte alle
+#define ParamAPP_Feuchte_Absolut_Senden_zyklisch ((uint32_t)((knx.paramWord(APP_Feuchte_Absolut_Senden_zyklisch) >> APP_Feuchte_Absolut_Senden_zyklisch_Shift) & APP_Feuchte_Absolut_Senden_zyklisch_Mask))
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_absolut		0x00F2
+// Offset: 242, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_absolut knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_absolut, Float_Enc_DPT9)
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_relativ		0x00F4
+// Offset: 244, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_relativ knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 //!< Number: 1, Text: In Betrieb, Function: Statusmeldung
 #define APP_KoHeartbeat 1
 #define KoAPP_Heartbeat knx.getGroupObject(APP_KoHeartbeat)
@@ -248,12 +262,36 @@
 //!< Number: 22, Text: Taupunkt (°C), Function: Messwert
 #define APP_KoTaupunkt_DPT14 22
 #define KoAPP_Taupunkt_DPT14 knx.getGroupObject(APP_KoTaupunkt_DPT14)
-//!< Number: 23, Text: Frostpunkt(°C), Function: Messwert
+//!< Number: 23, Text: Frostpunkt (°C), Function: Messwert
 #define APP_KoFrostpunkt_DPT9 23
 #define KoAPP_Frostpunkt_DPT9 knx.getGroupObject(APP_KoFrostpunkt_DPT9)
 //!< Number: 23, Text: Frostpunkt (°C), Function: Messwert
 #define APP_KoFrostpunkt_DPT14 23
 #define KoAPP_Frostpunkt_DPT14 knx.getGroupObject(APP_KoFrostpunkt_DPT14)
+//!< Number: 24, Text: Humidex (°C), Function: Messwert
+#define APP_KoHumidex_DPT9 24
+#define KoAPP_Humidex_DPT9 knx.getGroupObject(APP_KoHumidex_DPT9)
+//!< Number: 24, Text: Humidex (°C), Function: Messwert
+#define APP_KoHumidex_DPT14 24
+#define KoAPP_Humidex_DPT14 knx.getGroupObject(APP_KoHumidex_DPT14)
+//!< Number: 25, Text: Hitzeindex (°C), Function: Messwert
+#define APP_KoHeatindex_DPT9 25
+#define KoAPP_Heatindex_DPT9 knx.getGroupObject(APP_KoHeatindex_DPT9)
+//!< Number: 25, Text: Hitzeindex (°C), Function: Messwert
+#define APP_KoHeatindex_DPT14 25
+#define KoAPP_Heatindex_DPT14 knx.getGroupObject(APP_KoHeatindex_DPT14)
+//!< Number: 26, Text: Windchill (°C), Function: Messwert
+#define APP_KoWindchill_DPT9 26
+#define KoAPP_Windchill_DPT9 knx.getGroupObject(APP_KoWindchill_DPT9)
+//!< Number: 26, Text: Windchill (°C), Function: Messwert
+#define APP_KoWindchill_DPT14 26
+#define KoAPP_Windchill_DPT14 knx.getGroupObject(APP_KoWindchill_DPT14)
+//!< Number: 27, Text: Unbehagenindex (°C), Function: Messwert
+#define APP_KoDiscomfort_DPT9 27
+#define KoAPP_Discomfort_DPT9 knx.getGroupObject(APP_KoDiscomfort_DPT9)
+//!< Number: 27, Text: Unbehagenindex (°C), Function: Messwert
+#define APP_KoDiscomfort_DPT14 27
+#define KoAPP_Discomfort_DPT14 knx.getGroupObject(APP_KoDiscomfort_DPT14)
 //!< Number: 30, Text: relative Feuchte (%), Function: Messwert
 #define APP_KoFeuchte_DPT6 30
 #define KoAPP_Feuchte_DPT6 knx.getGroupObject(APP_KoFeuchte_DPT6)
@@ -263,6 +301,12 @@
 //!< Number: 30, Text: relative Feuchte (%), Function: Messwert
 #define APP_KoFeuchte_DPT14 30
 #define KoAPP_Feuchte_DPT14 knx.getGroupObject(APP_KoFeuchte_DPT14)
+//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Messwert
+#define APP_KoAbsolute_Feuchte_DPT9 31
+#define KoAPP_Absolute_Feuchte_DPT9 knx.getGroupObject(APP_KoAbsolute_Feuchte_DPT9)
+//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Messwert
+#define APP_KoAbsolute_Feuchte_DPT14 31
+#define KoAPP_Absolute_Feuchte_DPT14 knx.getGroupObject(APP_KoAbsolute_Feuchte_DPT14)
 //!< Number: 40, Text: Luftdruck (mBar), Function: Messwert
 #define APP_KoPressure_DPT9 40
 #define KoAPP_Pressure_DPT9 knx.getGroupObject(APP_KoPressure_DPT9)
