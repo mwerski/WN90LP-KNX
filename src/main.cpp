@@ -18,7 +18,6 @@
 #include <DallasTemperature.h>
 #include "NovaSDS011.h"
 #include <SoftwareSerial.h>
-#include <temperature.h>
 
 struct tm myTime;
 bool timeKnown = false;
@@ -31,7 +30,6 @@ bool sds_available = false;
 
 #include "utilities.h"
 #include <knxprod.h>
-#include <ringBuffer.h>
 #include <wsdata.h>>
 #include <tasks.h>
 #include <knx_send.h>
@@ -52,7 +50,7 @@ DeviceAddress sensor;
 
 
 
-u_int8_t lastHour = NAN;	// last hour (if this changes, a full hour has passed)
+u_int8_t lasthour = NAN;	// last hour (if this changes, a full hour has passed)
 u_int8_t lastminute = NAN; // last minute
 
 WebServer server(80);
@@ -80,6 +78,8 @@ struct netconfig {
 	char* mqttPass;
 	char* mqttTopic;
 	u_int16_t mqttFreq;
+	bool remoteDebug = true;
+	bool serialDebug = true;
 };
 netconfig net;
 
@@ -181,6 +181,67 @@ unsigned long start_ms=0;
 void setup() {
 	Serial.begin(115200);
 	delay (2000);
+	pinMode(KNXPIN, INPUT);
+
+	knx.buttonPin(KNXPIN);	// PROG button on GPIO5
+	knx.readMemory();	// read adress table, association table, groupobject table and parameters from eeprom
+	
+	#pragma region WiFiManager
+  WiFiManager wifiManager;
+	Serial.println(digitalRead(KNXPIN));
+
+	if ( !digitalRead(KNXPIN) ) {	// reset WiFi Settings if PROG-Button is pressed during boot
+		Serial.println("Reset WiFi settings...");
+		wifiManager.resetSettings();
+	}
+
+	if ( knx.configured() && ParamAPP_UseDHCP == false ) {	// use DHCP if KNX is not configured
+		// we are using a static IP config stored as KNX paramaeters
+		net.dhcp = false;
+		// convert IPs from little to big endian
+		net.ip = IPAddress((ParamAPP_IP & 0xFF) << 24) | ((ParamAPP_IP & 0xFF00) << 8) | ((ParamAPP_IP & 0xFF0000) >> 8) | ((ParamAPP_IP & 0xFF000000) >> 24);
+		net.netmask = IPAddress((ParamAPP_Netzmaske & 0xFF) << 24) | ((ParamAPP_Netzmaske & 0xFF00) << 8) | ((ParamAPP_Netzmaske & 0xFF0000) >> 8) | ((ParamAPP_Netzmaske & 0xFF000000) >> 24);
+		net.gateway = IPAddress((ParamAPP_Gateway & 0xFF) << 24) | ((ParamAPP_Gateway & 0xFF00) << 8) | ((ParamAPP_Gateway & 0xFF0000) >> 8) | ((ParamAPP_Gateway & 0xFF000000) >> 24);
+		net.dns = IPAddress((ParamAPP_DNS & 0xFF) << 24) | ((ParamAPP_DNS & 0xFF00) << 8) | ((ParamAPP_DNS & 0xFF0000) >> 8) | ((ParamAPP_DNS & 0xFF000000) >> 24);
+		Serial.println("Static network configuration:");
+		Serial.print("IP....... "); Serial.println(net.ip);
+		Serial.print("Netmask.. "); Serial.println(net.netmask);
+		Serial.print("Gateway.. "); Serial.println(net.gateway);
+		Serial.print("DNS...... "); Serial.println(net.dns);
+	} else {
+		net.dhcp = true;
+	}
+
+	if ( net.dhcp == false ) {
+		wifiManager.setSTAStaticIPConfig( net.ip, net.gateway, net.netmask, net.dns );
+		Serial.print("static setup: ");
+	}
+
+	wifiManager.setHostname( net.hostname );
+  wifiManager.setConfigPortalTimeout(180);
+	if (!wifiManager.autoConnect("AutoConnectAP")) {
+    Serial.println("failed to connect and hit timeout");
+    delay(3000);
+    ESP.restart();
+    delay(5000);
+  } 
+
+	Serial.print("IP Address: ");
+	Serial.println(WiFi.localIP());
+	#pragma endregion
+
+	#pragma region RemoteDebug
+	if ( ( knx.configured() && ParamAPP_RemoteDebug ) || !knx.configured() ) {
+		net.remoteDebug = true;
+		Debug.begin(net.hostname); // Initialize the WiFi server
+		Debug.setResetCmdEnabled(true); // Enable the reset command
+		Debug.showProfiler(true); // Profiler (Good to measure times, to optimize codes)
+		Debug.showColors(true); // Colors
+//		if ( ( knx.configured() && ParamApp_SerialDebug ) || !knx.configured() ) {
+//			Debug.setSerialEnabled(true);
+//		}
+	}
+	#pragma endregion
 
 	pinMode(RS485_CON_PIN, OUTPUT);
 	pinMode(KEY_PIN, INPUT_PULLUP);
@@ -192,11 +253,7 @@ void setup() {
 	RS485_Mode(RS485_TX_ENABLE);
 	delay(20); 
 
-	#pragma region KNX stuff
-	knx.buttonPin(5);
 
-	// read adress table, association table, groupobject table and parameters from eeprom
-	knx.readMemory();
 
 	Serial.println("Starting up...");
 	Serial.print("KNX configured: ");
@@ -210,22 +267,6 @@ void setup() {
 
 	if (knx.configured()) {
 
-		if ( ParamAPP_UseDHCP == false ) {
-			// we are using a static IP config stored as KNX paramaeters
-			net.dhcp = false;
-			// convert IPs from little to big endian
-			net.ip = IPAddress((ParamAPP_IP & 0xFF) << 24) | ((ParamAPP_IP & 0xFF00) << 8) | ((ParamAPP_IP & 0xFF0000) >> 8) | ((ParamAPP_IP & 0xFF000000) >> 24);
-			net.netmask = IPAddress((ParamAPP_Netzmaske & 0xFF) << 24) | ((ParamAPP_Netzmaske & 0xFF00) << 8) | ((ParamAPP_Netzmaske & 0xFF0000) >> 8) | ((ParamAPP_Netzmaske & 0xFF000000) >> 24);
-			net.gateway = IPAddress((ParamAPP_Gateway & 0xFF) << 24) | ((ParamAPP_Gateway & 0xFF00) << 8) | ((ParamAPP_Gateway & 0xFF0000) >> 8) | ((ParamAPP_Gateway & 0xFF000000) >> 24);
-			net.dns = IPAddress((ParamAPP_DNS & 0xFF) << 24) | ((ParamAPP_DNS & 0xFF00) << 8) | ((ParamAPP_DNS & 0xFF0000) >> 8) | ((ParamAPP_DNS & 0xFF000000) >> 24);
-			Serial.println("Static network configuration:");
-			Serial.print("IP....... "); Serial.println(net.ip);
-			Serial.print("Netmask.. "); Serial.println(net.netmask);
-			Serial.print("Gateway.. "); Serial.println(net.gateway);
-			Serial.print("DNS...... "); Serial.println(net.dns);
-		} else {
-			net.dhcp = true;
-		}
 
 		net.hostname = (char *) ParamAPP_Hostname;
 		net.mqtt = ParamAPP_useMQTT;
@@ -498,34 +539,7 @@ void setup() {
 		pm10_normalized.rel_change = ParamAPP_Feinstaub_Senden_Wertaenderung_relativ;
 
 	}
-	#pragma endregion
 
-
-  //WiFiManager
-  WiFiManager wifiManager;
-  //wifiManager.resetSettings();
-
-	if ( net.dhcp == false ) {
-		wifiManager.setSTAStaticIPConfig( net.ip, net.gateway, net.netmask, net.dns );
-		Serial.print("static setup: ");
-	}
-
-	wifiManager.setHostname( net.hostname );
-  wifiManager.setConfigPortalTimeout(180);
-	if (!wifiManager.autoConnect("AutoConnectAP")) {
-    Serial.println("failed to connect and hit timeout");
-    delay(3000);
-    ESP.restart();
-    delay(5000);
-  } 
-
-	Serial.print("IP Address: ");
-	Serial.println(WiFi.localIP());
-
-	Debug.begin(net.hostname); // Initialize the WiFi server
-	Debug.setResetCmdEnabled(true); // Enable the reset command
-	Debug.showProfiler(true); // Profiler (Good to measure times, to optimize codes)
-	Debug.showColors(true); // Colors
 
 	// Arduino OTA on üport 3232
 	// ArduinoOTA.setPort(3232);
@@ -923,25 +937,6 @@ void RS485_RX() {
 	RS485_Mode(RS485_RX_ENABLE);
 }
 
-void updatePressureRingbuffer() {
-	Serial.print("Update air pressure ringbuffer: ");
-	debugV("Update air pressure ringbuffer with value %u: ", pressure.value*10);
-	pressureRing.add(pressure.value*10);
-//	for (u_int8_t i = (-1 * max( pressureRing.elements(), pressureRing.size()) ) ; i<1 ; i++ ) {
-//	for (int i = (-1 * max( pressureRing.elements(), pressureRing.size()) ) ; i<1 ; i++ ) {
-	for (int i = 1; i<=pressureRing.size(); i++) {
-		debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
-	} 
-	debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
-/*	for (u_int8_t i=1; i<RINGBUFFERSIZE; i++) {
-		if ( pressureRing[i] > 0 ) pressureRing[i-1]=pressureRing[i];
-		Serial.print(pressureRing[i]); Serial.print(", ");
-	}
-	pressureRing[RINGBUFFERSIZE-1] = pressure.value*10;
-	Serial.println(pressureRing[RINGBUFFERSIZE-1]);
-	*/
-}
-
 void MQTTpublish() {
 	mqttMsg.add("chip_id", getChipID());
 	mqttMsg.add("wifi_rssi", WiFi.RSSI());
@@ -1050,7 +1045,7 @@ esp_task_wdt_reset();
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
 //		nbModbusMaster.readHoldingRegisters(slaveId, 0x165, 10, read_wn90);
-		read_wn90();
+//		read_wn90();
 		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
 //		debugV("Start Modbus cycle");
 	}
@@ -1070,23 +1065,24 @@ esp_task_wdt_reset();
 
 	if ( timeKnown && dateKnown && (minute(t) != lastminute) ) {   // every minute
 		lastminute = minute(t);
+		lasthour = hour(t);
 		for (int i = 1; i<=pressureRing.size(); i++) {
 			debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
 		} 
 		debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
 
 		if ( lastminute % 5 == 0) {		// every 5 minutes
-			debugV("testing %f", 13.4);
-		}
-		if ( lastminute % 15 == 0) {	// every 15 minutes
-			updatePressureRingbuffer();
-/*			if (pressureRing.getDelta(-1) > 0 ) {
-				debugV("Trend1 waere: %d", pressureRing.getDelta(0) - pressureRing.getDelta(-1));
-			}
-			if (pressureRing.getDelta(-4) > 0 ) {
-				debugV("Trend2 waere: %d", pressureRing.getDelta(0) - pressureRing.getDelta(-4));
-			} */
-//			if ( pressureRing[RINGBUFFERSIZE-4] > 0) { pressureTrend1.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[RINGBUFFERSIZE-4]; pressureTrend1.read = true; } else { pressureTrend1.read = false; }
+			#pragma region update rain amount ringbuffers
+			raincounterMA.add(rainCounter.value);
+			rainfallMA.add(rainFall.value);
+			#ifndef DEBUG_DISABLED
+			debugV("Update raincounter minute ringbuffer with value %u: ", rainCounter.value);
+			debugV("Raincounter minute ringbuffer contains %u elements, index is at %u", raincounterMA.elements(), raincounterMA.index());
+			debugV("Update rainfall minute ringbuffer with value %u: ", rainFall.value);
+			debugV("Rainfall minute ringbuffer contains %u elements, index is at %u", rainfallMA.elements(), rainfallMA.index());
+			#endif
+			#pragma endregion
+			#pragma region set hourly pressure trend if enough data is available
 			if ( pressureRing.getDelta(-4) > 0 ) {
 				pressureTrend1.value = pressureRing.getDelta(0) - pressureRing.getDelta(-4);
 				pressureTrend1.read = true; 
@@ -1094,10 +1090,40 @@ esp_task_wdt_reset();
 			} else {
 				pressureTrend1.read = false;
 			}
+			#pragma endregion
+		}
+		if ( lastminute % 15 == 0) {	// every 15 minutes
+			#pragma region update air pressure ringbuffer
+			Serial.print("Update air pressure ringbuffer: ");
+			debugV("Update air pressure ringbuffer with value %u: ", pressure.value*10);
+			pressureRing.add(pressure.value*10);
+			for (int i = 1; i<=pressureRing.size(); i++) {
+			debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
+			} 
+			debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
+//			updatePressureRingbuffer();
+			#pragma endregion
+			#pragma region set hourly pressure trend if enough data is available
+			if ( pressureRing.getDelta(-4) > 0 ) {
+				pressureTrend1.value = pressureRing.getDelta(0) - pressureRing.getDelta(-4);
+				pressureTrend1.read = true; 
+				debugV("Estimated hourly pressure trend %.01f", pressureTrend1.value );
+			} else {
+				pressureTrend1.read = false;
+			}
+			#pragma endregion
 		}
 		// every full hour
 		if ( lastminute == 0 ) {	// every full hour
-//			if ( pressureRing[0] > 0 ) { pressureTrend3.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[0]; pressureTrend3.read = true; }; // else { pressureTrend3.read = false; }
+			#pragma region update rain amount ringbuffers
+			raincounterSA.add(rainCounter.value);
+			debugV("Update raincounter hour ringbuffer with value %u: ", rainCounter.value);
+			debugV("Raincounter hour ringbuffer contains %u elements, index is at %u", raincounterSA.elements(), raincounterSA.index());
+			rainfallMA.add(rainFall.value);
+			debugV("Update rainfall hour ringbuffer with value %u: ", rainFall.value);
+			debugV("Rainfall hour ringbuffer contains %u elements, index is at %u", rainfallSA.elements(), rainfallSA.index());
+			#pragma endregion
+			#pragma region set 3 hourly pressure trend if enough data is available
 			if (pressureRing.getDelta(-12) > 0 ) {
 				pressureTrend3.value = pressureRing.getDelta(0) - pressureRing.getDelta(-12);
 				pressureTrend3.read = true;
@@ -1105,8 +1131,22 @@ esp_task_wdt_reset();
 			} else {
 				pressureTrend3.read = false;
 			}
+			#pragma endregion
+		}
+		if ( lastminute == 0 && lasthour == 0 ) {	// at midnight
+			// reset values for total rain amount for today
+			raincounterT = 0;
+			rainfallT = 0;
+
+
 		}
 	}
+
+	/*
+Es existieren 2 Ringbuffer mit jeweils 13 Elementen zur Speicherung der rainfall sowie raincounter Werte im 5 Minuten Takt (Minutenarray oder MA)
+Desweiteren existieren 2 Ringbuffer mit jeweils 73 Elementen in denen rainfall und raincounter jeweils stuendlich gespeichert werden (Stundenarray oder SA)
+Zusaetzlich existieren 2 T-Werte, die jeweils um Mitternacht auf 0 gesetzt werden. Die aktuelle Regenmenge abzueglich dieses Wertes ergibt die Tages-Regenmenge.
+*/
 
 
 

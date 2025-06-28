@@ -16,6 +16,7 @@
 #define RS485_RX_ENABLE         LOW
 #define NUMPIXELS               1
 #define WIREPIN									11
+#define KNXPIN									5
 
 #if CONFIG_IDF_TARGET_ESP32C3
 

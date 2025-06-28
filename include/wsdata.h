@@ -1,5 +1,11 @@
+/*
+	functions, structures and variables related to weather
+*/
 #ifndef _wsdata_h_
 #define _wsdata_h_
+
+#include <temperature.h>
+#include <ringBuffer.h>
 
 #pragma region Weather data structures and variables
 struct wsdata {
@@ -43,8 +49,8 @@ wsdata pm10; // PM10 value
 wsdata pm25_normalized; // humidity compensated PM2.5 value
 wsdata pm10_normalized; // humidity compensated PM10 value
 /*
-Es existieren 2 Ringbuffer mit jeweils 12 Elementen zur Speicherung der rainfall sowie raincounter Werte im 5 Minuten Takt (Minutenarray oder MA)
-Desweiteren existieren 2 Ringbuffer mit jeweils 72 Elementen in denen rainfall und raincounter jeweils stuendlich gespeichert werden (Stundenarray oder SA)
+Es existieren 2 Ringbuffer mit jeweils 13 Elementen zur Speicherung der rainfall sowie raincounter Werte im 5 Minuten Takt (Minutenarray oder MA)
+Desweiteren existieren 2 Ringbuffer mit jeweils 73 Elementen in denen rainfall und raincounter jeweils stuendlich gespeichert werden (Stundenarray oder SA)
 Zusaetzlich existieren 2 T-Werte, die jeweils um Mitternacht auf 0 gesetzt werden. Die aktuelle Regenmenge abzueglich dieses Wertes ergibt die Tages-Regenmenge.
 */
 ringBuffer<u_int16_t> rainfallSA(73), raincounterSA(73), rainfallMA(13), raincounterMA(13);
