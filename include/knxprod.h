@@ -9,10 +9,10 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x08
+#define MAIN_ApplicationVersion 0x09
 #define MAIN_OrderNumber "p3-00012.1"
-#define MAIN_ParameterSize 246
-#define MAIN_MaxKoNumber 83
+#define MAIN_ParameterSize 248
+#define MAIN_MaxKoNumber 93
 
 
 #define APP_startUp_Delay		0x0000
@@ -66,9 +66,12 @@
 #define APP_RemoteDebug		0x0003
 // Offset: 3, BitOffset: 3, Size: 1 Bit, Text: RemoteDebug aktivieren
 #define ParamAPP_RemoteDebug knx.paramBit(APP_RemoteDebug, 3)
+#define APP_SerialDebug		0x0003
+// Offset: 3, BitOffset: 4, Size: 1 Bit, Text: SerialDebug ebenfalls aktivieren
+#define ParamAPP_SerialDebug knx.paramBit(APP_SerialDebug, 4)
 #define APP_Temperatur_DPT		0x0003
-// Offset: 3, BitOffset: 4, Size: 1 Bit, Text: Sende Temperatur als
-#define ParamAPP_Temperatur_DPT knx.paramBit(APP_Temperatur_DPT, 4)
+// Offset: 3, BitOffset: 5, Size: 1 Bit, Text: Sende Temperatur als
+#define ParamAPP_Temperatur_DPT knx.paramBit(APP_Temperatur_DPT, 5)
 #define APP_Temperatur_Senden_zyklisch		0x0088
 #define APP_Temperatur_Senden_zyklisch_Shift	4
 #define APP_Temperatur_Senden_zyklisch_Mask	0x0FFF
@@ -81,10 +84,9 @@
 // Offset: 140, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Temperatur_Senden_Wertaenderung_relativ knx.paramFloat(APP_Temperatur_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Feuchte_DPT		0x0003
-#define APP_Feuchte_DPT_Shift	1
 #define APP_Feuchte_DPT_Mask	0x0003
-// Offset: 3, BitOffset: 5, Size: 2 Bit, Text: Sende relative Feuchte als
-#define ParamAPP_Feuchte_DPT ((uint32_t)((knx.paramByte(APP_Feuchte_DPT) >> APP_Feuchte_DPT_Shift) & APP_Feuchte_DPT_Mask))
+// Offset: 3, BitOffset: 6, Size: 2 Bit, Text: Sende relative Feuchte als
+#define ParamAPP_Feuchte_DPT ((uint32_t)((knx.paramByte(APP_Feuchte_DPT)) & APP_Feuchte_DPT_Mask))
 #define APP_Feuchte_Senden_zyklisch		0x008E
 #define APP_Feuchte_Senden_zyklisch_Shift	4
 #define APP_Feuchte_Senden_zyklisch_Mask	0x0FFF
@@ -96,12 +98,12 @@
 #define APP_Feuchte_Senden_Wertaenderung_relativ		0x0092
 // Offset: 146, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Senden_Wertaenderung_relativ knx.paramFloat(APP_Feuchte_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
-#define APP_WindSpeed_DPT		0x0003
-// Offset: 3, BitOffset: 7, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
-#define ParamAPP_WindSpeed_DPT knx.paramBit(APP_WindSpeed_DPT, 7)
-#define APP_WindDir_DPT		0x0094
+#define APP_WindSpeed_DPT		0x0094
 // Offset: 148, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
-#define ParamAPP_WindDir_DPT knx.paramBit(APP_WindDir_DPT, 0)
+#define ParamAPP_WindSpeed_DPT knx.paramBit(APP_WindSpeed_DPT, 0)
+#define APP_WindDir_DPT		0x0094
+// Offset: 148, BitOffset: 1, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
+#define ParamAPP_WindDir_DPT knx.paramBit(APP_WindDir_DPT, 1)
 #define APP_WindSpeed_Senden_zyklisch		0x0095
 #define APP_WindSpeed_Senden_zyklisch_Shift	4
 #define APP_WindSpeed_Senden_zyklisch_Mask	0x0FFF
@@ -125,8 +127,8 @@
 // Offset: 159, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_WindDir_Senden_Wertaenderung_relativ knx.paramFloat(APP_WindDir_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Pressure_DPT		0x0094
-// Offset: 148, BitOffset: 1, Size: 1 Bit, Text: Sende Luftdruck als
-#define ParamAPP_Pressure_DPT knx.paramBit(APP_Pressure_DPT, 1)
+// Offset: 148, BitOffset: 2, Size: 1 Bit, Text: Sende Luftdruck als
+#define ParamAPP_Pressure_DPT knx.paramBit(APP_Pressure_DPT, 2)
 #define APP_Pressure_Senden_zyklisch		0x00A1
 #define APP_Pressure_Senden_zyklisch_Shift	4
 #define APP_Pressure_Senden_zyklisch_Mask	0x0FFF
@@ -142,8 +144,8 @@
 // Offset: 167, Size: 256 Bit (32 Byte), Text: Hostname
 #define ParamAPP_Hostname knx.paramData(APP_Hostname)
 #define APP_Helligkeit_DPT		0x0094
-// Offset: 148, BitOffset: 2, Size: 1 Bit, Text: Sende Helligkeit als
-#define ParamAPP_Helligkeit_DPT knx.paramBit(APP_Helligkeit_DPT, 2)
+// Offset: 148, BitOffset: 3, Size: 1 Bit, Text: Sende Helligkeit als
+#define ParamAPP_Helligkeit_DPT knx.paramBit(APP_Helligkeit_DPT, 3)
 #define APP_Helligkeit_Senden_zyklisch		0x00C7
 #define APP_Helligkeit_Senden_zyklisch_Shift	4
 #define APP_Helligkeit_Senden_zyklisch_Mask	0x0FFF
@@ -156,8 +158,8 @@
 // Offset: 203, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Helligkeit_Senden_Wertaenderung_relativ knx.paramFloat(APP_Helligkeit_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_UVindex_DPT		0x0094
-// Offset: 148, BitOffset: 3, Size: 1 Bit, Text: Sende UV-Index als
-#define ParamAPP_UVindex_DPT knx.paramBit(APP_UVindex_DPT, 3)
+// Offset: 148, BitOffset: 4, Size: 1 Bit, Text: Sende UV-Index als
+#define ParamAPP_UVindex_DPT knx.paramBit(APP_UVindex_DPT, 4)
 #define APP_UVindex_Senden_zyklisch		0x00CD
 #define APP_UVindex_Senden_zyklisch_Shift	4
 #define APP_UVindex_Senden_zyklisch_Mask	0x0FFF
@@ -170,8 +172,8 @@
 // Offset: 209, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_UVindex_Senden_Wertaenderung_relativ knx.paramFloat(APP_UVindex_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Regen_DPT		0x0094
-// Offset: 148, BitOffset: 4, Size: 1 Bit, Text: Sende Regenmenge als
-#define ParamAPP_Regen_DPT knx.paramBit(APP_Regen_DPT, 4)
+// Offset: 148, BitOffset: 5, Size: 1 Bit, Text: Sende Regenmenge als
+#define ParamAPP_Regen_DPT knx.paramBit(APP_Regen_DPT, 5)
 #define APP_Regen_Senden_zyklisch		0x00D3
 #define APP_Regen_Senden_zyklisch_Shift	4
 #define APP_Regen_Senden_zyklisch_Mask	0x0FFF
@@ -196,11 +198,11 @@
 // Offset: 229, Size: 32 Bit (4 Byte), Text: Nameserver
 #define ParamAPP_DNS knx.paramInt(APP_DNS)
 #define APP_UseDHCP		0x0094
-// Offset: 148, BitOffset: 5, Size: 1 Bit, Text: Nutze DHCP
-#define ParamAPP_UseDHCP knx.paramBit(APP_UseDHCP, 5)
+// Offset: 148, BitOffset: 6, Size: 1 Bit, Text: Nutze DHCP
+#define ParamAPP_UseDHCP knx.paramBit(APP_UseDHCP, 6)
 #define APP_Feinstaub_DPT		0x0094
-// Offset: 148, BitOffset: 6, Size: 1 Bit, Text: Sende Feinstaubwerte als
-#define ParamAPP_Feinstaub_DPT knx.paramBit(APP_Feinstaub_DPT, 6)
+// Offset: 148, BitOffset: 7, Size: 1 Bit, Text: Sende Feinstaubwerte als
+#define ParamAPP_Feinstaub_DPT knx.paramBit(APP_Feinstaub_DPT, 7)
 #define APP_Feinstaub_Senden_zyklisch		0x00E9
 #define APP_Feinstaub_Senden_zyklisch_Shift	4
 #define APP_Feinstaub_Senden_zyklisch_Mask	0x0FFF
@@ -215,20 +217,23 @@
 #define APP_SDS_DutyCycle		0x00EF
 // Offset: 239, Size: 8 Bit (1 Byte), Text: Sensor Duty Cycle
 #define ParamAPP_SDS_DutyCycle ((uint32_t)((knx.paramByte(APP_SDS_DutyCycle))))
-#define APP_Feuchte_Absolut_DPT		0x0094
-// Offset: 148, BitOffset: 7, Size: 1 Bit, Text: Sende absolute Feuchte als
-#define ParamAPP_Feuchte_Absolut_DPT knx.paramBit(APP_Feuchte_Absolut_DPT, 7)
-#define APP_Feuchte_Absolut_Senden_zyklisch		0x00F0
+#define APP_Feuchte_Absolut_DPT		0x00F0
+// Offset: 240, Size: 1 Bit, Text: Sende absolute Feuchte als
+#define ParamAPP_Feuchte_Absolut_DPT knx.paramBit(APP_Feuchte_Absolut_DPT, 0)
+#define APP_Feuchte_Absolut_Senden_zyklisch		0x00F1
 #define APP_Feuchte_Absolut_Senden_zyklisch_Shift	4
 #define APP_Feuchte_Absolut_Senden_zyklisch_Mask	0x0FFF
-// Offset: 240, Size: 12 Bit, Text: Sende absolute Feuchte alle
+// Offset: 241, Size: 12 Bit, Text: Sende absolute Feuchte alle
 #define ParamAPP_Feuchte_Absolut_Senden_zyklisch ((uint32_t)((knx.paramWord(APP_Feuchte_Absolut_Senden_zyklisch) >> APP_Feuchte_Absolut_Senden_zyklisch_Shift) & APP_Feuchte_Absolut_Senden_zyklisch_Mask))
-#define APP_Feuchte_Absolut_Senden_Wertaenderung_absolut		0x00F2
-// Offset: 242, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_absolut		0x00F3
+// Offset: 243, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_absolut knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_absolut, Float_Enc_DPT9)
-#define APP_Feuchte_Absolut_Senden_Wertaenderung_relativ		0x00F4
-// Offset: 244, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_relativ		0x00F5
+// Offset: 245, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_relativ knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
+#define APP_Regen_Hysterese_(m)		0x00F7
+// Offset: 247, Size: 8 Bit (1 Byte), Text: Zeitfenster zur Regenermittlung
+#define ParamAPP_Regen_Hysterese_(m) ((uint32_t)((knx.paramByte(APP_Regen_Hysterese_(m)))))
 //!< Number: 1, Text: In Betrieb, Function: Statusmeldung
 #define APP_KoHeartbeat 1
 #define KoAPP_Heartbeat knx.getGroupObject(APP_KoHeartbeat)
@@ -256,40 +261,40 @@
 //!< Number: 21, Text: Temperatur 1wire (°C), Function: Messwert
 #define APP_KoTemperatur_1wire_DPT14 21
 #define KoAPP_Temperatur_1wire_DPT14 knx.getGroupObject(APP_KoTemperatur_1wire_DPT14)
-//!< Number: 22, Text: Taupunkt (°C), Function: Messwert
+//!< Number: 22, Text: Taupunkt (°C), Function: Rechenwert
 #define APP_KoTaupunkt_DPT9 22
 #define KoAPP_Taupunkt_DPT9 knx.getGroupObject(APP_KoTaupunkt_DPT9)
-//!< Number: 22, Text: Taupunkt (°C), Function: Messwert
+//!< Number: 22, Text: Taupunkt (°C), Function: Rechenwert
 #define APP_KoTaupunkt_DPT14 22
 #define KoAPP_Taupunkt_DPT14 knx.getGroupObject(APP_KoTaupunkt_DPT14)
-//!< Number: 23, Text: Frostpunkt (°C), Function: Messwert
+//!< Number: 23, Text: Frostpunkt (°C), Function: Rechenwert
 #define APP_KoFrostpunkt_DPT9 23
 #define KoAPP_Frostpunkt_DPT9 knx.getGroupObject(APP_KoFrostpunkt_DPT9)
-//!< Number: 23, Text: Frostpunkt (°C), Function: Messwert
+//!< Number: 23, Text: Frostpunkt (°C), Function: Rechenwert
 #define APP_KoFrostpunkt_DPT14 23
 #define KoAPP_Frostpunkt_DPT14 knx.getGroupObject(APP_KoFrostpunkt_DPT14)
-//!< Number: 24, Text: Humidex (°C), Function: Messwert
+//!< Number: 24, Text: Humidex (°C), Function: Rechenwert
 #define APP_KoHumidex_DPT9 24
 #define KoAPP_Humidex_DPT9 knx.getGroupObject(APP_KoHumidex_DPT9)
-//!< Number: 24, Text: Humidex (°C), Function: Messwert
+//!< Number: 24, Text: Humidex (°C), Function: Rechenwert
 #define APP_KoHumidex_DPT14 24
 #define KoAPP_Humidex_DPT14 knx.getGroupObject(APP_KoHumidex_DPT14)
-//!< Number: 25, Text: Hitzeindex (°C), Function: Messwert
+//!< Number: 25, Text: Hitzeindex (°C), Function: Rechenwert
 #define APP_KoHeatindex_DPT9 25
 #define KoAPP_Heatindex_DPT9 knx.getGroupObject(APP_KoHeatindex_DPT9)
-//!< Number: 25, Text: Hitzeindex (°C), Function: Messwert
+//!< Number: 25, Text: Hitzeindex (°C), Function: Rechenwert
 #define APP_KoHeatindex_DPT14 25
 #define KoAPP_Heatindex_DPT14 knx.getGroupObject(APP_KoHeatindex_DPT14)
-//!< Number: 26, Text: Windchill (°C), Function: Messwert
+//!< Number: 26, Text: Windchill (°C), Function: Rechenwert
 #define APP_KoWindchill_DPT9 26
 #define KoAPP_Windchill_DPT9 knx.getGroupObject(APP_KoWindchill_DPT9)
-//!< Number: 26, Text: Windchill (°C), Function: Messwert
+//!< Number: 26, Text: Windchill (°C), Function: Rechenwert
 #define APP_KoWindchill_DPT14 26
 #define KoAPP_Windchill_DPT14 knx.getGroupObject(APP_KoWindchill_DPT14)
-//!< Number: 27, Text: Unbehagenindex (°C), Function: Messwert
+//!< Number: 27, Text: Unbehagenindex (°C), Function: Rechenwert
 #define APP_KoDiscomfort_DPT9 27
 #define KoAPP_Discomfort_DPT9 knx.getGroupObject(APP_KoDiscomfort_DPT9)
-//!< Number: 27, Text: Unbehagenindex (°C), Function: Messwert
+//!< Number: 27, Text: Unbehagenindex (°C), Function: Rechenwert
 #define APP_KoDiscomfort_DPT14 27
 #define KoAPP_Discomfort_DPT14 knx.getGroupObject(APP_KoDiscomfort_DPT14)
 //!< Number: 30, Text: relative Feuchte (%), Function: Messwert
@@ -301,10 +306,10 @@
 //!< Number: 30, Text: relative Feuchte (%), Function: Messwert
 #define APP_KoFeuchte_DPT14 30
 #define KoAPP_Feuchte_DPT14 knx.getGroupObject(APP_KoFeuchte_DPT14)
-//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Messwert
+//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Rechenwert
 #define APP_KoAbsolute_Feuchte_DPT9 31
 #define KoAPP_Absolute_Feuchte_DPT9 knx.getGroupObject(APP_KoAbsolute_Feuchte_DPT9)
-//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Messwert
+//!< Number: 31, Text: absolute Feuchte (g/m³), Function: Rechenwert
 #define APP_KoAbsolute_Feuchte_DPT14 31
 #define KoAPP_Absolute_Feuchte_DPT14 knx.getGroupObject(APP_KoAbsolute_Feuchte_DPT14)
 //!< Number: 40, Text: Luftdruck (mBar), Function: Messwert
@@ -367,34 +372,124 @@
 //!< Number: 70, Text: Regenmenge (0.1mm), Function: Messwert
 #define APP_KoRainFall_DPT14 70
 #define KoAPP_RainFall_DPT14 knx.getGroupObject(APP_KoRainFall_DPT14)
-//!< Number: 71, Text: Regenmenge (0.01mm), Function: Messwert
-#define APP_KoRainCounter_DPT9 71
+//!< Number: 71, Text: Regenmenge letzte 5 Minuten (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_5min_DPT9 71
+#define KoAPP_RainFall_Amount_5min_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_5min_DPT9)
+//!< Number: 71, Text: Regenmenge letzte 5 Minuten (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_5min_DPT14 71
+#define KoAPP_RainFall_Amount_5min_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_5min_DPT14)
+//!< Number: 72, Text: Regenmenge letzte Stunde (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_1hour_DPT9 72
+#define KoAPP_RainFall_Amount_1hour_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_1hour_DPT9)
+//!< Number: 72, Text: Regenmenge letzte Stunde (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_1hour_DPT14 72
+#define KoAPP_RainFall_Amount_1hour_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_1hour_DPT14)
+//!< Number: 73, Text: Regenmenge letzte 6 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_6hour_DPT9 73
+#define KoAPP_RainFall_Amount_6hour_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_6hour_DPT9)
+//!< Number: 73, Text: Regenmenge letzte 6 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_6hour_DPT14 73
+#define KoAPP_RainFall_Amount_6hour_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_6hour_DPT14)
+//!< Number: 74, Text: Regenmenge letzte 24 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_24hour_DPT9 74
+#define KoAPP_RainFall_Amount_24hour_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_24hour_DPT9)
+//!< Number: 74, Text: Regenmenge letzte 24 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_24hour_DPT14 74
+#define KoAPP_RainFall_Amount_24hour_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_24hour_DPT14)
+//!< Number: 75, Text: Regenmenge letzte 48 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_48hour_DPT9 75
+#define KoAPP_RainFall_Amount_48hour_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_48hour_DPT9)
+//!< Number: 75, Text: Regenmenge letzte 48 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_48hour_DPT14 75
+#define KoAPP_RainFall_Amount_48hour_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_48hour_DPT14)
+//!< Number: 76, Text: Regenmenge letzte 72 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_72hour_DPT9 76
+#define KoAPP_RainFall_Amount_72hour_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_72hour_DPT9)
+//!< Number: 76, Text: Regenmenge letzte 72 Stunden (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_72hour_DPT14 76
+#define KoAPP_RainFall_Amount_72hour_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_72hour_DPT14)
+//!< Number: 77, Text: Regenmenge heute (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_today_DPT9 77
+#define KoAPP_RainFall_Amount_today_DPT9 knx.getGroupObject(APP_KoRainFall_Amount_today_DPT9)
+//!< Number: 77, Text: Regenmenge heute (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Amount_today_DPT14 77
+#define KoAPP_RainFall_Amount_today_DPT14 knx.getGroupObject(APP_KoRainFall_Amount_today_DPT14)
+//!< Number: 78, Text: Regen? (0.1mm Auflösung), Function: Messwert
+#define APP_KoRainFall_Raining 78
+#define KoAPP_RainFall_Raining knx.getGroupObject(APP_KoRainFall_Raining)
+//!< Number: 80, Text: Regenmenge (0.01mm), Function: Messwert
+#define APP_KoRainCounter_DPT9 80
 #define KoAPP_RainCounter_DPT9 knx.getGroupObject(APP_KoRainCounter_DPT9)
-//!< Number: 71, Text: Regenmenge (0.01mm), Function: Messwert
-#define APP_KoRainCounter_DPT14 71
+//!< Number: 80, Text: Regenmenge (0.01mm), Function: Messwert
+#define APP_KoRainCounter_DPT14 80
 #define KoAPP_RainCounter_DPT14 knx.getGroupObject(APP_KoRainCounter_DPT14)
-//!< Number: 80, Text: PM2.5 Konzentration, Function: Messwert
-#define APP_KoPM25_DPT9 80
+//!< Number: 81, Text: Regenmenge letzte 5 Minuten (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_5min_DPT9 81
+#define KoAPP_RainCounter_Amount_5min_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_5min_DPT9)
+//!< Number: 81, Text: Regenmenge letzte 5 Minuten (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_5min_DPT14 81
+#define KoAPP_RainCounter_Amount_5min_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_5min_DPT14)
+//!< Number: 82, Text: Regenmenge letzte Stunde (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_1hour_DPT9 82
+#define KoAPP_RainCounter_Amount_1hour_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_1hour_DPT9)
+//!< Number: 82, Text: Regenmenge letzte Stunde (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_1hour_DPT14 82
+#define KoAPP_RainCounter_Amount_1hour_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_1hour_DPT14)
+//!< Number: 83, Text: Regenmenge letzte 6 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_6hour_DPT9 83
+#define KoAPP_RainCounter_Amount_6hour_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_6hour_DPT9)
+//!< Number: 83, Text: Regenmenge letzte 6 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_6hour_DPT14 83
+#define KoAPP_RainCounter_Amount_6hour_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_6hour_DPT14)
+//!< Number: 84, Text: Regenmenge letzte 24 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_24hour_DPT9 84
+#define KoAPP_RainCounter_Amount_24hour_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_24hour_DPT9)
+//!< Number: 84, Text: Regenmenge letzte 24 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_24hour_DPT14 84
+#define KoAPP_RainCounter_Amount_24hour_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_24hour_DPT14)
+//!< Number: 85, Text: Regenmenge letzte 48 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_48hour_DPT9 85
+#define KoAPP_RainCounter_Amount_48hour_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_48hour_DPT9)
+//!< Number: 85, Text: Regenmenge letzte 48 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_48hour_DPT14 85
+#define KoAPP_RainCounter_Amount_48hour_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_48hour_DPT14)
+//!< Number: 86, Text: Regenmenge letzte 72 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_72hour_DPT9 86
+#define KoAPP_RainCounter_Amount_72hour_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_72hour_DPT9)
+//!< Number: 86, Text: Regenmenge letzte 72 Stunden (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_72hour_DPT14 86
+#define KoAPP_RainCounter_Amount_72hour_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_72hour_DPT14)
+//!< Number: 87, Text: Regenmenge heute (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_today_DPT9 87
+#define KoAPP_RainCounter_Amount_today_DPT9 knx.getGroupObject(APP_KoRainCounter_Amount_today_DPT9)
+//!< Number: 87, Text: Regenmenge heute (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Amount_today_DPT14 87
+#define KoAPP_RainCounter_Amount_today_DPT14 knx.getGroupObject(APP_KoRainCounter_Amount_today_DPT14)
+//!< Number: 88, Text: Regen? (0.01mm Auflösung), Function: Messwert
+#define APP_KoRainCounter_Raining 88
+#define KoAPP_RainCounter_Raining knx.getGroupObject(APP_KoRainCounter_Raining)
+//!< Number: 90, Text: PM2.5 Konzentration, Function: Messwert
+#define APP_KoPM25_DPT9 90
 #define KoAPP_PM25_DPT9 knx.getGroupObject(APP_KoPM25_DPT9)
-//!< Number: 80, Text: PM2.5 Konzentration, Function: Messwert
-#define APP_KoPM25_DPT14 80
+//!< Number: 90, Text: PM2.5 Konzentration, Function: Messwert
+#define APP_KoPM25_DPT14 90
 #define KoAPP_PM25_DPT14 knx.getGroupObject(APP_KoPM25_DPT14)
-//!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM25_Normalized_DPT9 81
+//!< Number: 91, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Rechenwert
+#define APP_KoPM25_Normalized_DPT9 91
 #define KoAPP_PM25_Normalized_DPT9 knx.getGroupObject(APP_KoPM25_Normalized_DPT9)
-//!< Number: 81, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM25_Normalized_DPT14 81
+//!< Number: 91, Text: PM2.5 Konzentration (feuchtekompensiert), Function: Rechenwert
+#define APP_KoPM25_Normalized_DPT14 91
 #define KoAPP_PM25_Normalized_DPT14 knx.getGroupObject(APP_KoPM25_Normalized_DPT14)
-//!< Number: 82, Text: PM10 Konzentration, Function: Messwert
-#define APP_KoPM10_DPT9 82
+//!< Number: 92, Text: PM10 Konzentration, Function: Messwert
+#define APP_KoPM10_DPT9 92
 #define KoAPP_PM10_DPT9 knx.getGroupObject(APP_KoPM10_DPT9)
-//!< Number: 82, Text: PM10 Konzentration, Function: Messwert
-#define APP_KoPM10_DPT14 82
+//!< Number: 92, Text: PM10 Konzentration, Function: Messwert
+#define APP_KoPM10_DPT14 92
 #define KoAPP_PM10_DPT14 knx.getGroupObject(APP_KoPM10_DPT14)
-//!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM10_Normalized_DPT9 83
+//!< Number: 93, Text: PM10 Konzentration (feuchtekompensiert), Function: Rechenwert
+#define APP_KoPM10_Normalized_DPT9 93
 #define KoAPP_PM10_Normalized_DPT9 knx.getGroupObject(APP_KoPM10_Normalized_DPT9)
-//!< Number: 83, Text: PM10 Konzentration (feuchtekompensiert), Function: Messwert
-#define APP_KoPM10_Normalized_DPT14 83
+//!< Number: 93, Text: PM10 Konzentration (feuchtekompensiert), Function: Rechenwert
+#define APP_KoPM10_Normalized_DPT14 93
 #define KoAPP_PM10_Normalized_DPT14 knx.getGroupObject(APP_KoPM10_Normalized_DPT14)
 
