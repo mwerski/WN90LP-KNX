@@ -942,23 +942,6 @@ void updatePressureRingbuffer() {
 	*/
 }
 
-char* toCharArray(String str) {
-	return &str[0];
-}
-
-String getChipID() {
-  String id;
-  uint64_t chipid;
-  char ssid[13];
-  chipid = ESP.getEfuseMac();
-  uint16_t chip = (uint16_t)(chipid >> 32);
-  snprintf(ssid, 13, "%04X%08X", chip, (uint32_t)chipid);
-  for ( int i = 0; i < 12; i++){
-    id += String(ssid[i]);
-  }
-  return String(id);
-}
-
 void MQTTpublish() {
 	mqttMsg.add("chip_id", getChipID());
 	mqttMsg.add("wifi_rssi", WiFi.RSSI());

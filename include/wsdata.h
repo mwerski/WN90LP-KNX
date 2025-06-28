@@ -102,11 +102,6 @@ double frostPoint(float t, float f) {
 	p = roundf( p * m ) / m;
 	return p;
 }
-double round(double n) { // rounds to 2 digits
-	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	n = roundf( n * m ) / m;
-	return n;
-}
 /* double dewpoint(float t, float f) {
 	// calculates dewpoint from given temperature and relative hjmidity
 	float a, b;
