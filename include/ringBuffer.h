@@ -1,5 +1,5 @@
-#ifndef _ringBufferlib_h
-#define _ringBufferlib_h
+#ifndef _ringBufferlib_h_
+#define _ringBufferlib_h_
 
 template <typename T>
 class ringBuffer {
@@ -32,6 +32,7 @@ ringBuffer<T>::ringBuffer(const size_t size) {
 	_size = size;
 	_index = 0;
 	_elements = 0;
+	for (size_t i = 0; i < _size; i++ ) _array[i] = 0;
 }
 
 template<typename T>
@@ -52,7 +53,8 @@ size_t ringBuffer<T>::index() const {
 template<typename T>
 void ringBuffer<T>::add(T value) {
 	_array[_index] = value;
-	( _index > _size ) ? _index = 1 : _index++;
+	if ( _elements < _size ) _elements++;
+	( _index >= _size ) ? _index = 1 : _index++;
 }
 
 template<typename T>
@@ -76,4 +78,18 @@ int ringBuffer<T>::mod(int a, int b) {
 
 
 #endif
-
+/*
+01 1400
+02 1415
+03 1430
+04 1445
+05 1500
+06 1515
+07 1530
+08 1545
+09 1600
+10 1615
+11 1630
+12 1645
+13 1700
+*/

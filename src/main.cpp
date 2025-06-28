@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "utilities.h"
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
@@ -10,7 +9,6 @@
 #include <ModbusMaster.h>
 #include <PubSubClient.h>
 #include <Json.h>
-#include <knxprod.h>
 #include <knx.h>
 #include <RemoteDebug.h>
 #include <TimeLib.h>
@@ -20,20 +18,7 @@
 #include <DallasTemperature.h>
 #include "NovaSDS011.h"
 #include <SoftwareSerial.h>
-#include <ringBuffer.h>
 #include <temperature.h>
-
-#define WDT_TIMEOUT 10 // Task Watchdog Timeout
-#define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
-#define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE	// Default Debug Level
-#define SDS_PIN_RX 35
-#define SDS_PIN_TX 38
-
-OneWire ow(WIREPIN);
-DallasTemperature ds(&ow);
-DeviceAddress sensor;
-
-#include <tasks.h>
 
 struct tm myTime;
 bool timeKnown = false;
@@ -44,162 +29,31 @@ bool sensorfailure_sds = false;
 bool ow_awailable = false;
 bool sds_available = false;
 
-void callbaack_time(GroupObject& go) {
-	if (go.value()) {
-		timeKnown = true;
-		myTime = KoAPP_Time.value();
-		unsigned short tmp_sec = myTime.tm_sec;
-		unsigned short tmp_min = myTime.tm_min;
-		unsigned short tmp_hour = myTime.tm_hour;
-		char buf[52];
-		sprintf(buf, "Time received from bus: %02d:%02d:%02d", tmp_hour, tmp_min, tmp_sec );
-		Serial.println(buf);
-		time_t t = now();
-		setTime(tmp_hour, tmp_min, tmp_sec, day(t), month(t), year(t));
-		if (dateKnown == true) {
-			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", day(t), month(t), year(t), tmp_hour, tmp_min, tmp_sec );
-			Serial.println(buf);
-		}
-	}
-}
-
-void callbaack_date(GroupObject& go) {
-	if (go.value()) {
-		dateKnown = true;
-		myTime = KoAPP_Date.value();
-		unsigned short tmp_mday = myTime.tm_mday;
-		unsigned short tmp_mon = myTime.tm_mon;
-		unsigned short tmp_year = myTime.tm_year;
-		char buf[52];
-		sprintf(buf, "Date received from bus: %d.%d.%d", tmp_mday, tmp_mon, tmp_year );
-		Serial.println(buf);
-		time_t t = now();
-		setTime(hour(t), minute(t), second(t), tmp_mday, tmp_mon, tmp_year);
-		if (timeKnown == true) {
-			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, hour(t), minute(t), second(t) );
-			Serial.println(buf);
-		}
-	}
-}
-
-void callbaack_dateTime(GroupObject& go) {
-	// Untested
-	if (go.value()) {
-		dateKnown = true;
-		timeKnown = true;
-		myTime = KoAPP_Date.value();
-		unsigned short tmp_sec = myTime.tm_sec;
-		unsigned short tmp_min = myTime.tm_min;
-		unsigned short tmp_hour = myTime.tm_hour;
-		unsigned short tmp_mday = myTime.tm_mday;
-		unsigned short tmp_mon = myTime.tm_mon;
-		unsigned short tmp_year = myTime.tm_year;
-		char buf[52];
-		sprintf(buf, "DateTime received from bus: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, tmp_hour, tmp_min, tmp_sec );
-		Serial.println(buf);
-		Serial.println("Setting/Adjusting system time");
-		setTime(tmp_hour, tmp_min, tmp_sec, tmp_mday, tmp_mon, tmp_year);
-	}
-}
-
-void callback_Temperature(GroupObject& go) {
- if (!go.value()) sendTemperature();
-}
-
-void callback_Temperature1(GroupObject& go) {
- if (!go.value()) sendTemperature1();
-}
-
-void callback_dewpoint(GroupObject& go) {
- if (!go.value()) senddewpoint();
-}
-
-void callback_frostpoint(GroupObject& go) {
- if (!go.value()) sendfrostpoint();
-}
-
-void callback_Humidity(GroupObject& go) {
- if (!go.value()) sendHumidity();
-}
-
-void callback_AbsHumidity(GroupObject& go) {
- if (!go.value()) sendAbsHumidity();
-}
-
-void callback_WindSpeed(GroupObject& go) {
- if (!go.value()) sendWindSpeed();
-}
-
-void callback_GustSpeed(GroupObject& go) {
- if (!go.value()) sendGustSpeed();
-}
-
-void callback_WindSpeedBft(GroupObject& go) {
- if (!go.value()) sendWindSpeedBft();
-}
-
-void callback_GustSpeedBft(GroupObject& go) {
- if (!go.value()) sendGustSpeedBft();
-}
-
-void callback_WindDirection(GroupObject& go) {
- if (!go.value()) sendWindDirection();
-}
-
-void callback_Pressure(GroupObject& go) {
- if (!go.value()) sendPressure();
-}
-
-void callback_PressureTrend1(GroupObject& go) {
- if (!go.value()) sendPressureTrend1();
-}
-
-void callback_PressureTrend3(GroupObject& go) {
- if (!go.value()) sendPressureTrend3();
-}
-
-void callback_RainFall(GroupObject& go) {
- if (!go.value()) sendRainFall();
-}
-
-void callback_RainCounter(GroupObject& go) {
- if (!go.value()) sendRainCounter();
-}
-
-void callback_UVindex(GroupObject& go) {
- if (!go.value()) sendUVindex();
-}
-
-void callback_Brightness(GroupObject& go) {
- if (!go.value()) sendBrightness();
-}
-
-void callback_pm25(GroupObject& go) {
- if (!go.value()) sendPM25();
-}
-
-void callback_pm10(GroupObject& go) {
- if (!go.value()) sendPM10();
-}
-
-void callback_pm25_normalized(GroupObject& go) {
- if (!go.value()) sendPM25_normalized();
-}
-
-void callback_pm10_normalized(GroupObject& go) {
- if (!go.value()) sendPM10_normalized();
-}
+#include "utilities.h"
+#include <knxprod.h>
+#include <ringBuffer.h>
+#include <wsdata.h>>
+#include <tasks.h>
+#include <knx_send.h>
 
 
-/*
-char* hostname = "wn90";
-char* ip_addr;
-char* mqtt_server = "broker.localnet";
-char *mqtt_username = "";
-char *mqtt_password = "";
-*/
+#define WDT_TIMEOUT 10 // Task Watchdog Timeout
+#define DEBUG_DISABLE_DEBUGGER true	// Debug Optionen in SerialDebug deaktivieren
+#define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE	// Default Debug Level
+#define SDS_PIN_RX 35
+#define SDS_PIN_TX 38
 
-u_int8_t	lastHour = NAN;	// last hour (if this changes, a full hour has passed)
+RemoteDebug Debug;
+
+OneWire ow(WIREPIN);
+DallasTemperature ds(&ow);
+DeviceAddress sensor;
+
+
+
+
+u_int8_t lastHour = NAN;	// last hour (if this changes, a full hour has passed)
+u_int8_t lastminute = NAN; // last minute
 
 WebServer server(80);
 
@@ -229,163 +83,6 @@ struct netconfig {
 };
 netconfig net;
 
-#define RINGBUFFERSIZE 12
-u_int8_t lasthour = NAN;	// last ringbuffer update hour
-u_int8_t lastminute = NAN; // last ringbuffer update minute
-int16_t pressureRing[RINGBUFFERSIZE];	// Ringbuffer for calculating pressure tendencies
-#pragma region Weather data structures and variables
-struct wsdata {
-	double value;
-	bool read = false;
-	double last; // value that was last sent to the bus
-	bool lastread = false;
-	double abs_change = 0;
-	double rel_change = 0;
-};
-struct wsdata_integer {
-	int32_t value;
-	bool read = false;
-	int32_t last; // value that was last sent to the bus
-	bool lastread = false;
-};
-wsdata uvIndex; // UV index
-wsdata light; // brightness in Lux
-wsdata temperature; // temperature in degree celsius
-wsdata temperature1; // temperature in degree celsius, measured via 1wire
-wsdata humidity; // relative humidity in percent
-wsdata abshumidity; // absolute humidity in grams per qubic meter
-wsdata windSpeed; // windspeed in m/s
-wsdata gustSpeed; // gust speed in m/s
-wsdata windSpeedBFT; // windspeed in beaufort
-wsdata gustSpeedBFT; // gust speed in beaufort
-wsdata windDirection; // wind direction in degrees
-wsdata pressure; // absolute pressure in hPa / mBar
-wsdata pressureTrend1; // gets measured and updated every 15 minutes, shows pressure differences from now to -1 hour, available after ~1 hour uptime
-wsdata pressureTrend3; // gets measured every full hour, shows pressure differences from now to -3 hours, available after ~3 hours uptime
-wsdata rainFall; // rainfall in mm / liter - 0.1mm resolution
-wsdata rainCounter; // rainfall in mm / liter - 0.01mm resolution
-wsdata dewpoint; // dewpoint in degree celsius
-wsdata frostpoint; // frostpoint in degree celsius
-wsdata pm25; // PM2.5 value
-wsdata pm10; // PM10 value
-wsdata pm25_normalized; // humidity compensated PM2.5 value
-wsdata pm10_normalized; // humidity compensated PM10 value
-/*
-Es existieren 2 Ringbuffer mit jeweils 12 Elementen zur Speicherung der rainfall sowie raincounter Werte im 5 Minuten Takt (Minutenarray oder MA)
-Desweiteren existieren 2 Ringbuffer mit jeweils 72 Elementen in denen rainfall und raincounter jeweils stuendlich gespeichert werden (Stundenarray oder SA)
-Zusaetzlich existieren 2 T-Werte, die jeweils um Mitternacht auf 0 gesetzt werden. Die aktuelle Regenmenge abzueglich dieses Wertes ergibt die Tages-Regenmenge.
-*/
-ringBuffer<uint16_t> rainfallSA(72), raincounterSA(72), rainfallMA(12), raincounterMA(12);
-u_int16_t rainfallT, raincounterT;
-
-double normalizePM25(double pm25, double humidity) {
-	double p = pm25/(1.0+0.48756*pow((humidity/100.0), 8.60068));
-	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	p = roundf( p * m ) / m;
-	return p;
-}
-double normalizePM10(double pm10, double humidity) {
-	double p = pm10/(1.0+0.81559*pow((humidity/100.0), 5.83411));
-	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	p = roundf( p * m ) / m;
-	return p;
-}
-bool abs_change(wsdata m) {
-	if ( m.abs_change != 0 && m.lastread != 0 ) {
-		if ( abs( m.last - m.value) >= m.abs_change ) return true;
-	}
-	return false;
-}
-bool rel_change(wsdata m) {
-	if ( m.rel_change != 0 && m.lastread != 0 && m.last != 0 ) {
-		if ( abs( (m.value - m.last) / m.last * 100) >= m.rel_change ) return true;
-	}
-	return false;
-}
-double get_abschange(wsdata m) {
-	if (m.lastread) return abs(m.value - m.last);
-	return NAN;
-}
-double get_relchange(wsdata m) {
-	if (m.lastread && m.last != 0) return abs((m.value - m.last) / m.last * 100);
-	return NAN;
-}
-double frostPoint(float t, float f) {
-	// calculates frostpoint from given temperature and relative hjmidity
-	float a, b;
-  if (t >= 0) {
-    a = 7.5;
-    b = 237.3;
-  } else {
-    a = 9.5;
-    b = 266.5;
-  }
-  double sdd = 6.1078 * pow(10, (a*t)/(b+t));  // Sättigungsdampfdruck in hPa
-  double dd = sdd * (f/100);  // Dampfdruck in mBar
-  double v = log10(dd/6.1078);  // v-Parameter
-  double p = (b*v) / (a-v);  // Frostpunkttemperatur (°C)
-//	return dp;
-	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	p = roundf( p * m ) / m;
-	return p;
-}
-
-/* double dewpoint(float t, float f) {
-	// calculates dewpoint from given temperature and relative hjmidity
-	float a, b;
-  if (t >= 0) {
-    a = 7.5;
-    b = 237.3;
-  } else {
-    a = 7.6;
-    b = 240.7;
-  }
-  double sdd = 6.1078 * pow(10, (a*t)/(b+t));  // Sättigungsdampfdruck in hPa
-  double dd = sdd * (f/100);  // Dampfdruck in mBar
-  double v = log10(dd/6.1078);  // v-Parameter
-  double p = (b*v) / (a-v);  // Taupunkttemperatur (°C)
-//	return p;
-	double m = powf( 10.0f, 2 ); // truncate to x.yz
-	p = roundf( p * m ) / m;
-	return p;
-}
-	*/
-
-
-	/*
-https://github.com/RobTillaart/Temperature?tab=readme-ov-file
-
-
-Windchill (in °C) = 13.12 + 0.6215 * Temperatur(°C) - 11.37 * Windgeschwindigkeit(km/h)^0.16 + 0.3965 * Temperatur(°C) * Windgeschwindigkeit(km/h)^0.16
-float Windchill  = 35.74 + 0.6215*T - 35.75*pow(V,0.16) + 0.4275*T*pow(V,0.16);
-
-
-// Funktion zur Berechnung des Hitzeindex (THSW)
-float heatIndex(float temperature, float humidity) {
-  float hic = 0.5 * (temperature + 61.0 + ((temperature - 68.0) * 1.2) + (humidity * 0.094));
-  if (hic > 79) {
-    hic = -42.379 + 2.04901523 * temperature + 10.14333127 * humidity - 0.22475541 * temperature * humidity - 0.00683783 * pow(temperature, 2) - 0.05481717 * pow(humidity, 2) + 0.00122874 * pow(temperature, 2) * humidity + 0.00085282 * temperature * pow(humidity, 2) - 0.00000199 * pow(temperature, 2) * pow(humidity, 2);
-  }
-  return hic;
-}
-
-*/
-u_int8_t bft(float s) {
-	if ( s >= 32.7 ) { return 12; } else
-	if ( s >= 28.5 ) { return 11; } else
-	if ( s >= 24.5 ) { return 10; } else
-	if ( s >= 20.8 ) { return 9; } else
-	if ( s >= 17.2 ) { return 8; } else
-	if ( s >= 13.9 ) { return 7; } else
-	if ( s >= 10.8 ) { return 6; } else
-	if ( s >= 8.0 ) { return 5; } else
-	if ( s >= 5.5 ) { return 4; } else
-	if ( s >= 3.4 ) { return 3; } else
-	if ( s >= 1.6 ) { return 2; } else
-	if ( s >= 0.3 ) { return 1; }
-	return 0;
-}
-#pragma endregion
 
 #pragma region MQTT
 WiFiClient espClient;
@@ -479,7 +176,7 @@ void read_SDS() {
 
 #pragma endregion
 
-
+unsigned long start_ms=0;
 #pragma region setup
 void setup() {
 	Serial.begin(115200);
@@ -493,7 +190,7 @@ void setup() {
   node.postTransmission(RS485_RX);
   node.begin(0x90, Serial485);
 	RS485_Mode(RS485_TX_ENABLE);
-	delay(20);
+	delay(20); 
 
 	#pragma region KNX stuff
 	knx.buttonPin(5);
@@ -800,21 +497,6 @@ void setup() {
 		pm10_normalized.abs_change = ParamAPP_Feinstaub_Senden_Wertaenderung_absolut;
 		pm10_normalized.rel_change = ParamAPP_Feinstaub_Senden_Wertaenderung_relativ;
 
-		// convert Params to char arrays
-//		ip_addr   = (char *) ParamAPP_IP;
-//		mqtt_host = (char *) ParamAPP_MQTT_Host;
-//		mqtt_user = (char *) ParamAPP_MQTT_Host;
-//		mqtt_pass = (char *) ParamAPP_MQTT_Host;
-//		char mqtth[32];
-//		char* mqtth = (char*) ParamAPP_MQTT_Host;
-		//uint8_t* mqtth[32];
-		//mqtth = ParamAPP_MQTT_Host;
-		//	mqtth=knx.paramData(ParamAPP_MQTT_Host,32);
-//		Serial.print("MQTT Host: "); Serial.println( mqtt_host);
-//		Serial.printf("Text: %s\n", (char*)mqtth);
-//		Serial.printf("[%u] get Text: %s\n", num, payload);
-
-
 	}
 	#pragma endregion
 
@@ -839,6 +521,11 @@ void setup() {
 
 	Serial.print("IP Address: ");
 	Serial.println(WiFi.localIP());
+
+	Debug.begin(net.hostname); // Initialize the WiFi server
+	Debug.setResetCmdEnabled(true); // Enable the reset command
+	Debug.showProfiler(true); // Profiler (Good to measure times, to optimize codes)
+	Debug.showColors(true); // Colors
 
 	// Arduino OTA on üport 3232
 	// ArduinoOTA.setPort(3232);
@@ -909,7 +596,7 @@ void setup() {
 	
 
 	// initialize ringbuffer
-	for (u_int8_t i=0; i<RINGBUFFERSIZE; i++) { pressureRing[i] = NAN; }
+	//	for (u_int8_t i=0; i<RINGBUFFERSIZE; i++) { pressureRing[i] = NAN; }
 
 	if ( net.mqtt == true ) {
 		runner.addTask(task_MQTTpublish);
@@ -940,9 +627,9 @@ void setup() {
 		if (ParamAPP_DateTime_DPTs == 1) {
 			Serial.println("Receive time and date from different KOs, registering callbacks");
 			KoAPP_Time.dataPointType(DPT_TimeOfDay);
-			KoAPP_Time.callback(callbaack_time);
+			KoAPP_Time.callback(callback_time);
 			KoAPP_Date.dataPointType(DPT_Date);
-			KoAPP_Date.callback(callbaack_date);
+			KoAPP_Date.callback(callback_date);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_Time.requestObjectRead();
@@ -951,7 +638,7 @@ void setup() {
 		} else {
 			Serial.println("Receive time and date from a single KO, registering callback");
 			KoAPP_DateTime.dataPointType(DPT_DateTime);
-			KoAPP_DateTime.callback(callbaack_dateTime);
+			KoAPP_DateTime.callback(callback_dateTime);
 			if (ParamAPP_Uhrzeit_beim_Start_lesen == 1) {
 				Serial.println("Reading time and date from Bus");
 				KoAPP_DateTime.requestObjectRead();
@@ -979,13 +666,19 @@ void printLocaltime(bool newline=false) {
 	if (newline == true) Serial.println();
 }
 
-uint8_t read_wn90() {
+void read_wn90() {
+//void read_wn90(NonBlockingModbusMaster &node) {
 	Serial.println("------------------------------------------------------------");
-	Serial.println("Read weather station data");
+	Serial.println("Process weather station data");
+	debugV("Process weather station data");
 	uint8_t c=10;
 	uint8_t result = node.readHoldingRegisters( 0x165, c );
 
+//	int err = node.getError(); // 0 for OK
+//	debugV("ERR: %u", err);
 	if (result == node.ku8MBSuccess) {
+	//if (!err) {
+//		debugV("no error");
 		sensorfailure_sds = false;
 		Serial.println("WDT timer reset");
 		Serial.print ("Uptime......... "); Serial.println( uptime_formatter::getUptime() );
@@ -1148,7 +841,7 @@ uint8_t read_wn90() {
 				Serial.println();
 			}
 		}
-		if ( temperature.read && humidity.read ) { // dewpoint, frostpoint, absolute humidity
+		if ( temperature.read && humidity.read ) { // dewpoint, frostpoint, absolute humidity, discomfort, heatindex, humidex
 //			dewpoint.value = dewpoint (temperature.value, humidity.value);
 			dewpoint.value = dewPoint (temperature.value, humidity.value);
 			dewpoint.read = true;
@@ -1188,6 +881,16 @@ uint8_t read_wn90() {
 			} else {
 				Serial.println();
 			}
+			
+			humIdex.value = humidex( temperature.value, dewpoint.value);
+			humIdex.read = true;
+
+			heatindex.value = heatIndexC( temperature.value, humidity.value);
+			heatindex.read = true;
+
+			discomfort.value = discomfortIndex( temperature.value, humidity.value);
+			discomfort.read = true;
+
 		}
 		if ( pressureTrend1.read ) {
 			if ( pressureTrend1.read ) Serial.printf("Trend (1h)..... %0.0f (%0.0f)\n", pressureTrend1.value, pressureTrend1.last);
@@ -1199,11 +902,11 @@ uint8_t read_wn90() {
 		}
 
 	} else {
-		Serial.print("result = ");
-		Serial.println( result );
+		Serial.print("Modbus Error: ");
+//		Serial.println( err );
 		sensorfailure_wn90 = true;
 	}
-	return result;
+//	return result;
 }
 
 void RS485_Mode(int Mode) {
@@ -1211,296 +914,33 @@ void RS485_Mode(int Mode) {
 }
 
 void RS485_TX() {
+//	debugV("Modbus TX mode");
 	RS485_Mode(RS485_TX_ENABLE);
 }
 
 void RS485_RX() {
+//	debugV("Modbus RX mode");
 	RS485_Mode(RS485_RX_ENABLE);
 }
 
 void updatePressureRingbuffer() {
-	Serial.print("Update ringbuffer: ");
-	for (u_int8_t i=1; i<RINGBUFFERSIZE; i++) {
+	Serial.print("Update air pressure ringbuffer: ");
+	debugV("Update air pressure ringbuffer with value %u: ", pressure.value*10);
+	pressureRing.add(pressure.value*10);
+//	for (u_int8_t i = (-1 * max( pressureRing.elements(), pressureRing.size()) ) ; i<1 ; i++ ) {
+//	for (int i = (-1 * max( pressureRing.elements(), pressureRing.size()) ) ; i<1 ; i++ ) {
+	for (int i = 1; i<=pressureRing.size(); i++) {
+		debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
+	} 
+	debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
+/*	for (u_int8_t i=1; i<RINGBUFFERSIZE; i++) {
 		if ( pressureRing[i] > 0 ) pressureRing[i-1]=pressureRing[i];
 		Serial.print(pressureRing[i]); Serial.print(", ");
 	}
 	pressureRing[RINGBUFFERSIZE-1] = pressure.value*10;
 	Serial.println(pressureRing[RINGBUFFERSIZE-1]);
+	*/
 }
-
-#pragma region KNX functions
-void sendHeartbeat() {
-	Serial.println(" -> Sending heartbeat to bus");
-	KoAPP_Heartbeat.value(1);
-}
-
-void sendTemperature() {
-	if (temperature.read) {
-		Serial.printf(" -> Sending temperature in °C (%0.2f) to bus\n", temperature.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Temperatur_DPT9.value(temperature.value) : KoAPP_Temperatur_DPT14.value(temperature.value);
-		temperature.last = temperature.value;
-		temperature.lastread = true;
-	} else {
-		Serial.println(" -- Temperature not yet available, won't send to bus - delay task");
-		task_sendTemperature.cancel();
-	}
-}
-
-void sendTemperature1() {
-	if (temperature1.read) {
-		Serial.printf(" -> Sending 1wire temperature in °C (%0.2f) to bus\n", temperature1.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Temperatur_1wire_DPT9.value(temperature1.value) : KoAPP_Temperatur_1wire_DPT14.value(temperature1.value);
-		temperature1.last = temperature1.value;
-		temperature1.lastread = true;
-	} else {
-		Serial.println(" -- 1wire temperature not yet available, won't send to bus - delay task");
-		task_sendTemperature1.cancel();
-	}
-}
-
-void senddewpoint() {
-	if (dewpoint.read) {
-		Serial.printf(" -> Sending dewpoint in °C (%0.2f) to bus\n", dewpoint.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Taupunkt_DPT9.value(dewpoint.value) : KoAPP_Taupunkt_DPT14.value(dewpoint.value);
-		dewpoint.last = dewpoint.value;
-		dewpoint.lastread = true;
-	} else {
-		Serial.println(" -- dewpoint not yet available, won't send to bus - delay task");
-		task_senddewpoint.cancel();
-	}
-}
-
-void sendfrostpoint() {
-	if (frostpoint.read) {
-		Serial.printf(" -> Sending frostpoint in °C (%0.2f) to bus\n", frostpoint.value);
-		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Frostpunkt_DPT9.value(frostpoint.value) : KoAPP_Frostpunkt_DPT14.value(frostpoint.value);
-		frostpoint.last = dewpoint.value;
-		frostpoint.lastread = true;
-	} else {
-		Serial.println(" -- frostpoint not yet available, won't send to bus - delay task");
-		task_sendfrostpoint.cancel();
-	}
-}
-
-void sendHumidity() {
-	if (humidity.read) {
-		Serial.printf(" -> Sending humidity in %% (%0.0f) to bus\n", humidity.value);
-		switch (ParamAPP_Feuchte_DPT) {
-			case 0: KoAPP_Feuchte_DPT6.value(humidity.value); break;
-			case 1: KoAPP_Feuchte_DPT9.value(humidity.value); break;
-			case 2: KoAPP_Feuchte_DPT14.value(humidity.value); break;
-		}
-		humidity.last = humidity.value;
-		humidity.lastread = true;
-	} else {
-		Serial.println(" -- Humidity not yet available, won't send to bus - delay task");
-		task_sendHumidity.cancel();
-	}
-}
-
-void sendAbsHumidity() {
-	if (humidity.read && temperature.read) {
-		float absH = absoluteHumidity( temperature.value, humidity.value );
-		Serial.printf(" -> Sending absolute humidity in g/m3 (%0.0f) to bus\n", humidity.value);
-		switch (ParamAPP_Feuchte_DPT) {
-			case 0: KoAPP_Feuchte_DPT6.value(absH); break;
-			case 1: KoAPP_Feuchte_DPT9.value(absH); break;
-			case 2: KoAPP_Feuchte_DPT14.value(absH); break;
-		}
-	} else {
-		Serial.println(" -- Absolute humidity not yet available, won't send to bus");
-	}
-}
-
-void sendWindSpeed() {
-	if (windSpeed.read) {
-		Serial.printf(" -> Sending wind speed in m/s (%0.2f) to bus\n", windSpeed.value);
-		(ParamAPP_WindSpeed_DPT == 0) ? KoAPP_WindSpeed_DPT9.value(windSpeed.value) : KoAPP_WindSpeed_DPT14.value(windSpeed.value);
-		windSpeed.last = windSpeed.value;
-		windSpeed.lastread = true;
-	} else {
-		Serial.println(" -- Wind speed not yet available, won't send to bus - delay task");
-		task_sendWindSpeed.cancel();
-	}
-}
-
-void sendGustSpeed() {
-	if (gustSpeed.read) {
-		Serial.printf(" -> Sending gust speed in m/s (%0.2f) to bus\n", gustSpeed.value);
-		(ParamAPP_WindSpeed_DPT == 0) ? KoAPP_GustSpeed_DPT9.value(gustSpeed.value) : KoAPP_GustSpeed_DPT14.value(gustSpeed.value);
-		gustSpeed.last = gustSpeed.value;
-		gustSpeed.lastread = true;
-	} else {
-		Serial.println(" -- Gust speed not yet available, won't send to bus - delay task");
-		task_sendGustSpeed.cancel();
-	}
-}
-
-void sendGustSpeedBft() {
-	if (gustSpeed.read) {
-		u_int8_t s = bft(gustSpeed.value);
-		Serial.printf(" -> Sending gust speed in beaufort (%0.0f) to bus\n", s);
-		KoAPP_GustSpeed_BFT_DPT5.value(s);
-	} else {
-		Serial.println(" -- Gust speed in beaufort not yet available, won't send to bus");
-	}
-}
-
-void sendWindSpeedBft() {
-	if (windSpeed.read) {
-		u_int8_t s = bft(windSpeed.value);
-		Serial.printf(" -> Sending wind speed in beaufort (%0.0f) to bus\n", s);
-		KoAPP_WindSpeed_BFT_DPT5.value(s);
-	} else {
-		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
-	}
-}
-
-void sendWindDirection() {
-	if (windDirection.read) {
-		Serial.printf(" -> Sending wind direction in ° (%0.0f) to bus\n", windDirection.value);
-		(ParamAPP_WindDir_DPT == 0) ? KoAPP_WindDir_DPT9.value(windDirection.value) : KoAPP_WindDir_DPT14.value(windDirection.value);
-		windDirection.last = windDirection.value;
-		windDirection.lastread = true;
-	} else {
-		Serial.println(" -- Wind direction not yet available, won't send to bus - delay task");
-		task_sendWindDirection.cancel();
-	}
-}
-
-void sendPressure() {
-	if (pressure.read) {
-		Serial.printf(" -> Sending air pressure in hPa (%0.2f) to bus\n", pressure.value);
-		(ParamAPP_Pressure_DPT == 0) ? KoAPP_Pressure_DPT9.value(pressure.value) : KoAPP_Pressure_DPT14.value(pressure.value);
-		pressure.last = pressure.value;
-		pressure.lastread = true;
-	} else {
-		Serial.println(" -- Air pressure not yet available, won't send to bus - delay task");
-		task_sendPressure.cancel();
-	}
-}
-
-void sendPressureTrend1() {
-	if (pressureTrend1.read) {
-		Serial.printf(" -> Sending hourly air pressure trend (%0.2f) to bus\n", pressureTrend1.value);
-		(ParamAPP_Pressure_DPT == 0) ? KoAPP_PressureTrend1h_DPT9.value(pressureTrend1.value) : KoAPP_PressureTrend1h_DPT14.value(pressureTrend1.value);
-		pressureTrend1.last = pressureTrend1.value;
-		pressureTrend1.lastread = true;
-	} else {
-		Serial.println(" -- Hourly air pressure trend not yet available, won't send to bus - delay task");
-		task_sendPressureTrend1.cancel();
-	}
-}
-
-void sendPressureTrend3() {
-	if (pressureTrend3.read) {
-		Serial.printf(" -> Sending 3 hourly air pressure trend (%0.2f) to bus\n", pressureTrend3.value);
-		(ParamAPP_Pressure_DPT == 0) ? KoAPP_PressureTrend3h_DPT9.value(pressureTrend3.value) : KoAPP_PressureTrend3h_DPT14.value(pressureTrend3.value);
-		pressureTrend3.last = pressureTrend3.value;
-		pressureTrend3.lastread = true;
-	} else {
-		Serial.println(" -- 3 hourly air pressure trend not yet available, won't send to bus - delay task");
-		task_sendPressureTrend3.cancel();
-	}
-}
-
-void sendRainFall() {
-	if (rainFall.read) {
-		Serial.printf(" -> Sending rainfall in mm (%0.2f) to bus\n", rainFall.value);
-		(ParamAPP_Regen_DPT == 0) ? KoAPP_RainFall_DPT9.value(rainFall.value) : KoAPP_RainFall_DPT14.value(rainFall.value);
-		rainFall.last = rainFall.value;
-		rainFall.lastread = true;
-	} else {
-		Serial.println(" -- Rainfall not yet available, won't send to bus - delay task");
-		task_sendRainFall.cancel();
-	}
-}
-
-void sendRainCounter() {
-	if (rainCounter.read) {
-		Serial.printf(" -> Sending raincounter in mm (%0.2f) to bus\n", rainCounter.value);
-		(ParamAPP_Regen_DPT == 0) ? KoAPP_RainFall_DPT9.value(rainCounter.value) : KoAPP_RainFall_DPT14.value(rainCounter.value);
-		rainCounter.last = rainCounter.value;
-		rainCounter.lastread = true;
-	} else {
-		Serial.println(" -- Rain counter not yet available, won't send to bus - delay task");
-		task_sendRainCounter.cancel();
-	}
-}
-
-void sendUVindex() {
-	if (uvIndex.read) {
-		Serial.printf(" -> Sending ultraviolet index (%0.2f) to bus\n", uvIndex.value);
-		(ParamAPP_UVindex_DPT == 0) ? KoAPP_UVindex_DPT9.value(uvIndex.value) : KoAPP_UVindex_DPT14.value(uvIndex.value);
-		uvIndex.last = uvIndex.value;
-		uvIndex.lastread = true;
-	} else {
-		Serial.println(" -- Ultraviolet index not yet available, won't send to bus - delay task");
-		task_sendUVindex.cancel();
-	}
-}
-
-void sendBrightness() {
-	if (light.read) {
-		Serial.printf(" -> Sending brightness in Lux (%0.0f) to bus\n", light.value);
-		(ParamAPP_Helligkeit_DPT == 0) ? KoAPP_Helligkeit_DPT9.value(light.value) : KoAPP_Helligkeit_DPT14.value(light.value);
-		light.last = light.value;
-		light.lastread = true;
-	} else {
-		Serial.println(" -- Brightness value not yet available, won't send to bus - delay task");
-		task_sendBrightness.cancel();
-	}
-}
-
-void sendPM25() {
-	if (pm25.read) {
-		Serial.printf(" -> Sending PM2.5 concentration µg/m3 (%0.2f) to bus\n", pm25.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM25_DPT9.value(pm25.value) : KoAPP_PM25_DPT14.value(pm25.value);
-		pm25.last = pm25.value;
-		pm25.lastread = true;
-	} else {
-		Serial.println(" -- PM2.5 concentration not yet available, won't send to bus - delay task");
-		task_sendPM25.cancel();
-	}
-}
-
-void sendPM10() {
-	if (pm10.read) {
-		Serial.printf(" -> Sending PM10 concentration µg/m3 (%0.2f) to bus\n", pm10.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM10_DPT9.value(pm10.value) : KoAPP_PM10_DPT14.value(pm10.value);
-		pm10.last = pm10.value;
-		pm10.lastread = true;
-	} else {
-		Serial.println(" -- PM10 concentration not yet available, won't send to bus - delay task");
-		task_sendPM10.cancel();
-	}
-}
-
-void sendPM25_normalized() {
-	if (pm25_normalized.read) {
-		Serial.printf(" -> Sending normalized PM2.5 concentration µg/m3 (%0.2f) to bus\n", pm25_normalized.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM25_DPT9.value(pm25_normalized.value) : KoAPP_PM25_DPT14.value(pm25_normalized.value);
-		pm25_normalized.last = pm25_normalized.value;
-		pm25_normalized.lastread = true;
-	} else {
-		Serial.println(" -- Normalized PM2.5 concentration not yet available, won't send to bus - delay task");
-		task_sendPM25_normalized.cancel();
-	}
-}
-
-void sendPM10_normalized() {
-	if (pm10_normalized.read) {
-		Serial.printf(" -> Sending normalized PM10 concentration µg/m3 (%0.2f) to bus\n", pm10_normalized.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM10_DPT9.value(pm10_normalized.value) : KoAPP_PM10_DPT14.value(pm10_normalized.value);
-		pm10_normalized.last = pm10_normalized.value;
-		pm10_normalized.lastread = true;
-	} else {
-		Serial.println(" -- Normalized PM10 concentration not yet available, won't send to bus - delay task");
-		task_sendPM10_normalized.cancel();
-	}
-}
-#pragma endregion
-
 
 char* toCharArray(String str) {
 	return &str[0];
@@ -1526,8 +966,13 @@ void MQTTpublish() {
 	if ( temperature.read ) mqttMsg.add("temperature", temperature.value );
 	if ( temperature1.read ) mqttMsg.add("temperature1", temperature1.value );
 	if ( humidity.read ) mqttMsg.add("humidity", humidity.value );
-	if ( dewpoint.read ) mqttMsg.add("dewpoint", dewpoint.value );
+	if ( abshumidity.read ) mqttMsg.add("humidity_abs", round(abshumidity.value) );
+	if ( dewpoint.read ) mqttMsg.add("dewpoint", round(dewpoint.value) );
 	if ( frostpoint.read ) mqttMsg.add("frostpoint", frostpoint.value );
+	if ( humIdex.read ) mqttMsg.add("humidex", round(humIdex.value) );
+	if ( heatindex.read ) mqttMsg.add("heatindex", round(heatindex.value) );
+	if ( windchill.read ) mqttMsg.add("windchill", round(windchill.value) );
+	if ( discomfort.read ) mqttMsg.add("discomfort", round(discomfort.value) );
 	if ( pressure.read ) mqttMsg.add("pressure", pressure.value );
 	if ( pressureTrend1.read ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
 	if ( pressureTrend3.read ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
@@ -1600,7 +1045,7 @@ unsigned long delayTime  = 2000;
 void loop() {
 
 	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
-
+esp_task_wdt_reset();
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print("WiFi lost, restarting...");
 		ESP.restart();
@@ -1613,24 +1058,71 @@ void loop() {
 	ElegantOTA.loop();
 	runner.execute();
 	knx.loop();
+	Debug.handle();
+	if(!knx.configured()) return;
+
 	if (ParamAPP_useMQTT) mqttClient.loop();
 
 
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
+//		nbModbusMaster.readHoldingRegisters(slaveId, 0x165, 10, read_wn90);
 		read_wn90();
 		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
-
+//		debugV("Start Modbus cycle");
 	}
 
-	if ( timeKnown && dateKnown && (minute(t) != lastminute) && (minute(t) % 15 == 0) ) {   // every 15 minutes
-		updatePressureRingbuffer();
+/*  if (samplingDelay.justFinished()) {
+    samplingDelay.restart();
+		debugV("Sampling just finished");
+    // this will return false and be ignored if nbModbusMaster is still processing the last cmd
+    // i.e. if nbModbusMaster.isProcessing() returns true
+		nbModbusMaster.readHoldingRegisters(0x90, 0x165, 12, read_wn90); // add processing fn
+  }
+
+  if (nbModbusMaster.justFinished()) {
+		debugV("Modbus finished");
+  } */
+//      Serial.println();
+
+	if ( timeKnown && dateKnown && (minute(t) != lastminute) ) {   // every minute
 		lastminute = minute(t);
-		// every 15 minutes
-		if ( pressureRing[RINGBUFFERSIZE-4] > 0) { pressureTrend1.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[RINGBUFFERSIZE-4]; pressureTrend1.read = true; } else { pressureTrend1.read = false; }
+		for (int i = 1; i<=pressureRing.size(); i++) {
+			debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
+		} 
+		debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
+
+		if ( lastminute % 5 == 0) {		// every 5 minutes
+			debugV("testing %f", 13.4);
+		}
+		if ( lastminute % 15 == 0) {	// every 15 minutes
+			updatePressureRingbuffer();
+/*			if (pressureRing.getDelta(-1) > 0 ) {
+				debugV("Trend1 waere: %d", pressureRing.getDelta(0) - pressureRing.getDelta(-1));
+			}
+			if (pressureRing.getDelta(-4) > 0 ) {
+				debugV("Trend2 waere: %d", pressureRing.getDelta(0) - pressureRing.getDelta(-4));
+			} */
+//			if ( pressureRing[RINGBUFFERSIZE-4] > 0) { pressureTrend1.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[RINGBUFFERSIZE-4]; pressureTrend1.read = true; } else { pressureTrend1.read = false; }
+			if ( pressureRing.getDelta(-4) > 0 ) {
+				pressureTrend1.value = pressureRing.getDelta(0) - pressureRing.getDelta(-4);
+				pressureTrend1.read = true; 
+				debugV("Estimated hourly pressure trend %.01f", pressureTrend1.value );
+			} else {
+				pressureTrend1.read = false;
+			}
+		}
 		// every full hour
-		if ( lastminute == 0 && pressureRing[0] > 0 ) { pressureTrend3.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[0]; pressureTrend3.read = true; }; // else { pressureTrend3.read = false; }
-		Serial.println();
+		if ( lastminute == 0 ) {	// every full hour
+//			if ( pressureRing[0] > 0 ) { pressureTrend3.value = pressureRing[RINGBUFFERSIZE-1] - pressureRing[0]; pressureTrend3.read = true; }; // else { pressureTrend3.read = false; }
+			if (pressureRing.getDelta(-12) > 0 ) {
+				pressureTrend3.value = pressureRing.getDelta(0) - pressureRing.getDelta(-12);
+				pressureTrend3.read = true;
+				debugV("Estimated 3 hourly pressure trend %.01f", pressureTrend3.value );
+			} else {
+				pressureTrend3.read = false;
+			}
+		}
 	}
 
 
