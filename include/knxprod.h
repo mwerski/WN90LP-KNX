@@ -9,9 +9,9 @@
 //--------------------Allgemein---------------------------
 #define MAIN_OpenKnxId 0xAF
 #define MAIN_ApplicationNumber 0x00
-#define MAIN_ApplicationVersion 0x09
+#define MAIN_ApplicationVersion 0x0A
 #define MAIN_OrderNumber "p3-00012.1"
-#define MAIN_ParameterSize 248
+#define MAIN_ParameterSize 247
 #define MAIN_MaxKoNumber 93
 
 
@@ -66,12 +66,9 @@
 #define APP_RemoteDebug		0x0003
 // Offset: 3, BitOffset: 3, Size: 1 Bit, Text: RemoteDebug aktivieren
 #define ParamAPP_RemoteDebug knx.paramBit(APP_RemoteDebug, 3)
-#define APP_SerialDebug		0x0003
-// Offset: 3, BitOffset: 4, Size: 1 Bit, Text: SerialDebug ebenfalls aktivieren
-#define ParamAPP_SerialDebug knx.paramBit(APP_SerialDebug, 4)
 #define APP_Temperatur_DPT		0x0003
-// Offset: 3, BitOffset: 5, Size: 1 Bit, Text: Sende Temperatur als
-#define ParamAPP_Temperatur_DPT knx.paramBit(APP_Temperatur_DPT, 5)
+// Offset: 3, BitOffset: 4, Size: 1 Bit, Text: Sende Temperatur als
+#define ParamAPP_Temperatur_DPT knx.paramBit(APP_Temperatur_DPT, 4)
 #define APP_Temperatur_Senden_zyklisch		0x0088
 #define APP_Temperatur_Senden_zyklisch_Shift	4
 #define APP_Temperatur_Senden_zyklisch_Mask	0x0FFF
@@ -84,9 +81,10 @@
 // Offset: 140, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Temperatur_Senden_Wertaenderung_relativ knx.paramFloat(APP_Temperatur_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Feuchte_DPT		0x0003
+#define APP_Feuchte_DPT_Shift	1
 #define APP_Feuchte_DPT_Mask	0x0003
-// Offset: 3, BitOffset: 6, Size: 2 Bit, Text: Sende relative Feuchte als
-#define ParamAPP_Feuchte_DPT ((uint32_t)((knx.paramByte(APP_Feuchte_DPT)) & APP_Feuchte_DPT_Mask))
+// Offset: 3, BitOffset: 5, Size: 2 Bit, Text: Sende relative Feuchte als
+#define ParamAPP_Feuchte_DPT ((uint32_t)((knx.paramByte(APP_Feuchte_DPT) >> APP_Feuchte_DPT_Shift) & APP_Feuchte_DPT_Mask))
 #define APP_Feuchte_Senden_zyklisch		0x008E
 #define APP_Feuchte_Senden_zyklisch_Shift	4
 #define APP_Feuchte_Senden_zyklisch_Mask	0x0FFF
@@ -98,12 +96,12 @@
 #define APP_Feuchte_Senden_Wertaenderung_relativ		0x0092
 // Offset: 146, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Senden_Wertaenderung_relativ knx.paramFloat(APP_Feuchte_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
-#define APP_WindSpeed_DPT		0x0094
-// Offset: 148, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
-#define ParamAPP_WindSpeed_DPT knx.paramBit(APP_WindSpeed_DPT, 0)
+#define APP_WindSpeed_DPT		0x0003
+// Offset: 3, BitOffset: 7, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
+#define ParamAPP_WindSpeed_DPT knx.paramBit(APP_WindSpeed_DPT, 7)
 #define APP_WindDir_DPT		0x0094
-// Offset: 148, BitOffset: 1, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
-#define ParamAPP_WindDir_DPT knx.paramBit(APP_WindDir_DPT, 1)
+// Offset: 148, Size: 1 Bit, Text: Sende Windgeschwindigkeit als
+#define ParamAPP_WindDir_DPT knx.paramBit(APP_WindDir_DPT, 0)
 #define APP_WindSpeed_Senden_zyklisch		0x0095
 #define APP_WindSpeed_Senden_zyklisch_Shift	4
 #define APP_WindSpeed_Senden_zyklisch_Mask	0x0FFF
@@ -127,8 +125,8 @@
 // Offset: 159, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_WindDir_Senden_Wertaenderung_relativ knx.paramFloat(APP_WindDir_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Pressure_DPT		0x0094
-// Offset: 148, BitOffset: 2, Size: 1 Bit, Text: Sende Luftdruck als
-#define ParamAPP_Pressure_DPT knx.paramBit(APP_Pressure_DPT, 2)
+// Offset: 148, BitOffset: 1, Size: 1 Bit, Text: Sende Luftdruck als
+#define ParamAPP_Pressure_DPT knx.paramBit(APP_Pressure_DPT, 1)
 #define APP_Pressure_Senden_zyklisch		0x00A1
 #define APP_Pressure_Senden_zyklisch_Shift	4
 #define APP_Pressure_Senden_zyklisch_Mask	0x0FFF
@@ -144,8 +142,8 @@
 // Offset: 167, Size: 256 Bit (32 Byte), Text: Hostname
 #define ParamAPP_Hostname knx.paramData(APP_Hostname)
 #define APP_Helligkeit_DPT		0x0094
-// Offset: 148, BitOffset: 3, Size: 1 Bit, Text: Sende Helligkeit als
-#define ParamAPP_Helligkeit_DPT knx.paramBit(APP_Helligkeit_DPT, 3)
+// Offset: 148, BitOffset: 2, Size: 1 Bit, Text: Sende Helligkeit als
+#define ParamAPP_Helligkeit_DPT knx.paramBit(APP_Helligkeit_DPT, 2)
 #define APP_Helligkeit_Senden_zyklisch		0x00C7
 #define APP_Helligkeit_Senden_zyklisch_Shift	4
 #define APP_Helligkeit_Senden_zyklisch_Mask	0x0FFF
@@ -158,8 +156,8 @@
 // Offset: 203, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Helligkeit_Senden_Wertaenderung_relativ knx.paramFloat(APP_Helligkeit_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_UVindex_DPT		0x0094
-// Offset: 148, BitOffset: 4, Size: 1 Bit, Text: Sende UV-Index als
-#define ParamAPP_UVindex_DPT knx.paramBit(APP_UVindex_DPT, 4)
+// Offset: 148, BitOffset: 3, Size: 1 Bit, Text: Sende UV-Index als
+#define ParamAPP_UVindex_DPT knx.paramBit(APP_UVindex_DPT, 3)
 #define APP_UVindex_Senden_zyklisch		0x00CD
 #define APP_UVindex_Senden_zyklisch_Shift	4
 #define APP_UVindex_Senden_zyklisch_Mask	0x0FFF
@@ -172,8 +170,8 @@
 // Offset: 209, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_UVindex_Senden_Wertaenderung_relativ knx.paramFloat(APP_UVindex_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
 #define APP_Regen_DPT		0x0094
-// Offset: 148, BitOffset: 5, Size: 1 Bit, Text: Sende Regenmenge als
-#define ParamAPP_Regen_DPT knx.paramBit(APP_Regen_DPT, 5)
+// Offset: 148, BitOffset: 4, Size: 1 Bit, Text: Sende Regenmenge als
+#define ParamAPP_Regen_DPT knx.paramBit(APP_Regen_DPT, 4)
 #define APP_Regen_Senden_zyklisch		0x00D3
 #define APP_Regen_Senden_zyklisch_Shift	4
 #define APP_Regen_Senden_zyklisch_Mask	0x0FFF
@@ -198,11 +196,11 @@
 // Offset: 229, Size: 32 Bit (4 Byte), Text: Nameserver
 #define ParamAPP_DNS knx.paramInt(APP_DNS)
 #define APP_UseDHCP		0x0094
-// Offset: 148, BitOffset: 6, Size: 1 Bit, Text: Nutze DHCP
-#define ParamAPP_UseDHCP knx.paramBit(APP_UseDHCP, 6)
+// Offset: 148, BitOffset: 5, Size: 1 Bit, Text: Nutze DHCP
+#define ParamAPP_UseDHCP knx.paramBit(APP_UseDHCP, 5)
 #define APP_Feinstaub_DPT		0x0094
-// Offset: 148, BitOffset: 7, Size: 1 Bit, Text: Sende Feinstaubwerte als
-#define ParamAPP_Feinstaub_DPT knx.paramBit(APP_Feinstaub_DPT, 7)
+// Offset: 148, BitOffset: 6, Size: 1 Bit, Text: Sende Feinstaubwerte als
+#define ParamAPP_Feinstaub_DPT knx.paramBit(APP_Feinstaub_DPT, 6)
 #define APP_Feinstaub_Senden_zyklisch		0x00E9
 #define APP_Feinstaub_Senden_zyklisch_Shift	4
 #define APP_Feinstaub_Senden_zyklisch_Mask	0x0FFF
@@ -217,22 +215,22 @@
 #define APP_SDS_DutyCycle		0x00EF
 // Offset: 239, Size: 8 Bit (1 Byte), Text: Sensor Duty Cycle
 #define ParamAPP_SDS_DutyCycle ((uint32_t)((knx.paramByte(APP_SDS_DutyCycle))))
-#define APP_Feuchte_Absolut_DPT		0x00F0
-// Offset: 240, Size: 1 Bit, Text: Sende absolute Feuchte als
-#define ParamAPP_Feuchte_Absolut_DPT knx.paramBit(APP_Feuchte_Absolut_DPT, 0)
-#define APP_Feuchte_Absolut_Senden_zyklisch		0x00F1
+#define APP_Feuchte_Absolut_DPT		0x0094
+// Offset: 148, BitOffset: 7, Size: 1 Bit, Text: Sende absolute Feuchte als
+#define ParamAPP_Feuchte_Absolut_DPT knx.paramBit(APP_Feuchte_Absolut_DPT, 7)
+#define APP_Feuchte_Absolut_Senden_zyklisch		0x00F0
 #define APP_Feuchte_Absolut_Senden_zyklisch_Shift	4
 #define APP_Feuchte_Absolut_Senden_zyklisch_Mask	0x0FFF
-// Offset: 241, Size: 12 Bit, Text: Sende absolute Feuchte alle
+// Offset: 240, Size: 12 Bit, Text: Sende absolute Feuchte alle
 #define ParamAPP_Feuchte_Absolut_Senden_zyklisch ((uint32_t)((knx.paramWord(APP_Feuchte_Absolut_Senden_zyklisch) >> APP_Feuchte_Absolut_Senden_zyklisch_Shift) & APP_Feuchte_Absolut_Senden_zyklisch_Mask))
-#define APP_Feuchte_Absolut_Senden_Wertaenderung_absolut		0x00F3
-// Offset: 243, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_absolut		0x00F2
+// Offset: 242, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_absolut knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_absolut, Float_Enc_DPT9)
-#define APP_Feuchte_Absolut_Senden_Wertaenderung_relativ		0x00F5
-// Offset: 245, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
+#define APP_Feuchte_Absolut_Senden_Wertaenderung_relativ		0x00F4
+// Offset: 244, Size: 16 Bit (2 Byte), Text: Sende bei Änderung um
 #define ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_relativ knx.paramFloat(APP_Feuchte_Absolut_Senden_Wertaenderung_relativ, Float_Enc_DPT9)
-#define APP_Regen_Hysterese_(m)		0x00F7
-// Offset: 247, Size: 8 Bit (1 Byte), Text: Zeitfenster zur Regenermittlung
+#define APP_Regen_Hysterese_(m)		0x00F6
+// Offset: 246, Size: 8 Bit (1 Byte), Text: Zeitfenster zur Regenermittlung
 #define ParamAPP_Regen_Hysterese_(m) ((uint32_t)((knx.paramByte(APP_Regen_Hysterese_(m)))))
 //!< Number: 1, Text: In Betrieb, Function: Statusmeldung
 #define APP_KoHeartbeat 1
