@@ -28,6 +28,9 @@ bool sensorfailure_sds = false;
 bool ow_awailable = false;
 bool sds_available = false;
 
+RemoteDebug Debug;
+
+
 #include "utilities.h"
 #include <knxprod.h>
 #include <wsdata.h>>
@@ -40,8 +43,6 @@ bool sds_available = false;
 #define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE	// Default Debug Level
 #define SDS_PIN_RX 35
 #define SDS_PIN_TX 38
-
-RemoteDebug Debug;
 
 OneWire ow(WIREPIN);
 DallasTemperature ds(&ow);
@@ -237,9 +238,11 @@ void setup() {
 		Debug.setResetCmdEnabled(true); // Enable the reset command
 		Debug.showProfiler(true); // Profiler (Good to measure times, to optimize codes)
 		Debug.showColors(true); // Colors
-//		if ( ( knx.configured() && ParamApp_SerialDebug ) || !knx.configured() ) {
-//			Debug.setSerialEnabled(true);
-//		}
+/*		if ( ( knx.configured() && ParamAPP_SerialDebug ) || !knx.configured() ) {
+			Serial.println("SEIRALDEBUG!!!");
+			Debug.setSerialEnabled(true);
+		}
+			*/
 	}
 	#pragma endregion
 
@@ -1036,39 +1039,26 @@ esp_task_wdt_reset();
 	ElegantOTA.loop();
 	runner.execute();
 	knx.loop();
+	#ifndef DEBUG_DISABLED
 	Debug.handle();
+	#endif
 	if(!knx.configured()) return;
 
 	if (ParamAPP_useMQTT) mqttClient.loop();
 
-
 	if (millis()-lastChange >= delayTime) {
 		lastChange = millis();
-//		nbModbusMaster.readHoldingRegisters(slaveId, 0x165, 10, read_wn90);
-//		read_wn90();
+		read_wn90();
+		debugV("Reading weather station data");
 		Serial.print("RSSI: "); Serial.println(WiFi.RSSI());
-//		debugV("Start Modbus cycle");
 	}
-
-/*  if (samplingDelay.justFinished()) {
-    samplingDelay.restart();
-		debugV("Sampling just finished");
-    // this will return false and be ignored if nbModbusMaster is still processing the last cmd
-    // i.e. if nbModbusMaster.isProcessing() returns true
-		nbModbusMaster.readHoldingRegisters(0x90, 0x165, 12, read_wn90); // add processing fn
-  }
-
-  if (nbModbusMaster.justFinished()) {
-		debugV("Modbus finished");
-  } */
-//      Serial.println();
 
 	if ( timeKnown && dateKnown && (minute(t) != lastminute) ) {   // every minute
 		lastminute = minute(t);
 		lasthour = hour(t);
 		for (int i = 1; i<=pressureRing.size(); i++) {
 			debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
-		} 
+		}
 		debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
 
 		if ( lastminute % 5 == 0) {		// every 5 minutes
@@ -1098,7 +1088,7 @@ esp_task_wdt_reset();
 			debugV("Update air pressure ringbuffer with value %u: ", pressure.value*10);
 			pressureRing.add(pressure.value*10);
 			for (int i = 1; i<=pressureRing.size(); i++) {
-			debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
+				debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
 			} 
 			debugV("Ringbuffer contains %u elements, index is at %u", pressureRing.elements(), pressureRing.index());
 //			updatePressureRingbuffer();
