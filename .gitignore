@@ -7,3 +7,4 @@
 .DS_Store
 include/WN90LP KNX Gateway.ae-manu.back
 flash.sh
+firmware.bin

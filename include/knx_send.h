@@ -292,11 +292,13 @@ void callback_time(GroupObject& go) {	// receive time from bus
 		char buf[52];
 		sprintf(buf, "Time received from bus: %02d:%02d:%02d", tmp_hour, tmp_min, tmp_sec );
 		Serial.println(buf);
+		debugV("Time received from bus: %02d:%02d:%02d", tmp_hour, tmp_min, tmp_sec );
 		time_t t = now();
 		setTime(tmp_hour, tmp_min, tmp_sec, day(t), month(t), year(t));
 		if (dateKnown == true) {
 			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", day(t), month(t), year(t), tmp_hour, tmp_min, tmp_sec );
 			Serial.println(buf);
+			debugV("Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", day(t), month(t), year(t), tmp_hour, tmp_min, tmp_sec );
 		}
 	}
 }
@@ -311,11 +313,13 @@ void callback_date(GroupObject& go) { // receive date from bus
 		char buf[52];
 		sprintf(buf, "Date received from bus: %d.%d.%d", tmp_mday, tmp_mon, tmp_year );
 		Serial.println(buf);
+		debugV("Date received from bus: %d.%d.%d", tmp_mday, tmp_mon, tmp_year );
 		time_t t = now();
 		setTime(hour(t), minute(t), second(t), tmp_mday, tmp_mon, tmp_year);
 		if (timeKnown == true) {
 			sprintf(buf, "Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, hour(t), minute(t), second(t) );
 			Serial.println(buf);
+			debugV("Setting/Adjusting system time: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, hour(t), minute(t), second(t) );
 		}
 	}
 }
@@ -335,7 +339,9 @@ void callback_dateTime(GroupObject& go) {	// receive date & time in one DPT from
 		char buf[52];
 		sprintf(buf, "DateTime received from bus: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, tmp_hour, tmp_min, tmp_sec );
 		Serial.println(buf);
+		debugV("DateTime received from bus: %d.%d.%d, %02d:%02d:%02d", tmp_mday, tmp_mon, tmp_year, tmp_hour, tmp_min, tmp_sec );
 		Serial.println("Setting/Adjusting system time");
+		debugV("Setting/Adjusting system time");
 		setTime(tmp_hour, tmp_min, tmp_sec, tmp_mday, tmp_mon, tmp_year);
 	}
 }
