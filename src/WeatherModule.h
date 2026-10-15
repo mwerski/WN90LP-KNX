@@ -8,12 +8,13 @@
 #include "Sds011Sensor.h"
 #include "ValueTable.h"
 #include "WebStatus.h"
+#include "Astro.h"
 #include "HaDiscovery.h"
 #include "InfluxWriter.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.9.0"
+#define WX_FIRMWARE_VERSION "0.10.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -50,6 +51,7 @@ class WeatherModule : public OpenKNX::Module
         float tempMinYesterday = NAN, tempMaxYesterday = NAN, gustMaxYesterday = NAN;
         float radToday = 0, radYesterday = NAN; // kWh/m2
         float pvToday = 0, pvYesterday = NAN;   // kWh
+        float sunshineToday = 0, sunshineYesterday = NAN; // h
     };
 
     struct Facade
@@ -84,6 +86,7 @@ class WeatherModule : public OpenKNX::Module
     void checkMinMaxDay();
     void updateSeason();
     void updateSolar();
+    void updateAstro();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -100,6 +103,7 @@ class WeatherModule : public OpenKNX::Module
     void showMinMax();
     void showSeason();
     void showSolar();
+    void showAstro();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -153,6 +157,17 @@ class WeatherModule : public OpenKNX::Module
     Facade _facades[6];
     uint32_t _solarLast = 0;
     float _ghi = NAN;
+
+    // Sonnenzeiten und Mond
+    bool _sunDnElevation = false;
+    int16_t _sunDnOffsetRise = 0, _sunDnOffsetSet = 0; // min
+    float _sunDnElevRise = 0, _sunDnElevSet = 0;
+    float _sunshineThreshold = 120;
+    uint32_t _astroDayKey = 0;
+    Astro::SunDay _sunDay = {};
+    float _moonRise = NAN, _moonSet = NAN;
+    float _nextFullMoon = NAN, _nextNewMoon = NAN; // Tage seit 2000
+    bool _dayNightSun = false;
     Season _season;
     HaDiscovery _ha;
     WebStatus _web;

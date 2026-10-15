@@ -14,9 +14,10 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
 
 // Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
 static constexpr uint32_t SEND_SPACING = 25;
-static constexpr uint8_t FLASH_VERSION = 4; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV
+static constexpr uint8_t FLASH_VERSION = 5; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
+static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
 // Lichtausbeute des Tageslichts zur Umrechnung Helligkeit -> Strahlung
 static constexpr float LUX_PER_WM2 = 110.0f;
 
@@ -90,6 +91,12 @@ void WeatherModule::setup(bool configured)
             _influx.setup(ParamWX_InfluxServerStr, ParamWX_InfluxPort, ParamWX_InfluxDatabaseStr, ParamWX_InfluxRpStr, ParamWX_InfluxUserStr,
                           ParamWX_InfluxPasswordStr, (uint32_t)ParamWX_InfluxInterval * 1000);
         }
+        _sunDnElevation = ParamWX_SunDnMode;
+        _sunDnOffsetRise = (int16_t)ParamWX_SunDnOffsetRise;
+        _sunDnOffsetSet = (int16_t)ParamWX_SunDnOffsetSet;
+        _sunDnElevRise = (float)ParamWX_SunDnElevRise;
+        _sunDnElevSet = (float)ParamWX_SunDnElevSet;
+        _sunshineThreshold = ParamWX_SunshineThreshold;
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -184,6 +191,7 @@ void WeatherModule::loop(bool configured)
         updateWarnings();
         updateSeason();
         updateSolar();
+        updateAstro();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -428,6 +436,8 @@ void WeatherModule::checkMinMaxDay()
         _minMax.gustMaxYesterday = wasYesterday ? _minMax.gustMax : NAN;
         _minMax.radYesterday = wasYesterday ? _minMax.radToday : NAN;
         _minMax.pvYesterday = wasYesterday ? _minMax.pvToday : NAN;
+        _minMax.sunshineYesterday = wasYesterday ? _minMax.sunshineToday : NAN;
+        _minMax.sunshineToday = 0;
         _minMax.tempMin = _minMax.tempMax = _minMax.gustMax = NAN;
         _minMax.radToday = 0;
         _minMax.pvToday = 0;
@@ -516,6 +526,8 @@ void WeatherModule::updateSolar()
     // Tagessummen
     if (hours > 0 && hours < 0.1f)
     {
+        if (_ghi >= _sunshineThreshold)
+            _minMax.sunshineToday += hours;
         _minMax.radToday += _ghi * hours / 1000.0f;
         if (!isnan(pv))
             _minMax.pvToday += pv * hours / 1000.0f;
@@ -523,6 +535,8 @@ void WeatherModule::updateSolar()
     const bool dayValid = _minMax.dayKey != 0;
     set(WxId::RadiationToday, dayValid ? _minMax.radToday : NAN);
     set(WxId::RadiationYesterday, _minMax.radYesterday);
+    set(WxId::SunshineToday, dayValid ? _minMax.sunshineToday : NAN);
+    set(WxId::SunshineYesterday, _minMax.sunshineYesterday);
     set(WxId::PvEnergyToday, (dayValid && _pvPeak > 0) ? _minMax.pvToday : NAN);
     set(WxId::PvEnergyYesterday, _pvPeak > 0 ? _minMax.pvYesterday : NAN);
 
@@ -559,6 +573,105 @@ void WeatherModule::updateSolar()
         set((WxId)((uint8_t)idSun + 1), f.irradiance);
         set((WxId)((uint8_t)idSun + 2), inRange ? Solar::profileAngle(elevation, azimuth, f.azimuth) : NAN);
     }
+}
+
+void WeatherModule::updateAstro()
+{
+    static const WxId sunTimes[] = {WxId::Sunrise, WxId::Sunset, WxId::SolarNoon, WxId::CivilDawn, WxId::CivilDusk, WxId::NauticalDawn,
+                                    WxId::NauticalDusk, WxId::AstroDawn, WxId::AstroDusk, WxId::SunriseAzimuth, WxId::SunsetAzimuth,
+                                    WxId::TransitElevation, WxId::DayLength, WxId::DayProgress, WxId::SunFalling, WxId::DayNightSun,
+                                    WxId::DayNightCivil, WxId::DayNightNautical, WxId::DayNightAstro, WxId::ClearSkyRadiation,
+                                    WxId::ClearSkyMax, WxId::MoonPhase, WxId::MoonPhaseText, WxId::MoonIllumination, WxId::MoonAge,
+                                    WxId::MoonAzimuth, WxId::MoonElevation, WxId::Moonrise, WxId::Moonset, WxId::NextFullMoon,
+                                    WxId::NextNewMoon};
+    if (!_configured || !openknx.time.isValid())
+    {
+        for (WxId id : sunTimes)
+            val(id).invalidate();
+        return;
+    }
+    const float lat = (float)ParamBASE_Latitude;
+    const float lon = (float)ParamBASE_Longitude;
+    const OpenKNX::DateTime local = openknx.time.getLocalTime();
+    const time_t utc = local.toTime_t();
+    // Ortszeit als "Unixzeit der Wanduhr" -> Verschiebung zu UTC und Mitternacht Ortszeit
+    const long localDays = MeasuredValue::daysFromCivil(local.year, local.month, local.day);
+    const int32_t secOfDay = local.hour * 3600 + local.minute * 60 + local.second;
+    const int32_t tzOffset = (int32_t)((int64_t)localDays * 86400 + secOfDay - (int64_t)utc);
+    const time_t midnight = utc - secOfDay;
+
+    // Tageswerte einmal je Tag (und nach dem ersten Erhalt der Uhrzeit)
+    const uint32_t key = dayKeyOf(local);
+    if (key != _astroDayKey)
+    {
+        _astroDayKey = key;
+        _sunDay = Astro::sunDay(midnight, tzOffset, lat, lon);
+        Astro::moonRiseSet(midnight, lat, lon, _moonRise, _moonSet);
+        // Datum (Ortszeit) des naechsten Voll-/Neumonds als Tage seit 1.1.2000
+        auto localDate = [&](time_t t) -> float { return (float)((t + tzOffset) / 86400 - 10957); };
+        _nextFullMoon = localDate(Astro::nextMoonPhase(utc, 180.0f));
+        _nextNewMoon = localDate(Astro::nextMoonPhase(utc, 0.0f));
+        logInfoP("Sonnenzeiten berechnet: Aufgang %s, Untergang %s", MeasuredValue::format(_sunDay.rise, &WX_VALUES[(uint8_t)WxId::Sunrise], false).c_str(),
+                 MeasuredValue::format(_sunDay.set, &WX_VALUES[(uint8_t)WxId::Sunset], false).c_str());
+    }
+    // Neu-/Vollmond am heutigen Tag erreicht: naechsten Termin bestimmen
+    const float today = (float)(localDays - 10957);
+    if ((!isnan(_nextFullMoon) && today > _nextFullMoon) || (!isnan(_nextNewMoon) && today > _nextNewMoon))
+        _astroDayKey = 0;
+
+    set(WxId::Sunrise, _sunDay.rise);
+    set(WxId::Sunset, _sunDay.set);
+    set(WxId::SolarNoon, _sunDay.transit);
+    set(WxId::CivilDawn, _sunDay.civilDawn);
+    set(WxId::CivilDusk, _sunDay.civilDusk);
+    set(WxId::NauticalDawn, _sunDay.nauticalDawn);
+    set(WxId::NauticalDusk, _sunDay.nauticalDusk);
+    set(WxId::AstroDawn, _sunDay.astroDawn);
+    set(WxId::AstroDusk, _sunDay.astroDusk);
+    set(WxId::SunriseAzimuth, _sunDay.riseAzimuth);
+    set(WxId::SunsetAzimuth, _sunDay.setAzimuth);
+    set(WxId::TransitElevation, _sunDay.transitElevation);
+    set(WxId::DayLength, _sunDay.dayLength);
+    set(WxId::ClearSkyMax, Solar::clearSky(_sunDay.transitElevation));
+
+    // Aktuelle Sonnenhoehe aus der eigenen Berechnung (gleiche Basis wie die Zeiten)
+    const Astro::Position sun = Astro::sunPosition(utc, lat, lon);
+    const float now = secOfDay;
+    set(WxId::SunFalling, !isnan(_sunDay.transit) && now > _sunDay.transit);
+    set(WxId::DayNightCivil, sun.elevation < -6.0f);
+    set(WxId::DayNightNautical, sun.elevation < -12.0f);
+    set(WxId::DayNightAstro, sun.elevation < -18.0f);
+    set(WxId::ClearSkyRadiation, Solar::clearSky(sun.elevation));
+    if (!isnan(_sunDay.rise) && !isnan(_sunDay.set))
+        set(WxId::DayProgress, constrain((now - _sunDay.rise) / (_sunDay.set - _sunDay.rise) * 100.0f, 0.0f, 100.0f));
+    else
+        set(WxId::DayProgress, sun.elevation > 0 ? 100.0f : 0.0f);
+
+    // Tag/Nacht wie im EDOMI-LBS: Auf-/Untergang mit Versatz oder Elevationsschwellen (morgens/abends)
+    bool night;
+    if (_sunDnElevation)
+    {
+        const bool falling = !isnan(_sunDay.transit) && now > _sunDay.transit;
+        night = falling ? sun.elevation < _sunDnElevSet : !(sun.elevation > _sunDnElevRise);
+    }
+    else if (!isnan(_sunDay.rise) && !isnan(_sunDay.set))
+        night = !(now > _sunDay.rise + _sunDnOffsetRise * 60 && now < _sunDay.set + _sunDnOffsetSet * 60);
+    else
+        night = sun.elevation < -0.833f; // Polartag/-nacht
+    set(WxId::DayNightSun, night);
+
+    // Mond
+    const Astro::MoonState moon = Astro::moon(utc, lat, lon);
+    set(WxId::MoonPhase, moon.phase);
+    set(WxId::MoonPhaseText, moon.phase);
+    set(WxId::MoonIllumination, moon.illumination * 100.0f);
+    set(WxId::MoonAge, moon.age);
+    set(WxId::MoonAzimuth, moon.position.azimuth);
+    set(WxId::MoonElevation, moon.position.elevation);
+    set(WxId::Moonrise, _moonRise);
+    set(WxId::Moonset, _moonSet);
+    set(WxId::NextFullMoon, _nextFullMoon);
+    set(WxId::NextNewMoon, _nextNewMoon);
 }
 
 void WeatherModule::updateMinMax(float temp, float gust)
@@ -740,9 +853,10 @@ void WeatherModule::publishMqtt()
         const MeasuredValue &v = _values[i];
         if (!v.valid())
             continue;
-        if ((WxId)i == WxId::ForecastText)
+        const WxFmt fmt = WX_VALUES[i].fmt;
+        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::Time || fmt == WxFmt::Date)
         {
-            doc[WX_VALUES[i].mqttKey] = Forecast::text((uint8_t)v.value(), true);
+            doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
             continue;
         }
         const float f = powf(10.0f, WX_VALUES[i].decimals);
@@ -861,8 +975,14 @@ std::string WeatherModule::buildStatusJson()
             o["s"] = roundf(v.lastSent() * f) / f;
         else
             o["s"] = nullptr;
-        if ((WxId)i == WxId::ForecastText && v.valid())
-            o["t"] = Forecast::text((uint8_t)v.value(), true);
+        o["f"] = (uint8_t)def.fmt;
+        if (def.fmt != WxFmt::Number && def.fmt != WxFmt::Duration)
+        {
+            if (v.valid())
+                o["t"] = MeasuredValue::format(v.value(), &def, false);
+            if (v.sent())
+                o["ts"] = MeasuredValue::format(v.lastSent(), &def, false);
+        }
     }
 
     std::string json;
@@ -875,7 +995,7 @@ std::string WeatherModule::buildStatusJson()
 // ---------------------------------------------------------------------------
 uint16_t WeatherModule::flashSize()
 {
-    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE;
+    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE + SUNSHINE_FLASH_SIZE;
 }
 
 void WeatherModule::writeFlash()
@@ -894,6 +1014,8 @@ void WeatherModule::writeFlash()
     openknx.flash.writeFloat(_minMax.radYesterday);
     openknx.flash.writeFloat(_minMax.pvToday);
     openknx.flash.writeFloat(_minMax.pvYesterday);
+    openknx.flash.writeFloat(_minMax.sunshineToday);
+    openknx.flash.writeFloat(_minMax.sunshineYesterday);
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -916,7 +1038,7 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     if (version < 3 || size < 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE)
         return;
     _season.readFlash();
-    if (version < 4 || size < flashSize())
+    if (version < 4 || size < flashSize() - SUNSHINE_FLASH_SIZE)
         return;
     _minMax.radToday = openknx.flash.readFloat();
     _minMax.radYesterday = openknx.flash.readFloat();
@@ -926,6 +1048,12 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
         _minMax.radToday = 0;
     if (isnan(_minMax.pvToday))
         _minMax.pvToday = 0;
+    if (version < 5 || size < flashSize())
+        return;
+    _minMax.sunshineToday = openknx.flash.readFloat();
+    _minMax.sunshineYesterday = openknx.flash.readFloat();
+    if (isnan(_minMax.sunshineToday))
+        _minMax.sunshineToday = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -942,6 +1070,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx minmax", "Minimum/Maximum, Windalarme, Daemmerung, Warnungen");
     openknx.console.printHelpLine("wx season", "Sommer/Winter, Tagesmittel und Kenntage");
     openknx.console.printHelpLine("wx solar", "Strahlung, PV-Schaetzung und Fassaden");
+    openknx.console.printHelpLine("wx astro", "Sonnenzeiten, Daemmerung und Mond");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -993,6 +1122,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showSeason();
     else if (cmd == "wx solar")
         showSolar();
+    else if (cmd == "wx astro")
+        showAstro();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)
@@ -1007,10 +1138,7 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
 
 void WeatherModule::formatValue(char *buf, size_t len, const MeasuredValue &v)
 {
-    if (!v.valid())
-        snprintf(buf, len, "-");
-    else
-        snprintf(buf, len, "%.*f %s", v.def()->decimals, v.value(), v.def()->unit);
+    snprintf(buf, len, "%s", v.valid() ? MeasuredValue::format(v.value(), v.def(), true).c_str() : "-");
 }
 
 void WeatherModule::showValues()
@@ -1023,7 +1151,7 @@ void WeatherModule::showValues()
         const MeasuredValue &v = _values[i];
         formatValue(value, sizeof(value), v);
         if (v.sent())
-            snprintf(sent, sizeof(sent), "(%.*f)", v.def()->decimals, v.lastSent());
+            snprintf(sent, sizeof(sent), "(%s)", MeasuredValue::format(v.lastSent(), v.def(), false).c_str());
         else
             snprintf(sent, sizeof(sent), "%s", v.active() ? "(-)" : "");
         logInfoP("%-44.44s %c %-16s %s", WX_VALUES[i].name, v.active() ? 'A' : ' ', value, sent);
@@ -1154,4 +1282,22 @@ void WeatherModule::showSolar()
             logInfoP("Fassade %u (%u Grad): %s, %.0f W/m2%s", i + 1, f.azimuth, f.sun ? "Sonne" : "keine Sonne", f.irradiance,
                      f.timing ? " (Verzoegerung laeuft)" : "");
     }
+}
+
+void WeatherModule::showAstro()
+{
+    if (!_configured || !openknx.time.isValid())
+    {
+        logInfoP("Sonnenzeiten: Uhrzeit oder Standort fehlen");
+        return;
+    }
+    auto t = [this](WxId id) { return MeasuredValue::format(val(id).valid() ? val(id).value() : NAN, &WX_VALUES[(uint8_t)id], false); };
+    logInfoP("Sonne: Aufgang %s (%.0f Grad), Hoechststand %s (%.1f Grad), Untergang %s (%.0f Grad), Tag %s", t(WxId::Sunrise).c_str(),
+             _sunDay.riseAzimuth, t(WxId::SolarNoon).c_str(), _sunDay.transitElevation, t(WxId::Sunset).c_str(), _sunDay.setAzimuth,
+             t(WxId::DayLength).c_str());
+    logInfoP("Daemmerung buergerlich %s-%s, nautisch %s-%s, astronomisch %s-%s", t(WxId::CivilDawn).c_str(), t(WxId::CivilDusk).c_str(),
+             t(WxId::NauticalDawn).c_str(), t(WxId::NauticalDusk).c_str(), t(WxId::AstroDawn).c_str(), t(WxId::AstroDusk).c_str());
+    logInfoP("Mond: %s, %.0f %% beleuchtet, Alter %.1f Tage, Aufgang %s, Untergang %s, Vollmond %s, Neumond %s", t(WxId::MoonPhaseText).c_str(),
+             val(WxId::MoonIllumination).value(), val(WxId::MoonAge).value(), t(WxId::Moonrise).c_str(), t(WxId::Moonset).c_str(),
+             t(WxId::NextFullMoon).c_str(), t(WxId::NextNewMoon).c_str());
 }

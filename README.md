@@ -39,6 +39,11 @@ und optional per MQTT bereit.
 - PV-Ertrag (geschätzt): Leistung sowie Ertrag heute/gestern aus kWp, Neigung, Ausrichtung und Performance Ratio
 - Bis zu 6 Fassaden: „Sonne auf Fassade“ mit Schwelle und Verzögerungen, Einstrahlung auf die Fassade und
   Profilwinkel für die Lamellennachführung (Direkt-/Diffusaufteilung nach Erbs, Sonnenstand aus OpenKNX)
+- Sonnenzeiten (nach dem EDOMI-LBS „Sonnenstand“): Auf-/Untergang, Höchststand, bürgerliche/nautische/astronomische
+  Dämmerung (DPT 10.001), Azimut bei Auf-/Untergang, Elevation im Höchststand, Tageslänge, Tagesfortschritt,
+  Sonne steigt/fällt, Tag/Nacht nach Sonnenstand (Versatz oder Elevationsschwellen) und je Dämmerungsstufe,
+  Strahlung bei klarem Himmel, Sonnenscheindauer heute/gestern (WMO, > 120 W/m²)
+- Mond: Phase (Nummer und Text), Beleuchtung, Alter, Azimut/Elevation, Auf-/Untergang, nächster Voll- und Neumond (DPT 11.001)
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
@@ -117,6 +122,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx minmax` | Minimum/Maximum, Windalarme, Dämmerung, Frost/Glätte |
 | `wx season` | Sommer/Winter, Messtermine und Tagesmittel, Kenntage |
 | `wx solar` | Globalstrahlung, Sonnenstand, PV-Schätzung, Fassaden |
+| `wx astro` | Sonnenzeiten, Dämmerung und Mond |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.

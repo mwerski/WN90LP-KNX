@@ -55,13 +55,14 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
 - **InfluxDB** (`InfluxWriter.*`): HTTP-POST in eigener FreeRTOS-Task (6 KB Stack), Daten per Mutex übergeben, kein Logging aus der Task (Fehlertext wird gespeichert, die Hauptschleife loggt). Schema und Feldnamen (`influx=` in generate_ets.py) entsprechen dem früheren Node-RED-Flow; immer Float-Felder.
 - **Allgemeine Parameter** reichen inzwischen bis Byte 367 (InfluxDB ab 160).
+- **Astronomie** (`Astro.*`): Sonne nach NOAA (Zeiten ±1 min), Mond nach gekürzten Meeus-Reihen (Phasen ±10 min, gegen 2026 geprüft). Uhrzeiten als Sekunden seit Mitternacht (WxFmt::Time, DPT 10.001 mit Index 1!), Datum als Tage seit 2000 (WxFmt::Date, DPT 11.001: Jahr vierstellig, Monat 1–12). DPT 7.006 wird über die 7.001-Kodierung gesendet.
 - **Statusseite** (`WebStatus.*`): HTTP-Handler laufen auf dem ESP32 in der httpd-Task und lesen nur einen per Mutex geschützten JSON-Schnappschuss, den `WeatherModule::buildStatusJson()` in der Hauptschleife alle 2 s erstellt (nur während Abfragen). Seite als ASCII-Rohstring, Sonderzeichen als HTML-/JS-Escapes, Daten nur per `textContent`.
 - **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
 - **Allgemeine Parameter** (GENERAL, 160 Byte): 0–36 allgemein, 37–63 Windalarme (3×9), 64–73 Sommer/Winter, 74–75 Strahlung, 80–87 PV, 88–159 Fassaden (6×12).
 - **Bedingte Werte:** `cond` in generate_ets.py (z. B. Fassade n aktiv, Bit 0 am Blockanfang) blendet KOs aus; die Firmware prüft `condParam` vor jedem KO-Zugriff.
 - **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
-- **Flash-Version 4** im Modul: [Version][Regen][Min/Max 28 Byte][Season::FLASH_SIZE][Strahlung/PV heute/gestern 16 Byte]; Versionen 1–3 werden noch gelesen.
+- **Flash-Version 5** im Modul: [Version][Regen][Min/Max 28 Byte][Season][Strahlung/PV 16 Byte][Sonnenschein 8 Byte]; ältere Versionen werden noch gelesen.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.

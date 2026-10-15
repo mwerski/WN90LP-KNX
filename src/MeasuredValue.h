@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenKNX.h"
 #include "ValueTable.h"
+#include <string>
 
 // Ein Messwert mit KO: zyklisch senden, senden bei absoluter/relativer Aenderung,
 // Leseanfragen beantwortet der knx-Stack aus dem KO-Wert (wird ohne Senden aktualisiert).
@@ -19,6 +20,11 @@ class MeasuredValue
     bool sent() const { return _sent; }
     float lastSent() const { return _lastSent; }
     const WxValueDef *def() const { return _def; }
+
+    // Darstellung fuer Konsole/MQTT: Uhrzeit HH:MM:SS, Datum JJJJ-MM-TT, Dauer, Texte, sonst Zahl
+    static std::string format(float value, const WxValueDef *def, bool withUnit);
+    static void civilFromDays(long daysSince1970, int &y, int &m, int &d);
+    static long daysFromCivil(int y, int m, int d);
 
   private:
     bool changeExceedsThreshold() const;

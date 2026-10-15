@@ -1,4 +1,5 @@
 #include "MeasuredValue.h"
+#include "Astro.h"
 #include "Forecast.h"
 
 void MeasuredValue::init(const WxValueDef *def, bool configured)
@@ -102,8 +103,31 @@ KNXValue MeasuredValue::busValue() const
         case 6:
             return KNXValue((int8_t)constrain(lroundf(bus), -128L, 127L));
         case 16:
-            // Text: der Messwert ist die Zambretti-Nummer
+            // Text: der Messwert ist der Index (Zambretti-Nummer bzw. Mondphase)
+            if (_def->fmt == WxFmt::MoonText)
+                return KNXValue(Astro::moonPhaseText((uint8_t)lroundf(bus), false));
             return KNXValue(Forecast::text((uint8_t)lroundf(bus), false));
+        case 10:
+        {
+            // Sekunden seit Mitternacht -> Uhrzeit (ohne Wochentag)
+            const long s = constrain(lroundf(_value), 0L, 86399L);
+            struct tm t = {};
+            t.tm_hour = s / 3600;
+            t.tm_min = (s / 60) % 60;
+            t.tm_sec = s % 60;
+            return KNXValue(t);
+        }
+        case 11:
+        {
+            // Tage seit 1.1.2000 -> Datum (knx-Stack erwartet Jahr vierstellig, Monat 1..12)
+            struct tm t = {};
+            int y, m, d;
+            civilFromDays((long)lroundf(_value) + 10957, y, m, d);
+            t.tm_year = y;
+            t.tm_mon = m;
+            t.tm_mday = d;
+            return KNXValue(t);
+        }
         case 5:
             if (opt.sub == 10)
                 return KNXValue((uint8_t)constrain(lroundf(bus), 0L, 255L));
@@ -116,5 +140,69 @@ KNXValue MeasuredValue::busValue() const
 Dpt MeasuredValue::dpt() const
 {
     const WxDptOption &opt = _def->dpts[_dptIndex];
+    // DPT 10.001 schreibt im knx-Stack die Uhrzeit nur mit Index 1 (Index 0 = Wochentag)
+    if (opt.main == 10)
+        return Dpt(10, 1, 1);
     return Dpt(opt.main, opt.sub);
+}
+
+void MeasuredValue::civilFromDays(long z, int &y, int &m, int &d)
+{
+    // Tage seit 1.1.1970 -> Kalenderdatum (Algorithmus nach H. Hinnant)
+    z += 719468;
+    const long era = (z >= 0 ? z : z - 146096) / 146097;
+    const unsigned doe = (unsigned)(z - era * 146097);
+    const unsigned yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    const unsigned doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    const unsigned mp = (5 * doy + 2) / 153;
+    d = doy - (153 * mp + 2) / 5 + 1;
+    m = mp < 10 ? mp + 3 : mp - 9;
+    y = (int)(yoe + era * 400) + (m <= 2);
+}
+
+long MeasuredValue::daysFromCivil(int y, int m, int d)
+{
+    y -= m <= 2;
+    const long era = (y >= 0 ? y : y - 399) / 400;
+    const unsigned yoe = (unsigned)(y - era * 400);
+    const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
+    const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    return era * 146097 + (long)doe - 719468;
+}
+
+std::string MeasuredValue::format(float value, const WxValueDef *def, bool withUnit)
+{
+    char buf[32];
+    if (isnan(value))
+        return "";
+    switch (def->fmt)
+    {
+        case WxFmt::Time:
+        {
+            const long s = lroundf(value);
+            snprintf(buf, sizeof(buf), "%02ld:%02ld:%02ld", s / 3600, (s / 60) % 60, s % 60);
+            return buf;
+        }
+        case WxFmt::Date:
+        {
+            int y, m, d;
+            civilFromDays((long)lroundf(value) + 10957, y, m, d);
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02d", y, m, d);
+            return buf;
+        }
+        case WxFmt::Duration:
+        {
+            const long s = lroundf(value);
+            snprintf(buf, sizeof(buf), "%ld:%02ld h", s / 3600, (s / 60) % 60);
+            return buf;
+        }
+        case WxFmt::Forecast:
+            return Forecast::text((uint8_t)lroundf(value), true);
+        case WxFmt::MoonText:
+        case WxFmt::MoonPhase:
+            return Astro::moonPhaseText((uint8_t)lroundf(value), true);
+        default:
+            snprintf(buf, sizeof(buf), withUnit && def->unit[0] ? "%.*f %s" : "%.*f", def->decimals, value, def->unit);
+            return buf;
+    }
 }

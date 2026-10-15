@@ -31,11 +31,13 @@ static const char PAGE[] = R"HTML(<div class='container'>
 <script>
 (function(){
 var SYMBOL=['sonnig','bew\u00f6lkt','Schauer','starker Regen','Gewitter','hoher UV-Index'];
-var BOOL={raining:['nein','ja'],night:['Tag','Nacht'],summer:['Winter','Sommer']};
+var DN=['Tag','Nacht'];
+var BOOL={raining:['nein','ja'],night:DN,night_sun:DN,night_civil:DN,night_nautical:DN,night_astro:DN,summer:['Winter','Sommer'],sun_falling:['steigt','f\u00e4llt']};
 function num(v,d){return v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});}
-function fmt(x,v){
+function fmt(x,v,t){
   if(v===null||v===undefined)return '\u2013';
-  if(x.k==='forecast_text')return x.t||'\u2013';
+  if(t!==undefined)return t;
+  if(x.f===3){var m=Math.round(v/60);return Math.floor(m/60)+':'+('0'+m%60).slice(-2)+' h';}
   if(x.k==='weather_symbol')return SYMBOL[v]||String(v);
   if(x.b){var m=BOOL[x.k]||['nein','ja'];return m[v?1:0];}
   return num(v,x.d)+(x.u?' '+x.u:'');
@@ -66,8 +68,8 @@ function render(j){
     groups[g].forEach(function(x){
       var r=el('tr',(x.a?'':'off')+(x.v===null?' inv':''));
       var n=el('td','',x.n+(x.a?'':' (nicht aktiv)'));n.title=n.textContent;r.appendChild(n);
-      r.appendChild(el('td','v',fmt(x,x.v)));
-      r.appendChild(el('td','s',x.a&&x.s!==null?fmt(x,x.s):''));
+      r.appendChild(el('td','v',fmt(x,x.v,x.t)));
+      r.appendChild(el('td','s',x.a&&x.s!==null?fmt(x,x.s,x.ts):''));
       t.appendChild(r);
     });
     box.appendChild(t);

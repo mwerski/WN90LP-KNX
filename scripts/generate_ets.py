@@ -56,6 +56,13 @@ ALARM = [("DPT 1.005 (1 Bit, Alarm)", "DPST-1-5", "1 Bit", 1, 5, 1.0)]
 DAYNIGHT = [("DPT 1.024 (1 Bit, 0 = Tag, 1 = Nacht)", "DPST-1-24", "1 Bit", 1, 2, 1.0)]
 ANGLE = [T14(7, "DPT 14.007 (4 Byte, °)")]
 IRRADIANCE = [T9(22, "DPT 9.022 (2 Byte, W/m²)")]
+TIME = [("DPT 10.001 (3 Byte, Uhrzeit)", "DPST-10-1", "3 Bytes", 10, 1, 1.0)]
+DATE = [("DPT 11.001 (3 Byte, Datum)", "DPST-11-1", "3 Bytes", 11, 1, 1.0)]
+# Dauer in Sekunden; 7.006 wird ueber die 16-Bit-Kodierung von 7.001 gesendet (gleiche Bytes)
+DURATION = [("DPT 13.100 (4 Byte, s)", "DPST-13-100", "4 Bytes", 13, 100, 1.0),
+            ("DPT 7.006 (2 Byte, min)", "DPST-7-6", "2 Bytes", 7, 1, 1.0 / 60)]
+HOURS = [("DPT 9 (2 Byte, h)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, h)")]
+PERCENT = [("DPT 5.001 (1 Byte, %)", "DPST-5-1", "1 Byte", 5, 1, 1.0)]
 ENERGY = [("DPT 13.010 (4 Byte, Wh)", "DPST-13-10", "4 Bytes", 13, 10, 1000.0), T14(None, "DPT 14 (4 Byte, kWh)")]
 # Faktor -1 = invertiert (1.100: 1 = Heizen = Winter)
 SEASON = [("DPT 1.002 (1 Bit, 1 = Sommer)", "DPST-1-2", "1 Bit", 1, 2, 1.0),
@@ -79,17 +86,19 @@ GROUPS = [
     ("Season", "Sommer/Winter und Kenntage", "thermometer", None),
     ("Solar", "Strahlung und PV", "white-balance-sunny", None),
     ("Facades", "Fassaden", "white-balance-sunny", None),
+    ("SunTimes", "Sonnenzeiten", "white-balance-sunny", None),
+    ("Moon", "Mond", "weather-partly-snowy-rainy", None),
 ]
 FACADES = 6
 FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
-      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None, influx=None):
+      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None, influx=None, fmt="number"):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
                 abs=abs_, rel=rel, active=active, sensor=sensor, thresholds=thresholds,
                 decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt,
-                extra=extra or [], cond=cond, influx=influx)
+                extra=extra or [], cond=cond, influx=influx, fmt=fmt)
 
 
 # Reihenfolge = KO-Reihenfolge und Reihenfolge im Parameterspeicher
@@ -167,7 +176,7 @@ VALUES = [
       info="Prognose für etwa 12 Stunden nach Zambretti aus Luftdruck auf Meereshöhe, Tendenz, Windrichtung und Jahreszeit: "
            "1 (A, beständig schön) bis 26 (Z, Sturm mit viel Regen). Die Höhe des Standorts auf der Seite Allgemein muss stimmen."),
     V("ForecastText", "Forecast", "Wetterprognose (Text)", "", TEXT, 1800, 0, 0, True, thresholds=False, decimals=0,
-      mqtt="forecast_text", influx="", info="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“."),
+      mqtt="forecast_text", influx="", fmt="forecast", info="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“."),
     V("WeatherSymbol", "Forecast", "Wettersymbol (Display)", "", BFT, 600, 0, 0, True, thresholds=False, decimals=0,
       mqtt="weather_symbol",
       info="0 sonnig, 1 bewölkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV-Index (z. B. für Tantron-Displays). "
@@ -285,6 +294,58 @@ VALUES = [
     V("Facade6Profile", "Facades", "Profilwinkel Fassade 6", "°", ANGLE, 300, 2, 0, mqtt="facade6_profile",
       cond="Facade6Active",
       info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    # Ab ETS 0.9 (Sonnenzeiten nach dem EDOMI-LBS "Sonnenstand", Mond)
+    V("Sunrise", "SunTimes", "Sonnenaufgang", "", TIME, 0, 0, 0, True, thresholds=False, decimals=0, mqtt="sunrise", influx="", fmt="time"),
+    V("Sunset", "SunTimes", "Sonnenuntergang", "", TIME, 0, 0, 0, True, thresholds=False, decimals=0, mqtt="sunset", influx="", fmt="time"),
+    V("SolarNoon", "SunTimes", "Sonnenhöchststand (Transit)", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="solar_noon", influx="", fmt="time"),
+    V("CivilDawn", "SunTimes", "Beginn bürgerliche Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="civil_dawn", influx="", fmt="time"),
+    V("CivilDusk", "SunTimes", "Ende bürgerliche Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="civil_dusk", influx="", fmt="time"),
+    V("NauticalDawn", "SunTimes", "Beginn nautische Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="nautical_dawn", influx="", fmt="time"),
+    V("NauticalDusk", "SunTimes", "Ende nautische Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="nautical_dusk", influx="", fmt="time"),
+    V("AstroDawn", "SunTimes", "Beginn astronomische Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="astro_dawn", influx="", fmt="time"),
+    V("AstroDusk", "SunTimes", "Ende astronomische Dämmerung", "", TIME, 0, 0, 0, False, thresholds=False, decimals=0, mqtt="astro_dusk", influx="", fmt="time"),
+    V("SunriseAzimuth", "SunTimes", "Azimut bei Sonnenaufgang", "°", ANGLE, 0, 0, 0, thresholds=False, mqtt="sunrise_azimuth"),
+    V("SunsetAzimuth", "SunTimes", "Azimut bei Sonnenuntergang", "°", ANGLE, 0, 0, 0, thresholds=False, mqtt="sunset_azimuth"),
+    V("TransitElevation", "SunTimes", "Elevation beim Höchststand", "°", ANGLE, 0, 0, 0, thresholds=False, mqtt="transit_elevation"),
+    V("DayLength", "SunTimes", "Tageslänge", "s", DURATION, 0, 0, 0, thresholds=False, decimals=0, mqtt="day_length", fmt="duration"),
+    V("DayProgress", "SunTimes", "Tagesfortschritt (Aufgang bis Untergang)", "%", PERCENT, 0, 5, 0, decimals=0, mqtt="day_progress",
+      info="0 % bei Sonnenaufgang, 100 % bei Sonnenuntergang (z. B. für die Positionierung eines Sonnensymbols in der Visualisierung)."),
+    V("SunFalling", "SunTimes", "Sonne steigt (0) / fällt (1)", "", BOOL, 0, 0, 0, thresholds=False, decimals=0, mqtt="sun_falling"),
+    V("DayNightSun", "SunTimes", "Tag/Nacht (Sonnenstand)", "", DAYNIGHT, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="night_sun", extra=["SunDnMode", "SunDnOffsetRise", "SunDnOffsetSet", "SunDnElevRise", "SunDnElevSet"],
+      info="Nach Sonnenauf-/untergang mit Versatz oder nach Elevationsschwellen (morgens Tag ab, abends Nacht unter). "
+           "Die Versätze gelten nur im ersten, die Schwellen nur im zweiten Verfahren."),
+    V("DayNightCivil", "SunTimes", "Tag/Nacht (bürgerliche Dämmerung, -6°)", "", DAYNIGHT, 1800, 0, 0, thresholds=False, decimals=0,
+      mqtt="night_civil"),
+    V("DayNightNautical", "SunTimes", "Tag/Nacht (nautische Dämmerung, -12°)", "", DAYNIGHT, 1800, 0, 0, thresholds=False, decimals=0,
+      mqtt="night_nautical"),
+    V("DayNightAstro", "SunTimes", "Tag/Nacht (astronomische Dämmerung, -18°)", "", DAYNIGHT, 1800, 0, 0, thresholds=False, decimals=0,
+      mqtt="night_astro"),
+    V("ClearSkyRadiation", "SunTimes", "Globalstrahlung bei klarem Himmel", "W/m²", IRRADIANCE, 300, 50, 0, decimals=0,
+      mqtt="clear_sky_radiation", info="Theoretischer Wert für den aktuellen Sonnenstand (Haurwitz)."),
+    V("ClearSkyMax", "SunTimes", "Globalstrahlung bei klarem Himmel, Tagesmaximum", "W/m²", IRRADIANCE, 0, 0, 0, thresholds=False, decimals=0,
+      mqtt="clear_sky_max"),
+    V("SunshineToday", "SunTimes", "Sonnenscheindauer heute", "h", HOURS, 3600, 0.1, 0, decimals=2, mqtt="sunshine_today",
+      extra=["SunshineThreshold"], info="Zeit mit Globalstrahlung über der Schwelle (WMO: 120 W/m²), bleibt über Neustarts erhalten."),
+    V("SunshineYesterday", "SunTimes", "Sonnenscheindauer gestern", "h", HOURS, 0, 0, 0, thresholds=False, decimals=2,
+      mqtt="sunshine_yesterday"),
+    V("MoonPhase", "Moon", "Mondphase (0-7)", "", BFT, 0, 0, 0, True, thresholds=False, decimals=0, mqtt="moon_phase", fmt="moonphase",
+      info="0 Neumond, 1 zunehmende Sichel, 2 erstes Viertel, 3 zunehmender Mond, 4 Vollmond, 5 abnehmender Mond, "
+           "6 letztes Viertel, 7 abnehmende Sichel."),
+    V("MoonPhaseText", "Moon", "Mondphase (Text)", "", TEXT, 0, 0, 0, thresholds=False, decimals=0, mqtt="moon_phase_text",
+      influx="", fmt="moontext"),
+    V("MoonIllumination", "Moon", "Mond beleuchtet", "%", PERCENT, 3600, 2, 0, True, decimals=0, mqtt="moon_illumination"),
+    V("MoonAge", "Moon", "Mondalter (Tage seit Neumond)", "d", [("DPT 9 (2 Byte, Tage)", "DPT-9", "2 Bytes", 9, 1, 1.0)], 3600, 0.5, 0,
+      decimals=1, mqtt="moon_age"),
+    V("MoonAzimuth", "Moon", "Mond Azimut", "°", ANGLE, 600, 5, 0, mqtt="moon_azimuth"),
+    V("MoonElevation", "Moon", "Mond Elevation", "°", ANGLE, 600, 2, 0, mqtt="moon_elevation"),
+    V("Moonrise", "Moon", "Mondaufgang", "", TIME, 0, 0, 0, thresholds=False, decimals=0, mqtt="moonrise", influx="", fmt="time",
+      info="Leer, wenn der Mond an diesem Tag nicht aufgeht."),
+    V("Moonset", "Moon", "Monduntergang", "", TIME, 0, 0, 0, thresholds=False, decimals=0, mqtt="moonset", influx="", fmt="time"),
+    V("NextFullMoon", "Moon", "Nächster Vollmond", "", DATE, 0, 0, 0, True, thresholds=False, decimals=0, mqtt="next_full_moon",
+      influx="", fmt="date"),
+    V("NextNewMoon", "Moon", "Nächster Neumond", "", DATE, 0, 0, 0, thresholds=False, decimals=0, mqtt="next_new_moon", influx="",
+      fmt="date"),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -297,7 +358,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 368
+GENERAL_SIZE = 384
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -401,6 +462,12 @@ GENERAL = [
     ("InfluxTagFloor", "%AID%_PT-WxText20", 305, 0, "Tag floor", "Aussen", None),
     ("InfluxTagRoom", "%AID%_PT-WxText20", 325, 0, "Tag room", "Garten", None),
     ("InfluxTagSensor", "%AID%_PT-WxText20", 345, 0, "Tag sensor (1-Wire: _1wire, SDS011: _sds011 angehängt)", "wn90", None),
+    ("SunDnMode", "%AID%_PT-WxSunDnMode", 368, 7, "Verfahren", "0", None),
+    ("SunDnOffsetRise", "%AID%_PT-WxOffsetMin", 369, 0, "Versatz zum Sonnenaufgang", "0", "min"),
+    ("SunDnOffsetSet", "%AID%_PT-WxOffsetMin", 371, 0, "Versatz zum Sonnenuntergang", "0", "min"),
+    ("SunDnElevRise", "%AID%_PT-WxElevSigned", 373, 0, "Morgens Tag ab Elevation", "0", "°"),
+    ("SunDnElevSet", "%AID%_PT-WxElevSigned", 377, 0, "Abends Nacht unter Elevation", "0", "°"),
+    ("SunshineThreshold", "%AID%_PT-WxIrr", 381, 0, "Sonnenschein ab Globalstrahlung", "120", "W/m²"),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -411,6 +478,8 @@ HA_BY_UNIT = {
     "kWh/m²": (None, "kWh/m²"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
 }
 HA_BY_KEY = {
+    "DayLength": ("duration", "s"), "SunshineToday": ("duration", "h"), "SunshineYesterday": ("duration", "h"),
+    "MoonAge": (None, "d"), "MoonIllumination": (None, "%"), "DayProgress": (None, "%"),
     "CloudCover": (None, "%"),
     "SummerWinter": (None, None), "SummerDay": (None, None), "HotDay": ("heat", None), "FrostDay": ("cold", None),
     "IceDay": ("cold", None),
@@ -628,6 +697,18 @@ def build():
         '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxText40" Name="WxText40">',
         '                <TypeText SizeInBit="320" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSunDnMode" Name="WxSunDnMode">',
+        '                <TypeRestriction Base="Value" SizeInBit="1">',
+        '                  <Enumeration Text="Sonnenauf-/untergang mit Versatz" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="Elevationsschwellen" Value="1" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxOffsetMin" Name="WxOffsetMin">',
+        '                <TypeNumber SizeInBit="16" Type="signedInt" minInclusive="-240" maxInclusive="240" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxElevSigned" Name="WxElevSigned">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="-18" maxInclusive="30" />',
         '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
@@ -862,6 +943,17 @@ def build():
     h.append("    OneWire")
     h.append("};")
     h.append("")
+    h.append("enum class WxFmt : uint8_t")
+    h.append("{")
+    h.append("    Number,")
+    h.append("    Time,      // Sekunden seit Mitternacht (Ortszeit)")
+    h.append("    Date,      // Tage seit 1.1.2000 (Ortszeit)")
+    h.append("    Duration,  // Sekunden")
+    h.append("    Forecast,  // Zambretti-Nummer, Text")
+    h.append("    MoonPhase, // 0..7")
+    h.append("    MoonText   // 0..7, Text")
+    h.append("};")
+    h.append("")
     h.append("struct WxDptOption")
     h.append("{")
     h.append("    uint8_t main;   // Hauptgruppe fuer den knx-Stack")
@@ -884,6 +976,7 @@ def build():
     h.append("    uint16_t condParam;   // Parameter, der aktiv sein muss (Bit 0), 0xFFFF = keiner")
     h.append("    bool thresholds;      // false: bei jeder Aenderung senden")
     h.append("    uint8_t decimals;")
+    h.append("    WxFmt fmt;            // Darstellung (Zahl, Uhrzeit, Datum, Dauer, Text)")
     h.append("    const char *haClass;  // Home Assistant device_class (nullptr = keine)")
     h.append("    const char *haUnit;   // Home Assistant unit_of_measurement (nullptr = keine)")
     h.append("    uint8_t dptCount;")
@@ -907,7 +1000,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")
