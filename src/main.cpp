@@ -498,8 +498,9 @@ void setup() {
 				break;
 		}
 
-		switch ( ParamAPP_Feinstaub_DPT ) {
-			case 0: 
+		// PM KOs are hidden in ETS without particle sensor and then missing in the group object table
+		if (ParamAPP_Feinstaubsensor_vorhanden) switch ( ParamAPP_Feinstaub_DPT ) {
+			case 0:
 				KoAPP_PM25_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_PM25_DPT9.callback(callback_pm25);
 				KoAPP_PM10_DPT9.dataPointType(Dpt(9, 1));
