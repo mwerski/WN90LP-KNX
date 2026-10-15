@@ -7,7 +7,7 @@
 */
 void sendHeartbeat() {
 	Serial.println(" -> Sending heartbeat to bus");
-	KoAPP_Heartbeat.value(1);
+	KoAPP_Heartbeat.value(true);
 }
 
 void sendTemperature() {
@@ -255,7 +255,7 @@ void sendPM10() {
 void sendPM25_normalized() {
 	if (pm25_normalized.read) {
 		Serial.printf(" -> Sending normalized PM2.5 concentration µg/m3 (%0.2f) to bus\n", pm25_normalized.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM25_DPT9.value(pm25_normalized.value) : KoAPP_PM25_DPT14.value(pm25_normalized.value);
+		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM25_Normalized_DPT9.value(pm25_normalized.value) : KoAPP_PM25_Normalized_DPT14.value(pm25_normalized.value);
 		pm25_normalized.last = pm25_normalized.value;
 		pm25_normalized.lastread = true;
 	} else {
@@ -267,7 +267,7 @@ void sendPM25_normalized() {
 void sendPM10_normalized() {
 	if (pm10_normalized.read) {
 		Serial.printf(" -> Sending normalized PM10 concentration µg/m3 (%0.2f) to bus\n", pm10_normalized.value);
-		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM10_DPT9.value(pm10_normalized.value) : KoAPP_PM10_DPT14.value(pm10_normalized.value);
+		(ParamAPP_Feinstaub_DPT == 0) ? KoAPP_PM10_Normalized_DPT9.value(pm10_normalized.value) : KoAPP_PM10_Normalized_DPT14.value(pm10_normalized.value);
 		pm10_normalized.last = pm10_normalized.value;
 		pm10_normalized.lastread = true;
 	} else {

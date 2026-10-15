@@ -218,6 +218,24 @@ void setup() {
 		Serial.print("static setup: ");
 	}
 
+	/*
+	FOLGENDES WIRD BENUTZT UM SICHERZUSTELLEN DASS DER ESP32 ALLE KANÄLE SCANNT UND DEN AP MIT DEM BESTEN SIGNAL WÄHLT, ANSTATT DEN ERSTEN ZU NEHMEN, DEN ER FINDET.
+	Die Standard-Einstellung ist WIFI_FAST_SCAN, was bedeutet, dass der ESP32 den ersten AP findet, der die gespeicherten SSID- und Passwortinformationen hat, und sich damit verbindet
+	*/
+	// default is WIFI_FAST_SCAN (first AP found), scan all channels and use the AP with the best signal
+	WiFi.mode(WIFI_STA);	// WiFi must be initialized before the stored config can be read
+	WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+	WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
+	// WiFiManager reuses the stored config, so patch it as well
+	wifi_config_t conf;
+	if (esp_wifi_get_config(WIFI_IF_STA, &conf) == ESP_OK) {
+		conf.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+		conf.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+		conf.sta.bssid_set = false;
+		esp_wifi_set_config(WIFI_IF_STA, &conf);
+	}
+	/* END */
+
 	wifiManager.setHostname( net.hostname );
   wifiManager.setConfigPortalTimeout(180);
 	if (!wifiManager.autoConnect("AutoConnectAP")) {
@@ -229,6 +247,14 @@ void setup() {
 
 	Serial.print("IP Address: ");
 	Serial.println(WiFi.localIP());
+
+	// disable modem sleep, otherwise multicast (KNX IP routing) gets delayed or lost
+	#if defined(ESP32)
+	WiFi.setSleep(false);
+	#elif defined(ESP8266)
+	WiFi.setSleepMode(WIFI_NONE_SLEEP);
+	#endif
+
 	#pragma endregion
 
 	#pragma region RemoteDebug
@@ -664,23 +690,44 @@ void setup() {
 		#pragma endregion
 	}
 
-	if ( ParamAPP_Watchdog ) {
-		Serial.printf("Enable hardware watchdog (%ds)\n", WDT_TIMEOUT);
-		esp_task_wdt_init(WDT_TIMEOUT,true);
-		esp_task_wdt_add(NULL); 
+	if (ParamAPP_Watchdog) {
+			Serial.printf("Enable hardware watchdog (%ds)\n", WDT_TIMEOUT);
+
+			esp_task_wdt_config_t wdt_config = {
+					.timeout_ms = WDT_TIMEOUT * 1000,
+					.idle_core_mask = 0,
+					.trigger_panic = true
+			};
+
+			esp_err_t err = esp_task_wdt_init(&wdt_config);
+
+			if (err == ESP_ERR_INVALID_STATE) {
+					err = esp_task_wdt_reconfigure(&wdt_config);
+			}
+
+			if (err == ESP_OK) {
+esp_err_t add_err = esp_task_wdt_add(NULL);
+Serial.printf("Watchdog task registration: %s\n", esp_err_to_name(add_err));
+			} else {
+					Serial.printf("Watchdog configuration failed: %d\n", err);
+			}
 	} else {
-		Serial.println("Deactivate hardware watchdog");
+			Serial.println("Deactivate hardware watchdog");
 	}
 
 }
 #pragma endregion
 
 void printLocaltime(bool newline=false) {
-	time_t t = now();
-	char buf[20];
-	sprintf(buf, "%d.%d.%d, %02d:%02d:%02d", day(t), month(t), year(t), hour(t), minute(t), second(t));
-	Serial.print(buf);
-	if (newline == true) Serial.println();
+    time_t t = now();
+    char buf[32];
+
+    snprintf(buf, sizeof(buf), "%d.%d.%d, %02d:%02d:%02d",
+             day(t), month(t), year(t),
+             hour(t), minute(t), second(t));
+
+    Serial.print(buf);
+    if (newline) Serial.println();
 }
 
 void read_wn90() {
@@ -1025,13 +1072,25 @@ unsigned long delayTime  = 2000;
 
 void loop() {
 
-	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
-esp_task_wdt_reset();
+//	if (!sensorfailure_1wire && !sensorfailure_sds && !sensorfailure_wn90) esp_task_wdt_reset(); // reset WDT timer if all sensors are available
+//esp_task_wdt_reset();
+
+   if (ParamAPP_Watchdog &&
+        !sensorfailure_1wire &&
+        !sensorfailure_sds &&
+        !sensorfailure_wn90) {
+        esp_task_wdt_reset();
+    }
+
+
+		
+/*
 	while (WiFi.status() != WL_CONNECTED) {
 		Serial.print("WiFi lost, restarting...");
 		ESP.restart();
 		delay(5000);
 	}
+*/
 
 	time_t t = now();
 	server.handleClient();
