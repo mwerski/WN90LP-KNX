@@ -779,6 +779,7 @@ def build():
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Das direkte Schreiben in eine InfluxDB wird auf der Seite Datenexport (InfluxDB) eingestellt." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Discovery meldet alle aktiven Messwerte unter homeassistant/... an (retained); Home Assistant legt sie dann automatisch als Sensoren an." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Störungsmeldungen" UIHint="Headline" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Für die Wetterstation und jeden aktivierten Zusatzsensor gibt es ein Kommunikationsobjekt „Störung …“ (DPT 1.005, 1 = Sensor antwortet nicht). Es wird bei jeder Änderung und einmal nach dem Start gesendet und steht in der Objektliste; Einstellungen sind nicht nötig." UIHint="Information" />')
     w('                <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />')
     w(f'                <choose ParamRefId="{ids.ref("SdsPresent")}">')
     w('                  <when test="1">')
