@@ -55,6 +55,8 @@ TEXT = [("DPT 16.001 (14 Byte, Text)", "DPST-16-1", "14 Bytes", 16, 1, 1.0)]
 ALARM = [("DPT 1.005 (1 Bit, Alarm)", "DPST-1-5", "1 Bit", 1, 5, 1.0)]
 DAYNIGHT = [("DPT 1.024 (1 Bit, 0 = Tag, 1 = Nacht)", "DPST-1-24", "1 Bit", 1, 2, 1.0)]
 ANGLE = [T14(7, "DPT 14.007 (4 Byte, °)")]
+IRRADIANCE = [T9(22, "DPT 9.022 (2 Byte, W/m²)")]
+ENERGY = [("DPT 13.010 (4 Byte, Wh)", "DPST-13-10", "4 Bytes", 13, 10, 1000.0), T14(None, "DPT 14 (4 Byte, kWh)")]
 # Faktor -1 = invertiert (1.100: 1 = Heizen = Winter)
 SEASON = [("DPT 1.002 (1 Bit, 1 = Sommer)", "DPST-1-2", "1 Bit", 1, 2, 1.0),
           ("DPT 1.100 (1 Bit, Heizen/Kühlen: 1 = Heizen = Winter)", "DPST-1-100", "1 Bit", 1, 2, -1.0)]
@@ -75,15 +77,19 @@ GROUPS = [
     ("MinMax", "Minimum und Maximum", "thermometer", None),
     ("Warnings", "Warnungen", "alert-outline", None),
     ("Season", "Sommer/Winter und Kenntage", "thermometer", None),
+    ("Solar", "Strahlung und PV", "white-balance-sunny", None),
+    ("Facades", "Fassaden", "white-balance-sunny", None),
 ]
+FACADES = 6
+FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
-      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None):
+      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
                 abs=abs_, rel=rel, active=active, sensor=sensor, thresholds=thresholds,
                 decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt,
-                extra=extra or [])
+                extra=extra or [], cond=cond)
 
 
 # Reihenfolge = KO-Reihenfolge und Reihenfolge im Parameterspeicher
@@ -217,6 +223,68 @@ VALUES = [
     V("IceDay", "Season", "Eistag (Maximum unter 0 °C)", "", BOOL, 3600, 0, 0, thresholds=False, decimals=0, mqtt="ice_day",
       info="Kenntage gelten für den laufenden Tag nach dem bisherigen Minimum/Maximum; der Eistag steht erst am Tagesende "
            "endgültig fest."),
+    # Ab ETS 0.7
+    V("GlobalRadiation", "Solar", "Globalstrahlung (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="global_radiation", extra=["RadFactor", "Albedo"],
+      info="Aus der Helligkeit geschätzt (ca. 110 lx je W/m²), typische Abweichung 15–20 %. Mit dem Korrekturfaktor an "
+           "eine Referenz angleichen. Die Albedo wirkt nur auf Fassaden und geneigte PV-Flächen."),
+    V("CloudCover", "Solar", "Bewölkungsgrad (geschätzt)", "%", [("DPT 5.001 (1 Byte, %)", "DPST-5-1", "1 Byte", 5, 1, 1.0)],
+      600, 10, 0, decimals=0, mqtt="cloud_cover",
+      info="Abweichung der Strahlung vom Wert bei klarem Himmel, nur tagsüber (Sonnenhöhe über 5°). Benötigt Uhrzeit und Gerätestandort."),
+    V("RadiationToday", "Solar", "Einstrahlung heute", "kWh/m²", [T14(None, "DPT 14 (4 Byte, kWh/m²)")], 3600, 0.1, 0, decimals=2,
+      mqtt="radiation_today"),
+    V("RadiationYesterday", "Solar", "Einstrahlung gestern", "kWh/m²", [T14(None, "DPT 14 (4 Byte, kWh/m²)")], 3600, 0, 0,
+      thresholds=False, decimals=2, mqtt="radiation_yesterday"),
+    V("PvPower", "Solar", "PV-Leistung (geschätzt)", "W", [("DPT 14.056 (4 Byte, W)", "DPST-14-56", "4 Bytes", 14, 0, 1.0)],
+      300, 100, 0, decimals=0, mqtt="pv_power", extra=["PvPeak", "PvTilt", "PvAzimuth", "PvPr"],
+      info="Aus der Globalstrahlung auf die Modulfläche umgerechnet; typische Abweichung 20–30 %. Keine Verschattung, "
+           "kein Temperatureinfluss."),
+    V("PvEnergyToday", "Solar", "PV-Ertrag heute (geschätzt)", "kWh", ENERGY, 3600, 0.1, 0, decimals=2, mqtt="pv_energy_today",
+      info="Benötigt den aktiven Wert PV-Leistung (Parameter der Anlage)."),
+    V("PvEnergyYesterday", "Solar", "PV-Ertrag gestern (geschätzt)", "kWh", ENERGY, 3600, 0, 0, thresholds=False, decimals=2,
+      mqtt="pv_energy_yesterday"),
+    V("Facade1Sun", "Facades", "Sonne auf Fassade 1", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade1_sun", cond="Facade1Active"),
+    V("Facade1Irradiance", "Facades", "Einstrahlung Fassade 1 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade1_irradiance", cond="Facade1Active"),
+    V("Facade1Profile", "Facades", "Profilwinkel Fassade 1", "°", ANGLE, 300, 2, 0, mqtt="facade1_profile",
+      cond="Facade1Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    V("Facade2Sun", "Facades", "Sonne auf Fassade 2", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade2_sun", cond="Facade2Active"),
+    V("Facade2Irradiance", "Facades", "Einstrahlung Fassade 2 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade2_irradiance", cond="Facade2Active"),
+    V("Facade2Profile", "Facades", "Profilwinkel Fassade 2", "°", ANGLE, 300, 2, 0, mqtt="facade2_profile",
+      cond="Facade2Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    V("Facade3Sun", "Facades", "Sonne auf Fassade 3", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade3_sun", cond="Facade3Active"),
+    V("Facade3Irradiance", "Facades", "Einstrahlung Fassade 3 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade3_irradiance", cond="Facade3Active"),
+    V("Facade3Profile", "Facades", "Profilwinkel Fassade 3", "°", ANGLE, 300, 2, 0, mqtt="facade3_profile",
+      cond="Facade3Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    V("Facade4Sun", "Facades", "Sonne auf Fassade 4", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade4_sun", cond="Facade4Active"),
+    V("Facade4Irradiance", "Facades", "Einstrahlung Fassade 4 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade4_irradiance", cond="Facade4Active"),
+    V("Facade4Profile", "Facades", "Profilwinkel Fassade 4", "°", ANGLE, 300, 2, 0, mqtt="facade4_profile",
+      cond="Facade4Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    V("Facade5Sun", "Facades", "Sonne auf Fassade 5", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade5_sun", cond="Facade5Active"),
+    V("Facade5Irradiance", "Facades", "Einstrahlung Fassade 5 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade5_irradiance", cond="Facade5Active"),
+    V("Facade5Profile", "Facades", "Profilwinkel Fassade 5", "°", ANGLE, 300, 2, 0, mqtt="facade5_profile",
+      cond="Facade5Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
+    V("Facade6Sun", "Facades", "Sonne auf Fassade 6", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="facade6_sun", cond="Facade6Active"),
+    V("Facade6Irradiance", "Facades", "Einstrahlung Fassade 6 (geschätzt)", "W/m²", IRRADIANCE, 300, 50, 0, True, decimals=0,
+      mqtt="facade6_irradiance", cond="Facade6Active"),
+    V("Facade6Profile", "Facades", "Profilwinkel Fassade 6", "°", ANGLE, 300, 2, 0, mqtt="facade6_profile",
+      cond="Facade6Active",
+      info="Sonnenhöhe in der Ebene senkrecht zur Fassade (Lamellennachführung); nur gültig, solange die Sonne auf die Fassade scheint."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -229,7 +297,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 80
+GENERAL_SIZE = 160
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -255,6 +323,60 @@ GENERAL = [
     ("SwDays", "%AID%_PT-WxSwDays", 65, 0, "Mittel über", "3", "Tage"),
     ("SwThreshold", "%AID%_PT-WxSwThreshold", 66, 0, "Sommer bei Mitteltemperatur über", "16", "°C"),
     ("SwHysteresis", "%AID%_PT-WxSwHysteresis", 70, 0, "Hysterese (±)", "0", "K"),
+    ("RadFactor", "%AID%_PT-WxRadFactor", 74, 0, "Korrekturfaktor Globalstrahlung", "100", "%"),
+    ("Albedo", "%AID%_PT-WxAlbedo", 75, 0, "Bodenreflexion (Albedo)", "20", "%"),
+    ("PvPeak", "%AID%_PT-WxKwp", 80, 0, "Anlagenleistung", "5", "kWp"),
+    ("PvTilt", "%AID%_PT-WxElev", 84, 0, "Neigung der Module", "30", "°"),
+    ("PvAzimuth", "%AID%_PT-WxAzimuth", 85, 0, "Ausrichtung der Module (0° = Nord, 180° = Süd)", "180", "°"),
+    ("PvPr", "%AID%_PT-WxPercent", 87, 0, "Systemwirkungsgrad (Performance Ratio)", "80", "%"),
+    ("Facade1Active", "%AID%_PT-OnOffYesNo", 88, 7, "Fassade 1 auswerten", "0", None),
+    ("Facade1Azimuth", "%AID%_PT-WxAzimuth", 89, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "90", "°"),
+    ("Facade1Range", "%AID%_PT-WxRange", 91, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade1MinElev", "%AID%_PT-WxElev", 92, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade1MaxElev", "%AID%_PT-WxElev", 93, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade1Threshold", "%AID%_PT-WxIrr", 94, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade1OnDelay", "%AID%_PT-WxDelayMin", 96, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade1OffDelay", "%AID%_PT-WxDelayMinAlarm", 97, 0, "Sonne weg nach", "15", "min"),
+    ("Facade2Active", "%AID%_PT-OnOffYesNo", 100, 7, "Fassade 2 auswerten", "0", None),
+    ("Facade2Azimuth", "%AID%_PT-WxAzimuth", 101, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "180", "°"),
+    ("Facade2Range", "%AID%_PT-WxRange", 103, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade2MinElev", "%AID%_PT-WxElev", 104, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade2MaxElev", "%AID%_PT-WxElev", 105, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade2Threshold", "%AID%_PT-WxIrr", 106, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade2OnDelay", "%AID%_PT-WxDelayMin", 108, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade2OffDelay", "%AID%_PT-WxDelayMinAlarm", 109, 0, "Sonne weg nach", "15", "min"),
+    ("Facade3Active", "%AID%_PT-OnOffYesNo", 112, 7, "Fassade 3 auswerten", "0", None),
+    ("Facade3Azimuth", "%AID%_PT-WxAzimuth", 113, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "270", "°"),
+    ("Facade3Range", "%AID%_PT-WxRange", 115, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade3MinElev", "%AID%_PT-WxElev", 116, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade3MaxElev", "%AID%_PT-WxElev", 117, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade3Threshold", "%AID%_PT-WxIrr", 118, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade3OnDelay", "%AID%_PT-WxDelayMin", 120, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade3OffDelay", "%AID%_PT-WxDelayMinAlarm", 121, 0, "Sonne weg nach", "15", "min"),
+    ("Facade4Active", "%AID%_PT-OnOffYesNo", 124, 7, "Fassade 4 auswerten", "0", None),
+    ("Facade4Azimuth", "%AID%_PT-WxAzimuth", 125, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "0", "°"),
+    ("Facade4Range", "%AID%_PT-WxRange", 127, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade4MinElev", "%AID%_PT-WxElev", 128, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade4MaxElev", "%AID%_PT-WxElev", 129, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade4Threshold", "%AID%_PT-WxIrr", 130, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade4OnDelay", "%AID%_PT-WxDelayMin", 132, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade4OffDelay", "%AID%_PT-WxDelayMinAlarm", 133, 0, "Sonne weg nach", "15", "min"),
+    ("Facade5Active", "%AID%_PT-OnOffYesNo", 136, 7, "Fassade 5 auswerten", "0", None),
+    ("Facade5Azimuth", "%AID%_PT-WxAzimuth", 137, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "135", "°"),
+    ("Facade5Range", "%AID%_PT-WxRange", 139, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade5MinElev", "%AID%_PT-WxElev", 140, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade5MaxElev", "%AID%_PT-WxElev", 141, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade5Threshold", "%AID%_PT-WxIrr", 142, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade5OnDelay", "%AID%_PT-WxDelayMin", 144, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade5OffDelay", "%AID%_PT-WxDelayMinAlarm", 145, 0, "Sonne weg nach", "15", "min"),
+    ("Facade6Active", "%AID%_PT-OnOffYesNo", 148, 7, "Fassade 6 auswerten", "0", None),
+    ("Facade6Azimuth", "%AID%_PT-WxAzimuth", 149, 0, "Ausrichtung (Blickrichtung nach außen, 0° = Nord, 90° = Ost)", "225", "°"),
+    ("Facade6Range", "%AID%_PT-WxRange", 151, 0, "Sonne erfasst bis zu einer seitlichen Abweichung von ±", "80", "°"),
+    ("Facade6MinElev", "%AID%_PT-WxElev", 152, 0, "Mindesthöhe der Sonne", "5", "°"),
+    ("Facade6MaxElev", "%AID%_PT-WxElev", 153, 0, "Höchste Sonnenhöhe (z. B. Dachüberstand)", "90", "°"),
+    ("Facade6Threshold", "%AID%_PT-WxIrr", 154, 0, "Sonne ab Einstrahlung auf die Fassade von", "200", "W/m²"),
+    ("Facade6OnDelay", "%AID%_PT-WxDelayMin", 156, 0, "Sonne meldet nach", "2", "min"),
+    ("Facade6OffDelay", "%AID%_PT-WxDelayMinAlarm", 157, 0, "Sonne weg nach", "15", "min"),
     ("Alarm1Source", "%AID%_PT-WxWindSource", 37, 0, "Auslösen durch", "0", None),
     ("Alarm1Threshold", "%AID%_PT-WxWindMs", 38, 0, "Schwelle", "10", "m/s"),
     ("Alarm1OnDelay", "%AID%_PT-WxDelaySec", 42, 0, "Auslösen nach", "3", "s"),
@@ -273,9 +395,11 @@ GENERAL = [
 HA_BY_UNIT = {
     "°C": ("temperature", "°C"), "%": ("humidity", "%"), "g/m³": ("absolute_humidity", "g/m³"),
     "m/s": ("wind_speed", "m/s"), "hPa": ("atmospheric_pressure", "hPa"), "lx": ("illuminance", "lx"),
-    "mm": ("precipitation", "mm"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
+    "mm": ("precipitation", "mm"), "W/m²": ("irradiance", "W/m²"), "W": ("power", "W"), "kWh": ("energy", "kWh"),
+    "kWh/m²": (None, "kWh/m²"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
 }
 HA_BY_KEY = {
+    "CloudCover": (None, "%"),
     "SummerWinter": (None, None), "SummerDay": (None, None), "HotDay": ("heat", None), "FrostDay": ("cold", None),
     "IceDay": ("cold", None),
     "Trend1h": (None, "hPa"), "Trend3h": (None, "hPa"), "Pm25": ("pm25", "µg/m³"), "Pm10": ("pm10", "µg/m³"),
@@ -460,6 +584,27 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxSwHysteresis" Name="WxSwHysteresis">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0" maxInclusive="5" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxRadFactor" Name="WxRadFactor">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="50" maxInclusive="200" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxAlbedo" Name="WxAlbedo">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="90" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxKwp" Name="WxKwp">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.1" maxInclusive="1000" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxElev" Name="WxElev">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="90" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxAzimuth" Name="WxAzimuth">',
+        '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="359" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxRange" Name="WxRange">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="10" maxInclusive="90" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxIrr" Name="WxIrr">',
+        '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="1000" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -587,8 +732,23 @@ def build():
             w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Schutz für Markisen und Jalousien: Der Alarm wird ausgelöst, wenn der Wind die Schwelle für die eingestellte Zeit überschreitet, und erst zurückgenommen, wenn er die eingestellte Zeit darunter bleibt. Beaufort 6 ≈ 10,8 m/s, 7 ≈ 13,9 m/s, 8 ≈ 17,2 m/s. Bei einer Störung der Wetterstation wird der Alarm ausgelöst." UIHint="Information" />')
         if gkey == "MinMax":
             w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Werte seit Mitternacht bzw. des Vortags (benötigt gültige Uhrzeit), bleiben über Neustarts erhalten. Temperatur = Temperatur für Berechnungen." UIHint="Information" />')
+        if gkey == "Facades":
+            q = " " * (ind + 2)
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Berechnet aus Globalstrahlung und Sonnenstand (benötigt Uhrzeit und Gerätestandort): direkte Sonne auf die Fassade plus diffuser und reflektierter Anteil. Die WN90LP misst nur waagerecht; Verschattung durch Nachbargebäude oder Bäume wird nicht erkannt." UIHint="Information" />')
+            for n in range(1, FACADES + 1):
+                w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Fassade {n}" UIHint="Headline" />')
+                w(f'{q}<ParameterRefRef RefId="{ids.ref(f"Facade{n}Active")}" IndentLevel="1" />')
+                w(f'{q}<choose ParamRefId="{ids.ref(f"Facade{n}Active")}">')
+                w(f'{q}  <when test="1">')
+                for pn in ("Azimuth", "Range", "MinElev", "MaxElev", "Threshold", "OnDelay", "OffDelay"):
+                    w(f'{q}    <ParameterRefRef RefId="{ids.ref(f"Facade{n}{pn}")}" IndentLevel="2" />')
+                for v in VALUES:
+                    if v["cond"] == f"Facade{n}Active":
+                        value_ui(v, ind + 6)
+                w(f'{q}  </when>')
+                w(f'{q}</choose>')
         for v in VALUES:
-            if v["group"] != gkey:
+            if v["group"] != gkey or v["cond"]:
                 continue
             if v["sensor"] and v["sensor"] != gsensor:
                 w(f'{" " * (ind + 2)}<choose ParamRefId="{ids.ref(SENSOR_PARAM[v["sensor"]])}">')
@@ -679,6 +839,7 @@ def build():
     h.append("    uint16_t paramOffset; // erstes Byte des Parameterblocks")
     h.append("    uint16_t koNumber;")
     h.append("    WxSensor sensor;")
+    h.append("    uint16_t condParam;   // Parameter, der aktiv sein muss (Bit 0), 0xFFFF = keiner")
     h.append("    bool thresholds;      // false: bei jeder Aenderung senden")
     h.append("    uint8_t decimals;")
     h.append("    const char *haClass;  // Home Assistant device_class (nullptr = keine)")
@@ -701,7 +862,7 @@ def build():
         for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss")):
             name = name.replace(a, b)
         h.append(f'    {{"{name}", "{v["mqtt"]}", "{unit}", WX_{v["key"]}Active, '
-                 f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {"true" if v["thresholds"] else "false"}, '
+                 f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
                  f'{v["decimals"]}, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")

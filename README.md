@@ -35,6 +35,10 @@ und optional per MQTT bereit.
   (T7 + T14 + 2·T21|22) / 4 oder Mittel aller Messwerte) über 1–7 Tage gegen eine Schwelle (Standard 16 °C),
   wahlweise als DPT 1.100 Heizen/Kühlen; dazu mittlere Außentemperatur, Tagesmittel gestern und die Kenntage
   Sommertag, heißer Tag, Frosttag, Eistag
+- Strahlung (geschätzt aus der Helligkeit): Globalstrahlung, Bewölkungsgrad, Einstrahlung heute/gestern
+- PV-Ertrag (geschätzt): Leistung sowie Ertrag heute/gestern aus kWp, Neigung, Ausrichtung und Performance Ratio
+- Bis zu 6 Fassaden: „Sonne auf Fassade“ mit Schwelle und Verzögerungen, Einstrahlung auf die Fassade und
+  Profilwinkel für die Lamellennachführung (Direkt-/Diffusaufteilung nach Erbs, Sonnenstand aus OpenKNX)
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
@@ -98,6 +102,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx forecast` | Zambretti-Prognose und Wettersymbol mit Begründung |
 | `wx minmax` | Minimum/Maximum, Windalarme, Dämmerung, Frost/Glätte |
 | `wx season` | Sommer/Winter, Messtermine und Tagesmittel, Kenntage |
+| `wx solar` | Globalstrahlung, Sonnenstand, PV-Schätzung, Fassaden |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.

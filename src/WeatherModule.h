@@ -11,7 +11,7 @@
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.6.0"
+#define WX_FIRMWARE_VERSION "0.7.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -46,6 +46,24 @@ class WeatherModule : public OpenKNX::Module
         uint32_t dayKey = 0;
         float tempMin = NAN, tempMax = NAN, gustMax = NAN;
         float tempMinYesterday = NAN, tempMaxYesterday = NAN, gustMaxYesterday = NAN;
+        float radToday = 0, radYesterday = NAN; // kWh/m2
+        float pvToday = 0, pvYesterday = NAN;   // kWh
+    };
+
+    struct Facade
+    {
+        bool active = false;
+        uint16_t azimuth = 180;
+        uint8_t range = 80;
+        uint8_t minElevation = 5;
+        uint8_t maxElevation = 90;
+        uint16_t threshold = 200;
+        uint32_t onDelayMs = 120000;
+        uint32_t offDelayMs = 900000;
+        bool sun = false;
+        bool timing = false;
+        uint32_t since = 0;
+        float irradiance = NAN;
     };
 
     MeasuredValue &val(WxId id) { return _values[(uint8_t)id]; }
@@ -63,6 +81,7 @@ class WeatherModule : public OpenKNX::Module
     void updateMinMax(float temp, float gust);
     void checkMinMaxDay();
     void updateSeason();
+    void updateSolar();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -76,6 +95,7 @@ class WeatherModule : public OpenKNX::Module
     void showForecast();
     void showMinMax();
     void showSeason();
+    void showSolar();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -119,6 +139,16 @@ class WeatherModule : public OpenKNX::Module
     bool _moistureSeen = false;
 
     MinMax _minMax;
+
+    float _radFactor = 1.0f;
+    float _albedo = 0.2f;
+    float _pvPeak = 0;
+    uint8_t _pvTilt = 30;
+    uint16_t _pvAzimuth = 180;
+    float _pvPr = 0.8f;
+    Facade _facades[6];
+    uint32_t _solarLast = 0;
+    float _ghi = NAN;
     Season _season;
     HaDiscovery _ha;
 

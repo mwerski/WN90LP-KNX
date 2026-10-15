@@ -2,6 +2,7 @@
 #include "NetworkModule.h"
 #include "WeatherCalc.h"
 #include "Forecast.h"
+#include "Solar.h"
 #include <ArduinoJson.h>
 
 WeatherModule openknxWeatherModule;
@@ -13,8 +14,11 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
 
 // Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
 static constexpr uint32_t SEND_SPACING = 25;
-static constexpr uint8_t FLASH_VERSION = 3; // 1: nur Regen, 2: + Minimum/Maximum, 3: + Sommer/Winter
+static constexpr uint8_t FLASH_VERSION = 4; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
+static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
+// Lichtausbeute des Tageslichts zur Umrechnung Helligkeit -> Strahlung
+static constexpr float LUX_PER_WM2 = 110.0f;
 
 const std::string WeatherModule::name()
 {
@@ -54,6 +58,27 @@ void WeatherModule::setup(bool configured)
         _twilightDelayMs = (uint32_t)ParamWX_TwilightDelay * 60000UL;
         _iceThreshold = (float)ParamWX_IceThreshold;
         _ha.setup(ParamWX_HaDiscovery);
+        _radFactor = ParamWX_RadFactor / 100.0f;
+        _albedo = ParamWX_Albedo / 100.0f;
+        _pvPeak = (float)ParamWX_PvPeak;
+        _pvTilt = ParamWX_PvTilt;
+        _pvAzimuth = ParamWX_PvAzimuth;
+        _pvPr = ParamWX_PvPr / 100.0f;
+        const uint16_t facadeBase[6] = {WX_Facade1Active, WX_Facade2Active, WX_Facade3Active, WX_Facade4Active, WX_Facade5Active, WX_Facade6Active};
+        for (uint8_t i = 0; i < 6; i++)
+        {
+            // Block je Fassade (12 Byte): +0 aktiv, +1 Ausrichtung, +3 Bereich, +4/+5 Hoehe min/max, +6 Schwelle, +8/+9 Verzoegerung
+            Facade &f = _facades[i];
+            const uint16_t b = facadeBase[i];
+            f.active = knx.paramByte(b) & 0x01;
+            f.azimuth = knx.paramWord(b + 1);
+            f.range = knx.paramByte(b + 3);
+            f.minElevation = knx.paramByte(b + 4);
+            f.maxElevation = knx.paramByte(b + 5);
+            f.threshold = knx.paramWord(b + 6);
+            f.onDelayMs = knx.paramByte(b + 8) * 60000UL;
+            f.offDelayMs = knx.paramByte(b + 9) * 60000UL;
+        }
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -75,7 +100,9 @@ void WeatherModule::setup(bool configured)
         const bool sensorOk = def->sensor == WxSensor::None ||
                               (def->sensor == WxSensor::Sds && _sdsEnabled) ||
                               (def->sensor == WxSensor::OneWire && _oneWireEnabled);
-        _values[i].init(def, configured && sensorOk);
+        // Werte hinter einem abgeschalteten Bedingungsparameter (z. B. Fassade) sind in der ETS ausgeblendet
+        const bool condOk = def->condParam == 0xFFFF || (configured && (knx.paramByte(def->condParam) & 0x01));
+        _values[i].init(def, configured && sensorOk && condOk);
     }
 
     _wn90.setup();
@@ -144,6 +171,7 @@ void WeatherModule::loop(bool configured)
         updateSunAndTwilight();
         updateWarnings();
         updateSeason();
+        updateSolar();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -377,7 +405,11 @@ void WeatherModule::checkMinMaxDay()
         _minMax.tempMinYesterday = wasYesterday ? _minMax.tempMin : NAN;
         _minMax.tempMaxYesterday = wasYesterday ? _minMax.tempMax : NAN;
         _minMax.gustMaxYesterday = wasYesterday ? _minMax.gustMax : NAN;
+        _minMax.radYesterday = wasYesterday ? _minMax.radToday : NAN;
+        _minMax.pvYesterday = wasYesterday ? _minMax.pvToday : NAN;
         _minMax.tempMin = _minMax.tempMax = _minMax.gustMax = NAN;
+        _minMax.radToday = 0;
+        _minMax.pvToday = 0;
     }
     // Ohne gespeicherten Tag (erste gueltige Uhrzeit): bisher gesammelte Werte gelten fuer heute
     _minMax.dayKey = today;
@@ -403,6 +435,109 @@ void WeatherModule::updateSeason()
     set(WxId::HotDay, valid ? (float)(_minMax.tempMax >= 30.0f) : NAN);
     set(WxId::FrostDay, valid ? (float)(_minMax.tempMin < 0.0f) : NAN);
     set(WxId::IceDay, valid ? (float)(_minMax.tempMax < 0.0f) : NAN);
+}
+
+void WeatherModule::updateSolar()
+{
+    const uint32_t now = millis();
+    const float hours = _solarLast ? (now - _solarLast) / 3600000.0f : 0;
+    _solarLast = now;
+
+    const MeasuredValue &light = val(WxId::Light);
+    _ghi = light.valid() ? light.value() / LUX_PER_WM2 * _radFactor : NAN;
+    set(WxId::GlobalRadiation, _ghi);
+
+    bool sunValid = false;
+    float elevation = NAN, azimuth = NAN;
+#ifdef OPENKNX_SUN_POSITION
+    if (openknx.sun.isSunCalculatioValid())
+    {
+        sunValid = true;
+        elevation = openknx.sun.elevation();
+        azimuth = openknx.sun.azimuth();
+    }
+#endif
+    uint16_t doy = 172;
+    if (openknx.time.isValid())
+    {
+        const OpenKNX::DateTime d = openknx.time.getLocalTime();
+        doy = Solar::dayOfYear(d.year, d.month, d.day);
+    }
+
+    // Bewoelkung tagsueber aus dem Verhaeltnis zum klaren Himmel
+    if (sunValid && elevation > 5.0f && !isnan(_ghi))
+        set(WxId::CloudCover, constrain((1.0f - _ghi / Solar::clearSky(elevation)) * 100.0f, 0.0f, 100.0f));
+    else
+        val(WxId::CloudCover).invalidate();
+
+    if (isnan(_ghi))
+    {
+        val(WxId::PvPower).invalidate();
+        for (uint8_t i = 0; i < 6; i++)
+        {
+            val((WxId)((uint8_t)WxId::Facade1Irradiance + i * 3)).invalidate();
+            val((WxId)((uint8_t)WxId::Facade1Profile + i * 3)).invalidate();
+        }
+        return;
+    }
+
+    const Solar::Split sp = sunValid ? Solar::split(_ghi, elevation, doy) : Solar::Split{0, _ghi};
+
+    // PV-Leistung: kWp * Einstrahlung auf die Modulflaeche [kW/m2] * Performance Ratio -> W
+    float pv = NAN;
+    if (_pvPeak > 0)
+    {
+        const float poa = sunValid ? Solar::plane(_ghi, sp, elevation, azimuth, _pvTilt, _pvAzimuth, _albedo) : _ghi;
+        pv = _pvPeak * poa * _pvPr;
+        set(WxId::PvPower, pv);
+    }
+
+    // Tagessummen
+    if (hours > 0 && hours < 0.1f)
+    {
+        _minMax.radToday += _ghi * hours / 1000.0f;
+        if (!isnan(pv))
+            _minMax.pvToday += pv * hours / 1000.0f;
+    }
+    const bool dayValid = _minMax.dayKey != 0;
+    set(WxId::RadiationToday, dayValid ? _minMax.radToday : NAN);
+    set(WxId::RadiationYesterday, _minMax.radYesterday);
+    set(WxId::PvEnergyToday, (dayValid && _pvPeak > 0) ? _minMax.pvToday : NAN);
+    set(WxId::PvEnergyYesterday, _pvPeak > 0 ? _minMax.pvYesterday : NAN);
+
+    // Fassaden: WxId-Reihenfolge je Fassade Sonne, Einstrahlung, Profilwinkel
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        Facade &f = _facades[i];
+        if (!f.active)
+            continue;
+        const WxId idSun = (WxId)((uint8_t)WxId::Facade1Sun + i * 3);
+        if (!sunValid)
+        {
+            val((WxId)((uint8_t)idSun + 1)).invalidate();
+            val((WxId)((uint8_t)idSun + 2)).invalidate();
+            continue;
+        }
+        f.irradiance = Solar::plane(_ghi, sp, elevation, azimuth, 90.0f, f.azimuth, _albedo);
+        const float offset = fabsf(Solar::azimuthOffset(azimuth, f.azimuth));
+        const bool inRange = offset <= f.range && elevation >= f.minElevation && elevation <= f.maxElevation;
+        const bool sunNow = inRange && f.irradiance >= f.threshold;
+        if (sunNow == f.sun)
+            f.timing = false;
+        else if (!f.timing)
+        {
+            f.timing = true;
+            f.since = now;
+        }
+        else if (now - f.since >= (sunNow ? f.onDelayMs : f.offDelayMs))
+        {
+            f.sun = sunNow;
+            f.timing = false;
+        }
+        set(idSun, f.sun);
+        set((WxId)((uint8_t)idSun + 1), f.irradiance);
+        set((WxId)((uint8_t)idSun + 2), inRange ? Solar::profileAngle(elevation, azimuth, f.azimuth) : NAN);
+    }
 }
 
 void WeatherModule::updateMinMax(float temp, float gust)
@@ -607,7 +742,7 @@ void WeatherModule::publishMqtt()
 // ---------------------------------------------------------------------------
 uint16_t WeatherModule::flashSize()
 {
-    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE;
+    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE;
 }
 
 void WeatherModule::writeFlash()
@@ -622,6 +757,10 @@ void WeatherModule::writeFlash()
     openknx.flash.writeFloat(_minMax.tempMaxYesterday);
     openknx.flash.writeFloat(_minMax.gustMaxYesterday);
     _season.writeFlash();
+    openknx.flash.writeFloat(_minMax.radToday);
+    openknx.flash.writeFloat(_minMax.radYesterday);
+    openknx.flash.writeFloat(_minMax.pvToday);
+    openknx.flash.writeFloat(_minMax.pvYesterday);
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -641,8 +780,19 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     _minMax.tempMinYesterday = openknx.flash.readFloat();
     _minMax.tempMaxYesterday = openknx.flash.readFloat();
     _minMax.gustMaxYesterday = openknx.flash.readFloat();
-    if (version >= 3 && size >= 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE)
-        _season.readFlash();
+    if (version < 3 || size < 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE)
+        return;
+    _season.readFlash();
+    if (version < 4 || size < flashSize())
+        return;
+    _minMax.radToday = openknx.flash.readFloat();
+    _minMax.radYesterday = openknx.flash.readFloat();
+    _minMax.pvToday = openknx.flash.readFloat();
+    _minMax.pvYesterday = openknx.flash.readFloat();
+    if (isnan(_minMax.radToday))
+        _minMax.radToday = 0;
+    if (isnan(_minMax.pvToday))
+        _minMax.pvToday = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -658,6 +808,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx forecast", "Prognose und Wettersymbol");
     openknx.console.printHelpLine("wx minmax", "Minimum/Maximum, Windalarme, Daemmerung, Warnungen");
     openknx.console.printHelpLine("wx season", "Sommer/Winter, Tagesmittel und Kenntage");
+    openknx.console.printHelpLine("wx solar", "Strahlung, PV-Schaetzung und Fassaden");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -707,6 +858,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showMinMax();
     else if (cmd == "wx season")
         showSeason();
+    else if (cmd == "wx solar")
+        showSolar();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)
@@ -841,4 +994,26 @@ void WeatherModule::showSeason()
              _season.reading(2), _season.todayMean());
     logInfoP("Kenntage heute: Sommertag %s, heisser Tag %s, Frosttag %s, Eistag %s", _minMax.tempMax >= 25.0f ? "ja" : "nein",
              _minMax.tempMax >= 30.0f ? "ja" : "nein", _minMax.tempMin < 0.0f ? "ja" : "nein", _minMax.tempMax < 0.0f ? "ja" : "nein");
+}
+
+void WeatherModule::showSolar()
+{
+    logInfoP("Globalstrahlung %.0f W/m2, Bewoelkung %.0f %%, heute %.2f kWh/m2, gestern %.2f kWh/m2", _ghi, val(WxId::CloudCover).value(),
+             _minMax.radToday, _minMax.radYesterday);
+#ifdef OPENKNX_SUN_POSITION
+    if (openknx.sun.isSunCalculatioValid())
+        logInfoP("Sonne: Azimut %.1f, Hoehe %.1f Grad", openknx.sun.azimuth(), openknx.sun.elevation());
+    else
+        logInfoP("Sonne: unbekannt (Uhrzeit/Standort fehlen)");
+#endif
+    if (_pvPeak > 0)
+        logInfoP("PV %.1f kWp, %u Grad / %u Grad: %.0f W, heute %.2f kWh, gestern %.2f kWh", _pvPeak, _pvTilt, _pvAzimuth, val(WxId::PvPower).value(),
+                 _minMax.pvToday, _minMax.pvYesterday);
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        const Facade &f = _facades[i];
+        if (f.active)
+            logInfoP("Fassade %u (%u Grad): %s, %.0f W/m2%s", i + 1, f.azimuth, f.sun ? "Sonne" : "keine Sonne", f.irradiance,
+                     f.timing ? " (Verzoegerung laeuft)" : "");
+    }
 }

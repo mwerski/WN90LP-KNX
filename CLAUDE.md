@@ -54,9 +54,11 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
 - **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
-- **Allgemeine Parameter** (GENERAL, 80 Byte): Bytes 0–36 belegt, 37–63 drei Windalarm-Blöcke à 9 Byte, 64–73 Sommer/Winter, Rest frei.
+- **Allgemeine Parameter** (GENERAL, 160 Byte): 0–36 allgemein, 37–63 Windalarme (3×9), 64–73 Sommer/Winter, 74–75 Strahlung, 80–87 PV, 88–159 Fassaden (6×12).
+- **Bedingte Werte:** `cond` in generate_ets.py (z. B. Fassade n aktiv, Bit 0 am Blockanfang) blendet KOs aus; die Firmware prüft `condParam` vor jedem KO-Zugriff.
+- **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
-- **Flash-Version 3** im Modul: [Version][Regen (RainStatistics::FLASH_SIZE)][Min/Max 28 Byte][Season::FLASH_SIZE]; Versionen 1 und 2 werden noch gelesen.
+- **Flash-Version 4** im Modul: [Version][Regen][Min/Max 28 Byte][Season::FLASH_SIZE][Strahlung/PV heute/gestern 16 Byte]; Versionen 1–3 werden noch gelesen.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.

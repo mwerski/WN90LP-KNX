@@ -58,7 +58,8 @@ bool HaDiscovery::publish(const MeasuredValue &v)
     if (!binary && def->haUnit)
     {
         doc["unit_of_measurement"] = def->haUnit;
-        doc["state_class"] = strcmp(def->mqttKey, "raincounter") == 0 ? "total_increasing" : "measurement";
+        const bool total = strcmp(def->mqttKey, "raincounter") == 0 || strstr(def->haUnit, "kWh") != nullptr;
+        doc["state_class"] = total ? "total_increasing" : "measurement";
     }
     JsonObject dev = doc["device"].to<JsonObject>();
     dev["identifiers"].to<JsonArray>().add(node);
