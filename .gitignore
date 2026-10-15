@@ -3,9 +3,20 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
-.vscode
 .DS_Store
-include/WN90LP KNX Gateway.ae-manu.back
-flash.sh
-firmware.bin
 .claude/settings.local.json
+
+# OpenKNX-Abhaengigkeiten (restore/restore.py)
+lib/knx
+lib/OGM-*
+lib/OFM-*
+
+# Von OpenKNXproducer bzw. prepare.py erzeugt
+include/knxprod.h
+include/versions.h
+include/buildtime.h
+include/webassets.h
+**/*.knxprod
+**/*.debug.xml
+src/*.baggages
+release/*

@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Abhaengigkeiten wiederherstellen",
+            "type": "shell",
+            "command": "python3",
+            "args": ["restore/restore.py"],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "ETS-Modul erzeugen (WN90LP.share.xml + ValueTable.h)",
+            "type": "shell",
+            "command": "python3",
+            "args": ["scripts/generate_ets.py"],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "OpenKNXproducer (knxprod.h + ETS-Applikation)",
+            "type": "shell",
+            "command": "OpenKNXproducer",
+            "args": ["create", "--Debug", "-h", "include/knxprod.h", "-o", "${workspaceFolder}/src/WN90LP.knxprod", "src/WN90LP"],
+            "problemMatcher": [],
+            "group": "build"
+        }
+    ]
+}

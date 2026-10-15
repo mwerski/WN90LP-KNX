@@ -1,0 +1,6 @@
+------- Built with -------
+8e4c5bc v1 lib/knx https://github.com/OpenKNX/knx
+66bc4af v1 lib/OGM-Common https://github.com/OpenKNX/OGM-Common
+51dc43e v1 lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
+fb7f4b5 v1 lib/OFM-Network https://github.com/OpenKNX/OFM-Network
+eca6977 v1 lib/OFM-ConfigTransfer https://github.com/OpenKNX/OFM-ConfigTransfer

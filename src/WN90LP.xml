@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<KNX xmlns="http://knx.org/xml/project/20" xmlns:op="http://github.com/OpenKNX/OpenKNXproducer">
+
+  <op:config href="WN90LP.conf.xml" />
+
+  <!-- Webserver- und MQTT-Parameter in der ETS anzeigen -->
+  <op:config name="%NET_ServiceHTTP%" value="1" />
+  <op:config name="%NET_ServiceMQTT%" value="1" />
+
+  <!-- OpenKnxId: 0xFE ist ein Platzhalter fuer den privaten Gebrauch.
+       Vor einer Veroeffentlichung eine eigene ID beim OpenKNX-Team anfragen. -->
+  <op:ETS ProductName="WN90LP Wetterstation"
+    OpenKnxId="0xFE"
+    ApplicationNumber="0x02"
+    ApplicationVersion="%WX_ApplicationVersion%"
+    ReplacesVersions="%WX_ReplacesVersions%"
+    ApplicationRevision="0"
+    ApplicationName="WN90LP-IP"
+    OrderNumber="OpenKnxWN90LP"
+    IsRailMounted="false"
+    BaggagesRootDir="FE/02"
+    MaskVersion="MV-57B0"
+    MediumTypes="MT-5"
+  />
+
+  <op:define prefix="BASE"
+    share="../lib/OGM-Common/src/Common.share.xml"
+    ModuleType="10">
+    <op:verify File="../lib/OGM-Common/library.json" ModuleVersion="%BASE_VerifyVersion%" />
+  </op:define>
+
+  <op:define prefix="NET"
+    share="../lib/OFM-Network/src/Network.share.xml"
+    ModuleType="11">
+    <op:verify File="../lib/OFM-Network/library.json" ModuleVersion="%NET_VerifyVersion%" />
+  </op:define>
+
+  <!-- ConfigTransfer: wird von OGM-Common fuer die Modulliste in der ETS benoetigt (nur ETS, keine Firmware) -->
+  <op:define prefix="UCT"
+    share="../lib/OFM-ConfigTransfer/src/ConfigTransfer.share.xml"
+    noConfigTransfer="true"
+    ModuleType="99">
+    <op:verify File="../lib/OFM-ConfigTransfer/library.json" ModuleVersion="%UCT_VerifyVersion%" />
+  </op:define>
+
+  <!-- Wetterstation; WN90LP.share.xml wird von scripts/generate_ets.py erzeugt -->
+  <op:define prefix="WX"
+    share="WN90LP.share.xml"
+    KoSingleOffset="20"
+    ModuleType="20" />
+
+  <generate />
+</KNX>
