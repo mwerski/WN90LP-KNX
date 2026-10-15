@@ -16,7 +16,8 @@ und optional per MQTT bereit.
 - Messwerte der WN90LP: Temperatur, Luftfeuchte, Wind, Böe, Windrichtung, Luftdruck, Helligkeit, UV-Index, Regen
 - Berechnet: absolute Feuchte, Taupunkt, Frostpunkt, Humidex, Hitzeindex, Windchill, Discomfort-Index,
   Beaufort, Luftdruck auf Meereshöhe, Luftdrucktendenz 1 h / 3 h
-- Regen: Gesamtmenge, Mengen der letzten 5 min / 1 h / 6 h / 24 h / 48 h / 72 h, heute, „Regen“ (ja/nein).
+- Regen: Gesamtmenge, Intensität (mm/h), Mengen der letzten 5 min / 1 h / 6 h / 24 h / 48 h / 72 h, heute,
+  „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
   Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
 - Feinstaub PM2,5 / PM10, auch feuchtekorrigiert
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung

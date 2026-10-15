@@ -27,6 +27,7 @@ enum class WxId : uint8_t
     Light,
     UvIndex,
     RainTotal,
+    RainRate,
     Rain5m,
     Rain1h,
     Rain6h,
@@ -70,7 +71,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 34
+#define WX_VALUE_COUNT 35
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -98,6 +99,7 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Helligkeit", "light", "lx", WX_LightActive, WX_KoLight, WxSensor::None, true, 0, 1, {{9, 1, 1.0f}}},
     {"UV-Index", "uvindex", "", WX_UvIndexActive, WX_KoUvIndex, WxSensor::None, true, 1, 2, {{9, 1, 1.0f}, {5, 10, 1.0f}}},
     {"Regenmenge gesamt", "raincounter", "mm", WX_RainTotalActive, WX_KoRainTotal, WxSensor::None, true, 2, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Regenintensitaet", "rain_rate", "mm/h", WX_RainRateActive, WX_KoRainRate, WxSensor::None, true, 1, 1, {{9, 1, 1.0f}}},
     {"Regenmenge letzte 5 Minuten", "rain_5min", "mm", WX_Rain5mActive, WX_KoRain5m, WxSensor::None, true, 2, 1, {{9, 1, 1.0f}}},
     {"Regenmenge letzte Stunde", "rain_1h", "mm", WX_Rain1hActive, WX_KoRain1h, WxSensor::None, true, 2, 1, {{9, 1, 1.0f}}},
     {"Regenmenge letzte 6 Stunden", "rain_6h", "mm", WX_Rain6hActive, WX_KoRain6h, WxSensor::None, true, 2, 1, {{9, 1, 1.0f}}},

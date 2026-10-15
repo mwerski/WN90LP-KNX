@@ -9,7 +9,9 @@ class RainStatistics
   public:
     static constexpr uint16_t FLASH_SIZE = 1 + 8 + 8 + 4 + 4 + 1 + 1 + 73 * 4;
 
-    void setup(uint8_t rainStopDelayMin);
+    // Regen beginnt bei mindestens minAmount mm innerhalb von windowMin Minuten
+    // und endet, wenn stopDelayMin Minuten kein Niederschlag gemessen wurde
+    void setup(uint8_t windowMin, float minAmount, uint8_t stopDelayMin);
     void feed(uint16_t rawCounter);
     void loop();
 
@@ -17,7 +19,8 @@ class RainStatistics
     float amountMinutes(uint8_t minutes) const;
     float amountHours(uint8_t hours) const;
     float today() const; // NAN ohne gueltige Uhrzeit
-    bool raining() const;
+    bool raining() const { return _raining; }
+    float rate() const; // mm/h aus den letzten 10 Minuten
     bool hasData() const { return _initialized; }
     uint8_t minuteSamples() const { return _minuteCount; }
     uint8_t hourSamples() const { return _hourCount; }
@@ -36,7 +39,12 @@ class RainStatistics
     void pushHour();
     float back(const float *ring, uint8_t size, uint8_t head, uint8_t count, uint8_t steps) const;
 
+    void updateRaining();
+
+    uint8_t _windowMin = 10;
+    float _minAmount = 0.1f;
     uint32_t _stopDelayMs = 15 * 60000UL;
+    bool _raining = false;
     bool _initialized = false;
     uint16_t _lastRaw = 0;
     double _total = 0;

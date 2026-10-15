@@ -23,6 +23,8 @@ void WeatherModule::setup(bool configured)
 {
     _configured = configured;
     uint8_t rainStopDelay = 15;
+    uint8_t rainWindow = 10;
+    float rainMinAmount = 0.1f;
     uint8_t sdsDutyCycle = 5;
     if (configured)
     {
@@ -32,6 +34,8 @@ void WeatherModule::setup(bool configured)
         _altitude = ParamWX_Altitude;
         _tempOffset = (float)ParamWX_TempOffset;
         rainStopDelay = ParamWX_RainStopDelay;
+        rainWindow = ParamWX_RainWindow;
+        rainMinAmount = (float)ParamWX_RainMinAmount;
         _mqttInterval = (uint32_t)ParamWX_MqttInterval * 1000;
     }
 
@@ -45,7 +49,7 @@ void WeatherModule::setup(bool configured)
     }
 
     _wn90.setup();
-    _rain.setup(rainStopDelay);
+    _rain.setup(rainWindow, rainMinAmount, rainStopDelay);
     if (_sdsEnabled)
         _sds.setup(sdsDutyCycle);
     if (_oneWireEnabled)
@@ -198,6 +202,7 @@ void WeatherModule::updateRain()
     if (!_rain.hasData())
         return;
     set(WxId::RainTotal, (float)_rain.total());
+    set(WxId::RainRate, _rain.rate());
     set(WxId::Rain5m, _rain.amountMinutes(5));
     set(WxId::Rain1h, _rain.amountMinutes(60));
     set(WxId::Rain6h, _rain.amountHours(6));
@@ -418,7 +423,8 @@ void WeatherModule::showRain()
         logInfoP("Regenstatistik: noch keine Daten");
         return;
     }
-    logInfoP("Regen gesamt %.2f mm, heute %.2f mm, regnet: %s", _rain.total(), _rain.today(), _rain.raining() ? "ja" : "nein");
+    logInfoP("Regen gesamt %.2f mm, heute %.2f mm, Intensitaet %.1f mm/h, regnet: %s", _rain.total(), _rain.today(), _rain.rate(),
+             _rain.raining() ? "ja" : "nein");
     logInfoP("5 min %.2f | 1 h %.2f | 6 h %.2f | 24 h %.2f | 48 h %.2f | 72 h %.2f mm", _rain.amountMinutes(5), _rain.amountMinutes(60),
              _rain.amountHours(6), _rain.amountHours(24), _rain.amountHours(48), _rain.amountHours(72));
     logInfoP("Werte im Puffer: %u Minuten, %u Stunden", _rain.minuteSamples(), _rain.hourSamples());

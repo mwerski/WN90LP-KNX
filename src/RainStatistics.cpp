@@ -4,9 +4,11 @@
 // Sprung von mehr als 50 mm zwischen zwei Abfragen (2 s): Zaehler der Wetterstation wurde zurueckgesetzt
 static constexpr uint16_t MAX_PLAUSIBLE_DELTA = 5000;
 
-void RainStatistics::setup(uint8_t rainStopDelayMin)
+void RainStatistics::setup(uint8_t windowMin, float minAmount, uint8_t stopDelayMin)
 {
-    _stopDelayMs = (uint32_t)max<uint8_t>(rainStopDelayMin, 1) * 60000UL;
+    _windowMin = constrain(windowMin, 1, 60);
+    _minAmount = max(minAmount, 0.01f);
+    _stopDelayMs = (uint32_t)max<uint8_t>(stopDelayMin, 1) * 60000UL;
     _minuteTimer = millis();
     _hourTimer = millis();
 }
@@ -57,6 +59,7 @@ void RainStatistics::loop()
         if (_minuteCount < MINUTES)
             _minuteCount++;
     }
+    updateRaining();
 
     if (delayCheck(_hourTimer, 3600000UL))
     {
@@ -140,9 +143,25 @@ float RainStatistics::today() const
     return (float)(_total - _midnightTotal);
 }
 
-bool RainStatistics::raining() const
+void RainStatistics::updateRaining()
 {
-    return _rainSeen && millis() - _lastRain < _stopDelayMs;
+    if (!_raining)
+    {
+        const float amount = amountMinutes(_windowMin);
+        _raining = !isnan(amount) && amount >= _minAmount - 0.0001f;
+    }
+    else if (!_rainSeen || millis() - _lastRain >= _stopDelayMs)
+        _raining = false;
+}
+
+float RainStatistics::rate() const
+{
+    const float amount = amountMinutes(10);
+    if (isnan(amount))
+        return NAN;
+    // Solange noch keine 10 Minuten vorliegen, auf die vorhandene Zeit hochrechnen
+    const uint8_t minutes = min<uint8_t>(10, max<uint8_t>(_minuteCount - 1, 1));
+    return amount * 60.0f / minutes;
 }
 
 bool RainStatistics::saveRequested()

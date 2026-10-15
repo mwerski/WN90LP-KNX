@@ -8,7 +8,7 @@
 #include "ValueTable.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.1.0"
+#define WX_FIRMWARE_VERSION "0.2.0"
 
 class WeatherModule : public OpenKNX::Module
 {

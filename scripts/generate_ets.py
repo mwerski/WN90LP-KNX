@@ -65,10 +65,10 @@ GROUPS = [
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
-      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None):
+      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
                 abs=abs_, rel=rel, active=active, sensor=sensor, thresholds=thresholds,
-                decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info)
+                decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt)
 
 
 # Reihenfolge = KO-Reihenfolge und Reihenfolge im Parameterspeicher
@@ -110,18 +110,26 @@ VALUES = [
     V("UvIndex", "Light", "UV-Index", "",
       [("DPT 9 (2 Byte)", "DPT-9", "2 Bytes", 9, 1, 1.0), ("DPT 5.010 (1 Byte, ganzzahlig)", "DPST-5-10", "1 Byte", 5, 10, 1.0)],
       300, 1, 0, True, mqtt="uvindex", absmax=15),
-    V("RainTotal", "Rain", "Regenmenge gesamt", "mm", RAIN, 3600, 1, 0, True, decimals=2, mqtt="raincounter",
-      info="Fortlaufender Zähler seit Inbetriebnahme, bleibt bei Neustart und Update erhalten."),
+    V("RainTotal", "Rain", "Regenmenge gesamt", "mm", RAIN, 3600, 1, 0, True, decimals=2, mqtt="raincounter", dpt=1,
+      info="Fortlaufender Zähler seit Inbetriebnahme, bleibt bei Neustart und Update erhalten. "
+           "DPT 14 empfohlen: DPT 9 wird bei großen Werten grob (ab 1000 mm in Schritten von 0,64 mm)."),
+    V("RainRate", "Rain", "Regenintensität", "mm/h", [("DPT 9 (2 Byte, mm/h)", "DPT-9", "2 Bytes", 9, 1, 1.0)],
+      600, 1, 0, True, decimals=1, mqtt="rain_rate",
+      info="Hochgerechnet aus der Regenmenge der letzten 10 Minuten."),
     V("Rain5m", "Rain", "Regenmenge letzte 5 Minuten", "mm", RAIN9, 300, 0.2, 0, decimals=2, mqtt="rain_5min"),
     V("Rain1h", "Rain", "Regenmenge letzte Stunde", "mm", RAIN9, 600, 0.5, 0, True, decimals=2, mqtt="rain_1h"),
-    V("Rain6h", "Rain", "Regenmenge letzte 6 Stunden", "mm", RAIN9, 1800, 1, 0, decimals=2, mqtt="rain_6h"),
-    V("Rain24h", "Rain", "Regenmenge letzte 24 Stunden", "mm", RAIN9, 3600, 1, 0, True, decimals=2, mqtt="rain_24h"),
-    V("Rain48h", "Rain", "Regenmenge letzte 48 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_48h"),
-    V("Rain72h", "Rain", "Regenmenge letzte 72 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_72h"),
+    V("Rain6h", "Rain", "Regenmenge letzte 6 Stunden", "mm", RAIN9, 1800, 1, 0, decimals=2, mqtt="rain_6h",
+      info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
+    V("Rain24h", "Rain", "Regenmenge letzte 24 Stunden", "mm", RAIN9, 3600, 1, 0, True, decimals=2, mqtt="rain_24h",
+      info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
+    V("Rain48h", "Rain", "Regenmenge letzte 48 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_48h",
+      info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
+    V("Rain72h", "Rain", "Regenmenge letzte 72 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_72h",
+      info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
     V("RainToday", "Rain", "Regenmenge heute", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="rain_today",
       info="Wird um Mitternacht zurückgesetzt; benötigt eine gültige Uhrzeit (KO Uhrzeit/Datum oder NTP)."),
     V("Raining", "Rain", "Regen", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0, mqtt="raining",
-      info="1 = es regnet. Wird bei jeder Änderung gesendet."),
+      info="1 = es regnet: Mindestmenge im Zeitfenster erreicht (Seite Allgemein). Wird bei jeder Änderung gesendet."),
     V("Pm25", "Particles", "Feinstaub PM2,5", "µg/m³", PM, 300, 2, 0, True, sensor="sds", mqtt="pm25"),
     V("Pm10", "Particles", "Feinstaub PM10", "µg/m³", PM, 300, 2, 0, True, sensor="sds", mqtt="pm10"),
     V("Pm25Norm", "Particles", "Feinstaub PM2,5 (feuchtekorrigiert)", "µg/m³", PM, 300, 2, 0, sensor="sds",
@@ -140,7 +148,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 12
+GENERAL_SIZE = 16
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -149,6 +157,8 @@ GENERAL = [
     ("TempOffset", "%AID%_PT-WxTempOffset", 4, 0, "Korrektur der Lufttemperatur", "0", "K"),
     ("RainStopDelay", "%AID%_PT-WxRainStop", 8, 0, "Regen endet, wenn so lange kein Niederschlag gemessen wurde", "15", "min"),
     ("MqttInterval", "%AID%_PT-WxCycle", 9, 0, "Messwerte per MQTT senden alle (0 = nie)", "60", "s"),
+    ("RainWindow", "%AID%_PT-WxRainWindow", 11, 0, "Regen beginnt bei Niederschlag innerhalb von", "10", "min"),
+    ("RainMinAmount", "%AID%_PT-WxRainAmount", 12, 0, "von mindestens", "0.1", "mm"),
 ]
 
 DPT_TYPES = {}  # Labels -> ParameterType-Id
@@ -209,7 +219,7 @@ def build():
         k = v["key"]
         param(f"{k}Active", "%AID%_PT-CheckBox", offset, 7, "Aktiv", "1" if v["active"] else "0")
         if len(v["dpts"]) > 1:
-            param(f"{k}Dpt", dpt_type(v["dpts"]), offset, 5, "Datenpunkttyp", "0")
+            param(f"{k}Dpt", dpt_type(v["dpts"]), offset, 5, "Datenpunkttyp", str(v["dpt"]))
         param(f"{k}Cycle", "%AID%_PT-WxCycle", offset + 1, 0, "Zyklisch senden (0 = nie)", v["cycle"], "s")
         if v["thresholds"]:
             unit = v["unit"] or None
@@ -260,6 +270,12 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxTempOffset" Name="WxTempOffset">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="-10" maxInclusive="10" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxRainWindow" Name="WxRainWindow">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="60" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxRainAmount" Name="WxRainAmount">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.01" maxInclusive="10" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxRainStop" Name="WxRainStop">',
         '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="240" />',
         '              </ParameterType>',
@@ -290,7 +306,11 @@ def build():
     w(f'                <ParameterRefRef RefId="{ids.ref("Altitude")}" IndentLevel="1" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("TempOffset")}" IndentLevel="1" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Regen" UIHint="Headline" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Einzelne Zählerschritte (z. B. durch Tau oder Erschütterungen) lösen so noch keinen Regen aus." UIHint="Information" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("RainWindow")}" IndentLevel="1" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("RainMinAmount")}" IndentLevel="1" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("RainStopDelay")}" IndentLevel="1" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach der ersten Inbetriebnahme enthalten die Regenmengen nur die Zeit seit dem Start (z. B. 72 Stunden erst nach drei Tagen vollständig). Danach bleiben sie über Neustarts erhalten." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("MqttInterval")}" IndentLevel="1" />')
