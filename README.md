@@ -31,6 +31,10 @@ und optional per MQTT bereit.
 - Sonnenstand (Azimut/Elevation) und Tag/Nacht aus der Helligkeit mit Hysterese und Verzögerung
 - Minimum/Maximum: Temperatur und stärkste Böe heute und gestern (remanent)
 - Warnungen: Frost und Glättegefahr
+- Sommer/Winter-Umschaltung: gleitendes Mittel der Tagesmitteltemperaturen (DIN/Mannheimer Stunden
+  (T7 + T14 + 2·T21|22) / 4 oder Mittel aller Messwerte) über 1–7 Tage gegen eine Schwelle (Standard 16 °C),
+  wahlweise als DPT 1.100 Heizen/Kühlen; dazu mittlere Außentemperatur, Tagesmittel gestern und die Kenntage
+  Sommertag, heißer Tag, Frosttag, Eistag
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
@@ -93,6 +97,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx pressure` | Luftdruckverlauf und Tendenz |
 | `wx forecast` | Zambretti-Prognose und Wettersymbol mit Begründung |
 | `wx minmax` | Minimum/Maximum, Windalarme, Dämmerung, Frost/Glätte |
+| `wx season` | Sommer/Winter, Messtermine und Tagesmittel, Kenntage |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.

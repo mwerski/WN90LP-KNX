@@ -6,9 +6,14 @@
 
 WeatherModule openknxWeatherModule;
 
+static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
+{
+    return d.year * 10000UL + d.month * 100UL + d.day;
+}
+
 // Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
 static constexpr uint32_t SEND_SPACING = 25;
-static constexpr uint8_t FLASH_VERSION = 2; // 1: nur Regen, 2: + Minimum/Maximum
+static constexpr uint8_t FLASH_VERSION = 3; // 1: nur Regen, 2: + Minimum/Maximum, 3: + Sommer/Winter
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 
 const std::string WeatherModule::name()
@@ -49,6 +54,8 @@ void WeatherModule::setup(bool configured)
         _twilightDelayMs = (uint32_t)ParamWX_TwilightDelay * 60000UL;
         _iceThreshold = (float)ParamWX_IceThreshold;
         _ha.setup(ParamWX_HaDiscovery);
+        _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
+                      (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
         const float thresholds[3] = {(float)ParamWX_Alarm1Threshold, (float)ParamWX_Alarm2Threshold, (float)ParamWX_Alarm3Threshold};
         const uint8_t onDelays[3] = {ParamWX_Alarm1OnDelay, ParamWX_Alarm2OnDelay, ParamWX_Alarm3OnDelay};
@@ -136,6 +143,7 @@ void WeatherModule::loop(bool configured)
         updateForecast();
         updateSunAndTwilight();
         updateWarnings();
+        updateSeason();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -213,6 +221,7 @@ void WeatherModule::processWn90()
     set(WxId::WindAvg10, _windStats.average());
     set(WxId::GustMax10, _windStats.maxGust());
     updateMinMax(t, gust);
+    _season.feed(t);
 }
 
 float WeatherModule::calcTemperature(float stationTemp, const char **source)
@@ -351,11 +360,6 @@ void WeatherModule::updateWarnings()
     set(WxId::IceWarning, _ice);
 }
 
-static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
-{
-    return d.year * 10000UL + d.month * 100UL + d.day;
-}
-
 void WeatherModule::checkMinMaxDay()
 {
     if (!openknx.time.isValid())
@@ -378,6 +382,27 @@ void WeatherModule::checkMinMaxDay()
     // Ohne gespeicherten Tag (erste gueltige Uhrzeit): bisher gesammelte Werte gelten fuer heute
     _minMax.dayKey = today;
     openknx.flash.save(true);
+}
+
+void WeatherModule::updateSeason()
+{
+    if (openknx.time.isValid())
+    {
+        const OpenKNX::DateTime now = openknx.time.getLocalTime();
+        const MeasuredValue &temp = val(WxId::Temp);
+        const float t = calcTemperature(temp.valid() ? temp.value() : NAN);
+        _season.loop(dayKeyOf(now), now.hour, t);
+    }
+    set(WxId::SummerWinter, _season.summer() < 0 ? NAN : (float)_season.summer());
+    set(WxId::MeanTemp, _season.average());
+    set(WxId::DailyMeanYesterday, _season.yesterday());
+
+    // Kenntage nach bisherigem Minimum/Maximum des laufenden Tages
+    const bool valid = _minMax.dayKey != 0 && !isnan(_minMax.tempMax);
+    set(WxId::SummerDay, valid ? (float)(_minMax.tempMax >= 25.0f) : NAN);
+    set(WxId::HotDay, valid ? (float)(_minMax.tempMax >= 30.0f) : NAN);
+    set(WxId::FrostDay, valid ? (float)(_minMax.tempMin < 0.0f) : NAN);
+    set(WxId::IceDay, valid ? (float)(_minMax.tempMax < 0.0f) : NAN);
 }
 
 void WeatherModule::updateMinMax(float temp, float gust)
@@ -582,7 +607,7 @@ void WeatherModule::publishMqtt()
 // ---------------------------------------------------------------------------
 uint16_t WeatherModule::flashSize()
 {
-    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE;
+    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE;
 }
 
 void WeatherModule::writeFlash()
@@ -596,6 +621,7 @@ void WeatherModule::writeFlash()
     openknx.flash.writeFloat(_minMax.tempMinYesterday);
     openknx.flash.writeFloat(_minMax.tempMaxYesterday);
     openknx.flash.writeFloat(_minMax.gustMaxYesterday);
+    _season.writeFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -615,6 +641,8 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     _minMax.tempMinYesterday = openknx.flash.readFloat();
     _minMax.tempMaxYesterday = openknx.flash.readFloat();
     _minMax.gustMaxYesterday = openknx.flash.readFloat();
+    if (version >= 3 && size >= 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE)
+        _season.readFlash();
 }
 
 // ---------------------------------------------------------------------------
@@ -629,6 +657,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx pressure", "Luftdruckverlauf und Tendenz");
     openknx.console.printHelpLine("wx forecast", "Prognose und Wettersymbol");
     openknx.console.printHelpLine("wx minmax", "Minimum/Maximum, Windalarme, Daemmerung, Warnungen");
+    openknx.console.printHelpLine("wx season", "Sommer/Winter, Tagesmittel und Kenntage");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -676,6 +705,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showForecast();
     else if (cmd == "wx minmax")
         showMinMax();
+    else if (cmd == "wx season")
+        showSeason();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)
@@ -799,4 +830,15 @@ void WeatherModule::showMinMax()
                  _alarms[i].threshold, _alarms[i].timing ? " (Verzoegerung laeuft)" : "");
     logInfoP("Daemmerung: %s, Frost: %s, Glaettegefahr: %s", _night < 0 ? "unbekannt" : (_night ? "Nacht" : "Tag"), _frost ? "ja" : "nein",
              _ice ? "ja" : "nein");
+}
+
+void WeatherModule::showSeason()
+{
+    const int8_t summer = _season.summer();
+    logInfoP("Sommer/Winter: %s, Mittel %u Tage %.1f C, Tagesmittel gestern %.1f C", summer < 0 ? "noch unbekannt" : (summer ? "Sommer" : "Winter"),
+             _season.days(), _season.average(), _season.yesterday());
+    logInfoP("Heute: 7 Uhr %.1f C, 14 Uhr %.1f C, Abend %.1f C, Tagesmittel bisher %.1f C", _season.reading(0), _season.reading(1),
+             _season.reading(2), _season.todayMean());
+    logInfoP("Kenntage heute: Sommertag %s, heisser Tag %s, Frosttag %s, Eistag %s", _minMax.tempMax >= 25.0f ? "ja" : "nein",
+             _minMax.tempMax >= 30.0f ? "ja" : "nein", _minMax.tempMin < 0.0f ? "ja" : "nein", _minMax.tempMax < 0.0f ? "ja" : "nein");
 }

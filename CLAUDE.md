@@ -54,8 +54,9 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
 - **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
-- **Allgemeine Parameter** (GENERAL, 64 Byte): Bytes 0–36 belegt, ab 37 drei Windalarm-Blöcke à 9 Byte.
-- **Flash-Version 2** im Modul: [Version][Regen (RainStatistics::FLASH_SIZE)][Min/Max 28 Byte]; Version 1 wird noch gelesen.
+- **Allgemeine Parameter** (GENERAL, 80 Byte): Bytes 0–36 belegt, 37–63 drei Windalarm-Blöcke à 9 Byte, 64–73 Sommer/Winter, Rest frei.
+- **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
+- **Flash-Version 3** im Modul: [Version][Regen (RainStatistics::FLASH_SIZE)][Min/Max 28 Byte][Season::FLASH_SIZE]; Versionen 1 und 2 werden noch gelesen.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.

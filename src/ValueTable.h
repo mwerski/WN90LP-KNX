@@ -60,6 +60,13 @@ enum class WxId : uint8_t
     GustMaxYesterday,
     Frost,
     IceWarning,
+    SummerWinter,
+    MeanTemp,
+    DailyMeanYesterday,
+    SummerDay,
+    HotDay,
+    FrostDay,
+    IceDay,
     Count
 };
 
@@ -93,7 +100,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 55
+#define WX_VALUE_COUNT 62
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -154,5 +161,12 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Staerkste Boee gestern", "gust_max_yesterday", "m/s", WX_GustMaxYesterdayActive, WX_KoGustMaxYesterday, WxSensor::None, false, 1, "wind_speed", "m/s", 3, {{9, 1, 1.0f}, {9, 1, 3.6f}, {14, 0, 1.0f}}},
     {"Frost", "frost", "", WX_FrostActive, WX_KoFrost, WxSensor::None, false, 0, "cold", nullptr, 1, {{1, 5, 1.0f}}},
     {"Glaettegefahr", "ice_warning", "", WX_IceWarningActive, WX_KoIceWarning, WxSensor::None, false, 0, "cold", nullptr, 1, {{1, 5, 1.0f}}},
+    {"Sommer/Winter", "summer", "", WX_SummerWinterActive, WX_KoSummerWinter, WxSensor::None, false, 0, nullptr, nullptr, 2, {{1, 2, 1.0f}, {1, 2, -1.0f}}},
+    {"Mittlere Aussentemperatur (mehrere Tage)", "temp_mean_days", "C", WX_MeanTempActive, WX_KoMeanTemp, WxSensor::None, true, 1, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Tagesmitteltemperatur gestern", "temp_mean_yesterday", "C", WX_DailyMeanYesterdayActive, WX_KoDailyMeanYesterday, WxSensor::None, false, 1, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Sommertag (Maximum ab 25 °C)", "summer_day", "", WX_SummerDayActive, WX_KoSummerDay, WxSensor::None, false, 0, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Heisser Tag (Maximum ab 30 °C)", "hot_day", "", WX_HotDayActive, WX_KoHotDay, WxSensor::None, false, 0, "heat", nullptr, 1, {{1, 2, 1.0f}}},
+    {"Frosttag (Minimum unter 0 °C)", "frost_day", "", WX_FrostDayActive, WX_KoFrostDay, WxSensor::None, false, 0, "cold", nullptr, 1, {{1, 2, 1.0f}}},
+    {"Eistag (Maximum unter 0 °C)", "ice_day", "", WX_IceDayActive, WX_KoIceDay, WxSensor::None, false, 0, "cold", nullptr, 1, {{1, 2, 1.0f}}},
 };
 

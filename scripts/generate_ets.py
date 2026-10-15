@@ -55,6 +55,9 @@ TEXT = [("DPT 16.001 (14 Byte, Text)", "DPST-16-1", "14 Bytes", 16, 1, 1.0)]
 ALARM = [("DPT 1.005 (1 Bit, Alarm)", "DPST-1-5", "1 Bit", 1, 5, 1.0)]
 DAYNIGHT = [("DPT 1.024 (1 Bit, 0 = Tag, 1 = Nacht)", "DPST-1-24", "1 Bit", 1, 2, 1.0)]
 ANGLE = [T14(7, "DPT 14.007 (4 Byte, °)")]
+# Faktor -1 = invertiert (1.100: 1 = Heizen = Winter)
+SEASON = [("DPT 1.002 (1 Bit, 1 = Sommer)", "DPST-1-2", "1 Bit", 1, 2, 1.0),
+          ("DPT 1.100 (1 Bit, Heizen/Kühlen: 1 = Heizen = Winter)", "DPST-1-100", "1 Bit", 1, 2, -1.0)]
 
 # Gruppen = ETS-Seiten
 GROUPS = [
@@ -71,6 +74,7 @@ GROUPS = [
     ("Sun", "Sonne und Dämmerung", "white-balance-sunny", None),
     ("MinMax", "Minimum und Maximum", "thermometer", None),
     ("Warnings", "Warnungen", "alert-outline", None),
+    ("Season", "Sommer/Winter und Kenntage", "thermometer", None),
 ]
 
 
@@ -196,6 +200,23 @@ VALUES = [
       info="1, wenn die Temperatur unter der Schwelle liegt und Feuchtigkeit vorhanden ist: Regen in der letzten Stunde "
            "oder Taupunkt höchstens 1 K unter der Temperatur. Zurück, wenn die Temperatur 1 K über der Schwelle liegt "
            "oder 30 Minuten keine Feuchtigkeit mehr vorhanden war."),
+    # Ab ETS 0.6
+    V("SummerWinter", "Season", "Sommer/Winter", "", SEASON, 3600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="summer", extra=["SwMethod", "SwEvening", "SwDays", "SwThreshold", "SwHysteresis"],
+      info="Sommer, wenn das Mittel der Tagesmitteltemperaturen der letzten Tage über der Schwelle liegt, sonst Winter. "
+           "Bewertet wird einmal täglich um Mitternacht; der erste Wert liegt nach dem ersten vollständigen Tag vor."),
+    V("MeanTemp", "Season", "Mittlere Außentemperatur (mehrere Tage)", "°C", TEMP, 3600, 0.5, 0, True, mqtt="temp_mean_days",
+      info="Gleitendes Mittel der Tagesmittel über die eingestellte Anzahl Tage (Grundlage der Sommer/Winter-Umschaltung)."),
+    V("DailyMeanYesterday", "Season", "Tagesmitteltemperatur gestern", "°C", TEMP, 3600, 0, 0, thresholds=False,
+      mqtt="temp_mean_yesterday"),
+    V("SummerDay", "Season", "Sommertag (Maximum ab 25 °C)", "", BOOL, 3600, 0, 0, thresholds=False, decimals=0,
+      mqtt="summer_day"),
+    V("HotDay", "Season", "Heißer Tag (Maximum ab 30 °C)", "", BOOL, 3600, 0, 0, thresholds=False, decimals=0, mqtt="hot_day"),
+    V("FrostDay", "Season", "Frosttag (Minimum unter 0 °C)", "", BOOL, 3600, 0, 0, thresholds=False, decimals=0,
+      mqtt="frost_day"),
+    V("IceDay", "Season", "Eistag (Maximum unter 0 °C)", "", BOOL, 3600, 0, 0, thresholds=False, decimals=0, mqtt="ice_day",
+      info="Kenntage gelten für den laufenden Tag nach dem bisherigen Minimum/Maximum; der Eistag steht erst am Tagesende "
+           "endgültig fest."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -208,7 +229,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 64
+GENERAL_SIZE = 80
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -229,6 +250,11 @@ GENERAL = [
     ("TwilightDay", "%AID%_PT-WxLux", 28, 0, "Tag oberhalb von", "60", "lx"),
     ("IceThreshold", "%AID%_PT-WxIceTemp", 32, 0, "Glättegefahr bei Temperatur bis", "1", "°C"),
     ("HaDiscovery", "%AID%_PT-OnOffYesNo", 36, 0, "Home Assistant MQTT Discovery", "0", None),
+    ("SwMethod", "%AID%_PT-WxSwMethod", 64, 0, "Tagesmitteltemperatur", "0", None),
+    ("SwEvening", "%AID%_PT-WxSwEvening", 64, 1, "Abendtermin (nur DIN)", "1", None),
+    ("SwDays", "%AID%_PT-WxSwDays", 65, 0, "Mittel über", "3", "Tage"),
+    ("SwThreshold", "%AID%_PT-WxSwThreshold", 66, 0, "Sommer bei Mitteltemperatur über", "16", "°C"),
+    ("SwHysteresis", "%AID%_PT-WxSwHysteresis", 70, 0, "Hysterese (±)", "0", "K"),
     ("Alarm1Source", "%AID%_PT-WxWindSource", 37, 0, "Auslösen durch", "0", None),
     ("Alarm1Threshold", "%AID%_PT-WxWindMs", 38, 0, "Schwelle", "10", "m/s"),
     ("Alarm1OnDelay", "%AID%_PT-WxDelaySec", 42, 0, "Auslösen nach", "3", "s"),
@@ -250,6 +276,8 @@ HA_BY_UNIT = {
     "mm": ("precipitation", "mm"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
 }
 HA_BY_KEY = {
+    "SummerWinter": (None, None), "SummerDay": (None, None), "HotDay": ("heat", None), "FrostDay": ("cold", None),
+    "IceDay": ("cold", None),
     "Trend1h": (None, "hPa"), "Trend3h": (None, "hPa"), "Pm25": ("pm25", "µg/m³"), "Pm10": ("pm10", "µg/m³"),
     "Pm25Norm": ("pm25", "µg/m³"), "Pm10Norm": ("pm10", "µg/m³"), "Raining": ("moisture", None),
     "WindAlarm1": ("safety", None), "WindAlarm2": ("safety", None), "WindAlarm3": ("safety", None),
@@ -410,6 +438,27 @@ def build():
         '                  <Enumeration Text="Windgeschwindigkeit (Momentanwert)" Value="1" Id="%ENID%" />',
         '                  <Enumeration Text="Windgeschwindigkeit (10-min-Mittel)" Value="2" Id="%ENID%" />',
         '                </TypeRestriction>',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSwMethod" Name="WxSwMethod">',
+        '                <TypeRestriction Base="Value" SizeInBit="1">',
+        '                  <Enumeration Text="DIN (7, 14 und Abendtermin, Abendwert doppelt)" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="Mittel aller Messwerte des Tages" Value="1" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSwEvening" Name="WxSwEvening">',
+        '                <TypeRestriction Base="Value" SizeInBit="1">',
+        '                  <Enumeration Text="21 Uhr (Mannheimer Stunden)" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="22 Uhr" Value="1" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSwDays" Name="WxSwDays">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="7" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSwThreshold" Name="WxSwThreshold">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="5" maxInclusive="25" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxSwHysteresis" Name="WxSwHysteresis">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0" maxInclusive="5" />',
         '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',

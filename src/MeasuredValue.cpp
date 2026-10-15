@@ -97,7 +97,8 @@ KNXValue MeasuredValue::busValue() const
     switch (opt.main)
     {
         case 1:
-            return KNXValue(bus >= 0.5f);
+            // Negativer Faktor = invertiert (z. B. DPT 1.100: 1 = Heizen = Winter)
+            return KNXValue(opt.factor < 0 ? !(_value >= 0.5f) : bus >= 0.5f);
         case 6:
             return KNXValue((int8_t)constrain(lroundf(bus), -128L, 127L));
         case 16:

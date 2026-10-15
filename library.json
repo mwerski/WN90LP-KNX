@@ -1,5 +1,5 @@
 {
     "name": "WN90LP-KNX",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "OpenKNX-Firmware fuer die Wetterstation Ecowitt WN90LP (ESP32-S3, KNX IP)"
 }

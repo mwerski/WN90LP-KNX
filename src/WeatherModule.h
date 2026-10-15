@@ -4,13 +4,14 @@
 #include "OpenKNX.h"
 #include "PressureTrend.h"
 #include "RainStatistics.h"
+#include "Season.h"
 #include "Sds011Sensor.h"
 #include "ValueTable.h"
 #include "HaDiscovery.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.5.0"
+#define WX_FIRMWARE_VERSION "0.6.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -61,6 +62,7 @@ class WeatherModule : public OpenKNX::Module
     void updateWarnings();
     void updateMinMax(float temp, float gust);
     void checkMinMaxDay();
+    void updateSeason();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -73,6 +75,7 @@ class WeatherModule : public OpenKNX::Module
     void showPressure();
     void showForecast();
     void showMinMax();
+    void showSeason();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -116,6 +119,7 @@ class WeatherModule : public OpenKNX::Module
     bool _moistureSeen = false;
 
     MinMax _minMax;
+    Season _season;
     HaDiscovery _ha;
 
     bool _faultWn90 = false;
