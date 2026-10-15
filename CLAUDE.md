@@ -53,6 +53,8 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **WLAN:** `main.cpp` setzt Scan aller Kanäle/stärkster AP vor `openknx.init` und `WiFi.setSleep(false)`
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
+- **InfluxDB** (`InfluxWriter.*`): HTTP-POST in eigener FreeRTOS-Task (6 KB Stack), Daten per Mutex übergeben, kein Logging aus der Task (Fehlertext wird gespeichert, die Hauptschleife loggt). Schema und Feldnamen (`influx=` in generate_ets.py) entsprechen dem früheren Node-RED-Flow; immer Float-Felder.
+- **Allgemeine Parameter** reichen inzwischen bis Byte 367 (InfluxDB ab 160).
 - **Statusseite** (`WebStatus.*`): HTTP-Handler laufen auf dem ESP32 in der httpd-Task und lesen nur einen per Mutex geschützten JSON-Schnappschuss, den `WeatherModule::buildStatusJson()` in der Hauptschleife alle 2 s erstellt (nur während Abfragen). Seite als ASCII-Rohstring, Sonderzeichen als HTML-/JS-Escapes, Daten nur per `textContent`.
 - **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
 - **Allgemeine Parameter** (GENERAL, 160 Byte): 0–36 allgemein, 37–63 Windalarme (3×9), 64–73 Sommer/Winter, 74–75 Strahlung, 80–87 PV, 88–159 Fassaden (6×12).

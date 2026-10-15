@@ -79,6 +79,17 @@ void WeatherModule::setup(bool configured)
             f.onDelayMs = knx.paramByte(b + 8) * 60000UL;
             f.offDelayMs = knx.paramByte(b + 9) * 60000UL;
         }
+        if (ParamWX_InfluxActive)
+        {
+            _influxMeasurement = ParamWX_InfluxMeasurementStr;
+            _influxFloor = ParamWX_InfluxTagFloorStr;
+            _influxRoom = ParamWX_InfluxTagRoomStr;
+            _influxSensor = ParamWX_InfluxTagSensorStr;
+            if (_influxMeasurement.empty())
+                _influxMeasurement = "weather";
+            _influx.setup(ParamWX_InfluxServerStr, ParamWX_InfluxPort, ParamWX_InfluxDatabaseStr, ParamWX_InfluxRpStr, ParamWX_InfluxUserStr,
+                          ParamWX_InfluxPasswordStr, (uint32_t)ParamWX_InfluxInterval * 1000);
+        }
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -192,6 +203,13 @@ void WeatherModule::loop(bool configured)
     }
     if (_web.due())
         _web.update(buildStatusJson());
+    if (_influx.due())
+        _influx.submit(buildInfluxBody());
+    if (_influx.errorCount() != _influxErrorsLogged)
+    {
+        _influxErrorsLogged = _influx.errorCount();
+        logErrorP("InfluxDB: Schreiben fehlgeschlagen (HTTP %d) %s", _influx.lastCode(), _influx.lastError().c_str());
+    }
 }
 
 void WeatherModule::processWn90()
@@ -740,6 +758,61 @@ void WeatherModule::publishMqtt()
 #endif
 }
 
+// Line Protocol: Kommas, Leerzeichen und Gleichheitszeichen in Namen und Tags maskieren
+static std::string influxEscape(const std::string &s, bool measurement = false)
+{
+    std::string out;
+    for (char c : s)
+    {
+        if (c == ',' || c == ' ' || (!measurement && c == '='))
+            out += '\\';
+        out += c;
+    }
+    return out;
+}
+
+std::string WeatherModule::buildInfluxBody()
+{
+    // Schema wie im bisherigen Node-RED-Flow: ein Punkt je Sensor, unterschieden ueber den Tag sensor
+    std::string tags;
+    if (!_influxFloor.empty())
+        tags += ",floor=" + influxEscape(_influxFloor);
+    if (!_influxRoom.empty())
+        tags += ",room=" + influxEscape(_influxRoom);
+    const std::string base = _influxSensor.empty() ? "wn90" : _influxSensor;
+    const struct
+    {
+        WxSensor sensor;
+        std::string tag;
+    } points[] = {{WxSensor::None, base}, {WxSensor::OneWire, base + "_1wire"}, {WxSensor::Sds, base + "_sds011"}};
+
+    std::string body;
+    char num[24];
+    for (const auto &pt : points)
+    {
+        std::string fields;
+        if (pt.sensor == WxSensor::None)
+            fields = "rssi=" + std::to_string(WiFi.RSSI());
+        for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
+        {
+            const WxValueDef &def = WX_VALUES[i];
+            if (def.sensor != pt.sensor || !def.influxKey || !_values[i].valid())
+                continue;
+            // Immer Gleitkomma (ohne i-Suffix), damit keine Feldtyp-Konflikte entstehen
+            snprintf(num, sizeof(num), "%.*f", def.decimals, _values[i].value());
+            if (!fields.empty())
+                fields += ',';
+            fields += def.influxKey;
+            fields += '=';
+            fields += num;
+        }
+        if (fields.empty())
+            continue;
+        body += influxEscape(_influxMeasurement, true) + tags + ",sensor=" + influxEscape(pt.tag) + " " + fields + "\n";
+    }
+    return body;
+}
+
 std::string WeatherModule::buildStatusJson()
 {
     JsonDocument doc;
@@ -755,6 +828,8 @@ std::string WeatherModule::buildStatusJson()
         doc["sds"] = _sds.faulty() ? "Stoerung" : "ok";
     if (_oneWireEnabled)
         doc["ow"] = _oneWire.faulty() ? "Stoerung" : "ok";
+    if (_influx.enabled())
+        doc["influx"] = _influx.lastCode() == 204 ? "ok" : (_influx.okCount() + _influx.errorCount() == 0 ? "wartet" : "Fehler");
 
     JsonArray values = doc["values"].to<JsonArray>();
     for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
@@ -975,6 +1050,11 @@ void WeatherModule::showSensors()
     const float t = calcTemperature(temp.valid() ? temp.value() : NAN, &source);
     logInfoP("Temperatur fuer Berechnungen: %.2f C aus %s", t, source);
     logInfoP("Uhrzeit: %s", openknx.time.isValid() ? "gueltig" : "unbekannt");
+    if (_influx.enabled())
+        logInfoP("InfluxDB: %lu ok, %lu Fehler, letzter Code %d, letzter Erfolg vor %lu s (%s)", _influx.okCount(), _influx.errorCount(),
+                 _influx.lastCode(), _influx.lastOkAge(), _influx.url().c_str());
+    else
+        logInfoP("InfluxDB: nicht aktiviert");
 }
 
 void WeatherModule::showRaw()

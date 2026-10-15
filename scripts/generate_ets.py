@@ -85,18 +85,18 @@ FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
-      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None):
+      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None, influx=None):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
                 abs=abs_, rel=rel, active=active, sensor=sensor, thresholds=thresholds,
                 decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt,
-                extra=extra or [], cond=cond)
+                extra=extra or [], cond=cond, influx=influx)
 
 
 # Reihenfolge = KO-Reihenfolge und Reihenfolge im Parameterspeicher
 VALUES = [
-    V("Temp", "Temperature", "Temperatur", "°C", TEMP, 300, 0.5, 0, True, mqtt="temperature"),
+    V("Temp", "Temperature", "Temperatur", "°C", TEMP, 300, 0.5, 0, True, mqtt="temperature", influx="temp"),
     V("Temp1W", "Temperature", "Temperatur 1-Wire", "°C", TEMP, 300, 0.5, 0, True, sensor="onewire", decimals=2,
-      mqtt="temperature1"),
+      mqtt="temperature1", influx="temp"),
     V("Humidity", "Humidity", "Relative Luftfeuchte", "%",
       [T9(7, "DPT 9.007 (2 Byte, %)"), ("DPT 5.001 (1 Byte, %)", "DPST-5-1", "1 Byte", 5, 1, 1.0)],
       300, 2, 0, True, decimals=0, mqtt="humidity"),
@@ -122,12 +122,12 @@ VALUES = [
     V("Pressure", "Pressure", "Luftdruck (absolut)", "hPa", PRESSURE, 600, 1, 0, True, mqtt="pressure"),
     V("PressureSea", "Pressure", "Luftdruck (auf Meereshöhe)", "hPa", PRESSURE, 600, 1, 0, mqtt="pressure_sea",
       info="Benötigt die Höhe des Standorts auf der Seite Allgemein."),
-    V("Trend1h", "Pressure", "Luftdrucktendenz 1 Stunde", "hPa", PRESSURE, 900, 0.5, 0, mqtt="pressuretrend1",
+    V("Trend1h", "Pressure", "Luftdrucktendenz 1 Stunde", "hPa", PRESSURE, 900, 0.5, 0, mqtt="pressuretrend1", influx="pressureTrend1",
       info="Differenz zum Luftdruck vor einer Stunde; verfügbar frühestens eine Stunde nach dem Start."),
-    V("Trend3h", "Pressure", "Luftdrucktendenz 3 Stunden", "hPa", PRESSURE, 900, 0.5, 0, mqtt="pressuretrend3",
+    V("Trend3h", "Pressure", "Luftdrucktendenz 3 Stunden", "hPa", PRESSURE, 900, 0.5, 0, mqtt="pressuretrend3", influx="pressureTrend3",
       info="Differenz zum Luftdruck vor drei Stunden; verfügbar frühestens drei Stunden nach dem Start."),
     V("Light", "Light", "Helligkeit", "lx", [T9(4, "DPT 9.004 (2 Byte, lx)")], 300, 0, 20, True, decimals=0,
-      mqtt="light", absmax=300000),
+      mqtt="light", absmax=300000, influx="brightness"),
     V("UvIndex", "Light", "UV-Index", "",
       [("DPT 9 (2 Byte)", "DPT-9", "2 Bytes", 9, 1, 1.0), ("DPT 5.010 (1 Byte, ganzzahlig)", "DPST-5-10", "1 Byte", 5, 10, 1.0)],
       300, 1, 0, True, mqtt="uvindex", absmax=15),
@@ -137,17 +137,17 @@ VALUES = [
     V("RainRate", "Rain", "Regenintensität", "mm/h", [("DPT 9 (2 Byte, mm/h)", "DPT-9", "2 Bytes", 9, 1, 1.0)],
       600, 1, 0, True, decimals=1, mqtt="rain_rate",
       info="Hochgerechnet aus der Regenmenge der letzten 10 Minuten."),
-    V("Rain5m", "Rain", "Regenmenge letzte 5 Minuten", "mm", RAIN9, 300, 0.2, 0, decimals=2, mqtt="rain_5min"),
-    V("Rain1h", "Rain", "Regenmenge letzte Stunde", "mm", RAIN9, 600, 0.5, 0, True, decimals=2, mqtt="rain_1h"),
-    V("Rain6h", "Rain", "Regenmenge letzte 6 Stunden", "mm", RAIN9, 1800, 1, 0, decimals=2, mqtt="rain_6h",
+    V("Rain5m", "Rain", "Regenmenge letzte 5 Minuten", "mm", RAIN9, 300, 0.2, 0, decimals=2, mqtt="rain_5min", influx="raincounter_5min"),
+    V("Rain1h", "Rain", "Regenmenge letzte Stunde", "mm", RAIN9, 600, 0.5, 0, True, decimals=2, mqtt="rain_1h", influx="raincounter_1h"),
+    V("Rain6h", "Rain", "Regenmenge letzte 6 Stunden", "mm", RAIN9, 1800, 1, 0, decimals=2, mqtt="rain_6h", influx="raincounter_6h",
       info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
-    V("Rain24h", "Rain", "Regenmenge letzte 24 Stunden", "mm", RAIN9, 3600, 1, 0, True, decimals=2, mqtt="rain_24h",
+    V("Rain24h", "Rain", "Regenmenge letzte 24 Stunden", "mm", RAIN9, 3600, 1, 0, True, decimals=2, mqtt="rain_24h", influx="raincounter_24h",
       info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
-    V("Rain48h", "Rain", "Regenmenge letzte 48 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_48h",
+    V("Rain48h", "Rain", "Regenmenge letzte 48 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_48h", influx="raincounter_48h",
       info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
-    V("Rain72h", "Rain", "Regenmenge letzte 72 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_72h",
+    V("Rain72h", "Rain", "Regenmenge letzte 72 Stunden", "mm", RAIN9, 3600, 1, 0, decimals=2, mqtt="rain_72h", influx="raincounter_72h",
       info="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr."),
-    V("RainToday", "Rain", "Regenmenge heute", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="rain_today",
+    V("RainToday", "Rain", "Regenmenge heute", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="rain_today", influx="raincounter_today",
       info="Wird um Mitternacht zurückgesetzt; benötigt eine gültige Uhrzeit (KO Uhrzeit/Datum oder NTP)."),
     V("Raining", "Rain", "Regen", "", BOOL, 600, 0, 0, True, thresholds=False, decimals=0, mqtt="raining",
       info="1 = es regnet: Mindestmenge im Zeitfenster erreicht (Seite Allgemein). Wird bei jeder Änderung gesendet."),
@@ -167,7 +167,7 @@ VALUES = [
       info="Prognose für etwa 12 Stunden nach Zambretti aus Luftdruck auf Meereshöhe, Tendenz, Windrichtung und Jahreszeit: "
            "1 (A, beständig schön) bis 26 (Z, Sturm mit viel Regen). Die Höhe des Standorts auf der Seite Allgemein muss stimmen."),
     V("ForecastText", "Forecast", "Wetterprognose (Text)", "", TEXT, 1800, 0, 0, True, thresholds=False, decimals=0,
-      mqtt="forecast_text", info="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“."),
+      mqtt="forecast_text", influx="", info="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“."),
     V("WeatherSymbol", "Forecast", "Wettersymbol (Display)", "", BFT, 600, 0, 0, True, thresholds=False, decimals=0,
       mqtt="weather_symbol",
       info="0 sonnig, 1 bewölkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV-Index (z. B. für Tantron-Displays). "
@@ -297,7 +297,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 160
+GENERAL_SIZE = 368
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -389,6 +389,18 @@ GENERAL = [
     ("Alarm3Threshold", "%AID%_PT-WxWindMs", 56, 0, "Schwelle", "17", "m/s"),
     ("Alarm3OnDelay", "%AID%_PT-WxDelaySec", 60, 0, "Auslösen nach", "3", "s"),
     ("Alarm3OffDelay", "%AID%_PT-WxDelayMinAlarm", 61, 0, "Zurücknehmen nach (unter der Schwelle)", "10", "min"),
+    ("InfluxActive", "%AID%_PT-OnOffYesNo", 160, 7, "Messwerte in InfluxDB 1.x schreiben", "0", None),
+    ("InfluxPort", "%AID%_PT-WxPort", 161, 0, "Port", "8086", None),
+    ("InfluxInterval", "%AID%_PT-WxInfluxInterval", 163, 0, "Schreiben alle", "60", "s"),
+    ("InfluxServer", "%AID%_PT-WxText40", 165, 0, "Server (Name oder IP-Adresse, ohne http://)", "", None),
+    ("InfluxDatabase", "%AID%_PT-WxText20", 205, 0, "Datenbank", "", None),
+    ("InfluxRp", "%AID%_PT-WxText20", 225, 0, "Retention Policy (leer = Standard)", "", None),
+    ("InfluxUser", "%AID%_PT-WxText20", 245, 0, "Benutzer (leer = ohne Anmeldung)", "", None),
+    ("InfluxPassword", "%AID%_PT-WxText20", 265, 0, "Passwort", "", None),
+    ("InfluxMeasurement", "%AID%_PT-WxText20", 285, 0, "Measurement", "weather", None),
+    ("InfluxTagFloor", "%AID%_PT-WxText20", 305, 0, "Tag floor", "Aussen", None),
+    ("InfluxTagRoom", "%AID%_PT-WxText20", 325, 0, "Tag room", "Garten", None),
+    ("InfluxTagSensor", "%AID%_PT-WxText20", 345, 0, "Tag sensor (1-Wire: _1wire, SDS011: _sds011 angehängt)", "wn90", None),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -605,6 +617,18 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxIrr" Name="WxIrr">',
         '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="0" maxInclusive="1000" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxPort" Name="WxPort">',
+        '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="1" maxInclusive="65535" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxInfluxInterval" Name="WxInfluxInterval">',
+        '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="10" maxInclusive="3600" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxText20" Name="WxText20">',
+        '                <TypeText SizeInBit="160" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxText40" Name="WxText40">',
+        '                <TypeText SizeInBit="320" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -763,6 +787,20 @@ def build():
             ind -= 4
             w(f'{" " * ind}  </when>')
             w(f'{" " * ind}</choose>')
+    w('              <ParameterBlock Id="%AID%_PB-nnn" Name="Influx" Text="InfluxDB" Icon="application-cog-outline">')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Schreibt alle gültigen Messwerte direkt per HTTP in eine InfluxDB 1.x (Schnittstelle /write, ohne TLS). Drei Punkte je Intervall: Wetterstation, 1-Wire und SDS011, unterschieden über den Tag sensor. Zahlen werden als Gleitkommawerte geschrieben, den Zeitstempel setzt der Server." UIHint="Information" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("InfluxActive")}" IndentLevel="1" />')
+    w(f'                <choose ParamRefId="{ids.ref("InfluxActive")}">')
+    w('                  <when test="1">')
+    for n in ("InfluxServer", "InfluxPort", "InfluxDatabase", "InfluxRp", "InfluxUser", "InfluxPassword", "InfluxInterval"):
+        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
+    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Datenstruktur" UIHint="Headline" />')
+    for n in ("InfluxMeasurement", "InfluxTagFloor", "InfluxTagRoom", "InfluxTagSensor"):
+        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
+    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Das Passwort steht im ETS-Projekt und im Gerät im Klartext." UIHint="Information" />')
+    w('                  </when>')
+    w('                </choose>')
+    w('              </ParameterBlock>')
     w('            </Channel>')
 
     xml = f'''<?xml version="1.0" encoding="utf-8"?>
@@ -838,6 +876,7 @@ def build():
     h.append("    const char *group;    // ETS-Seite (Webseite, UTF-8)")
     h.append("    const char *unitUtf8; // Einheit (Webseite, UTF-8)")
     h.append("    const char *mqttKey;  // Feldname im MQTT-JSON")
+    h.append("    const char *influxKey; // Feldname in InfluxDB (nullptr = nicht schreiben)")
     h.append("    const char *unit;")
     h.append("    uint16_t paramOffset; // erstes Byte des Parameterblocks")
     h.append("    uint16_t koNumber;")
@@ -865,7 +904,7 @@ def build():
         for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss")):
             name = name.replace(a, b)
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
-        h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", "{unit}", WX_{v["key"]}Active, '
+        h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
                  f'{v["decimals"]}, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")

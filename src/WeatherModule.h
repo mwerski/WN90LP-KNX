@@ -9,10 +9,11 @@
 #include "ValueTable.h"
 #include "WebStatus.h"
 #include "HaDiscovery.h"
+#include "InfluxWriter.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.8.0"
+#define WX_FIRMWARE_VERSION "0.9.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -88,6 +89,7 @@ class WeatherModule : public OpenKNX::Module
     void sendValues();
     void publishMqtt();
     std::string buildStatusJson();
+    std::string buildInfluxBody();
 
     void showValues();
     void showSensors();
@@ -154,6 +156,9 @@ class WeatherModule : public OpenKNX::Module
     Season _season;
     HaDiscovery _ha;
     WebStatus _web;
+    InfluxWriter _influx;
+    uint32_t _influxErrorsLogged = 0;
+    std::string _influxMeasurement, _influxFloor, _influxRoom, _influxSensor;
 
     bool _faultWn90 = false;
     bool _faultSds = false;

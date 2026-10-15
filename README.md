@@ -88,6 +88,14 @@ pio run -e release_WN90 -t upload
 
 Nach einer Änderung der Applikationsversion immer vollständig programmieren (nicht „partiell“).
 
+## InfluxDB
+
+Optional schreibt das Gerät alle gültigen Messwerte selbst per HTTP in eine InfluxDB 1.x (`/write`, ohne TLS);
+Einstellungen in der ETS unter Wetterstation → InfluxDB. Das Schema entspricht dem früheren Node-RED-Flow:
+Measurement `weather`, Tags `floor`, `room` und `sensor` (`wn90`, `wn90_1wire`, `wn90_sds011`), Feldnamen wie
+`temp`, `brightness`, `pressureTrend1`, `raincounter_1h` …, alle Zahlen als Gleitkommawerte, Zeitstempel vom Server.
+Zustand und Fehler zeigen `wx sensors` und die Statusseite.
+
 ## Statusseite
 
 Bei aktivem Webserver (ETS, Netzwerkseite) zeigt `http://<IP>/weather` (Menüpunkt „Wetter“) alle Messwerte

@@ -40,10 +40,10 @@ function render(j){
   var st=document.getElementById('wx-state');
   if(!j.values){st.textContent='Warte auf Daten\u2026';return false;}
   st.textContent='';
-  var parts=[['WN90LP',j.wn90],['SDS011',j.sds],['1-Wire',j.ow]];
+  var parts=[['WN90LP',j.wn90],['SDS011',j.sds],['1-Wire',j.ow],['InfluxDB',j.influx]];
   parts.forEach(function(p){
     if(p[1]===undefined)return;
-    var s=el('span',p[1]==='ok'?'':'wx-bad',p[0]+': '+p[1]);st.appendChild(s);st.appendChild(document.createTextNode(' \u00b7 '));
+    var s=el('span',(p[1]==='ok'||p[1]==='wartet')?'':'wx-bad',p[0]+': '+p[1]);st.appendChild(s);st.appendChild(document.createTextNode(' \u00b7 '));
   });
   st.appendChild(document.createTextNode('Uhrzeit: '+(j.time?'g\u00fcltig':'unbekannt')+' \u00b7 MQTT: '+(j.mqtt?'verbunden':'aus')+
     ' \u00b7 WLAN '+j.rssi+' dBm \u00b7 Laufzeit '+Math.floor(j.up/3600)+' h \u00b7 Firmware '+j.fw));
