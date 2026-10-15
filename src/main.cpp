@@ -33,7 +33,7 @@ RemoteDebug Debug;
 
 #include "utilities.h"
 #include <knxprod.h>
-#include <wsdata.h>>
+#include <wsdata.h>
 #include <tasks.h>
 #include <knx_send.h>
 
@@ -186,7 +186,8 @@ void setup() {
 
 	knx.buttonPin(KNXPIN);	// PROG button on GPIO5
 	knx.readMemory();	// read adress table, association table, groupobject table and parameters from eeprom
-	
+	if (knx.configured()) net.hostname = (char *) ParamAPP_Hostname;	// must be set before WiFi and RemoteDebug start
+
 	#pragma region WiFiManager
   WiFiManager wifiManager;
 	Serial.println(digitalRead(KNXPIN));
@@ -297,7 +298,6 @@ void setup() {
 	if (knx.configured()) {
 
 
-		net.hostname = (char *) ParamAPP_Hostname;
 		net.mqtt = ParamAPP_useMQTT;
 		if ( net.mqtt == true ) {
 			Serial.println("MQTT configured");
@@ -428,11 +428,22 @@ void setup() {
 				break;
 		}
 
+		switch ( ParamAPP_Feuchte_Absolut_DPT ) {
+			case 0:
+				KoAPP_Absolute_Feuchte_DPT9.dataPointType(Dpt(9, 1));
+				KoAPP_Absolute_Feuchte_DPT9.callback(callback_AbsHumidity);
+				break;
+			case 1:
+				KoAPP_Absolute_Feuchte_DPT14.dataPointType(Dpt(14, 1));
+				KoAPP_Absolute_Feuchte_DPT14.callback(callback_AbsHumidity);
+				break;
+		}
+
 		switch ( ParamAPP_WindSpeed_DPT ) {
 			case 0: 
 				KoAPP_WindSpeed_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_WindSpeed_DPT9.callback(callback_WindSpeed);
-				KoAPP_GustSpeed_DPT9.dataPointType(Dpt(14, 1));
+				KoAPP_GustSpeed_DPT9.dataPointType(Dpt(9, 1));
 				KoAPP_GustSpeed_DPT9.callback(callback_GustSpeed);
 				break;
 			case 1:
@@ -546,6 +557,8 @@ void setup() {
 		dewpoint.rel_change = ParamAPP_Temperatur_Senden_Wertaenderung_relativ;
 		humidity.abs_change = ParamAPP_Feuchte_Senden_Wertaenderung_absolut;
 		humidity.rel_change = ParamAPP_Feuchte_Senden_Wertaenderung_relativ;
+		abshumidity.abs_change = ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_absolut;
+		abshumidity.rel_change = ParamAPP_Feuchte_Absolut_Senden_Wertaenderung_relativ;
 		windSpeed.abs_change = ParamAPP_WindSpeed_Senden_Wertaenderung_absolut;
 		windSpeed.rel_change = ParamAPP_WindSpeed_Senden_Wertaenderung_relativ;
 		gustSpeed.abs_change = ParamAPP_WindSpeed_Senden_Wertaenderung_absolut;
@@ -743,7 +756,7 @@ void read_wn90() {
 	if (result == node.ku8MBSuccess) {
 	//if (!err) {
 //		debugV("no error");
-		sensorfailure_sds = false;
+		sensorfailure_wn90 = false;
 		Serial.println("WDT timer reset");
 		Serial.print ("Uptime......... "); Serial.println( uptime_formatter::getUptime() );
 		Serial.print ("Localtime...... "); printLocaltime(true);
@@ -829,7 +842,7 @@ void read_wn90() {
 			}
 		}
 		if ( node.getResponseBuffer(5) != 0xFFFF ) { // GUSTSPEED
-			gustSpeed.value = node.getResponseBuffer(4) / 10.0;
+			gustSpeed.value = node.getResponseBuffer(5) / 10.0;
 			gustSpeed.read = true;
 			gustSpeedBFT.value = bft(gustSpeed.value);
 			gustSpeedBFT.read = true;
@@ -1032,7 +1045,7 @@ void MQTTpublish() {
 			mqttClient.publish(net.mqttTopic, msgChar );
 		}
 		*/
-		if (mqttMsg.size() > 0) mqttClient.publish(net.mqttTopic,toCharArray(mqttMsg.toString()) );
+		if (mqttMsg.size() > 0) mqttClient.publish(net.mqttTopic, mqttMsg.toString().c_str() );
 	// mqttClient.publish(net.mqttTopic,toCharArray(msg) );	}
 //	Serial.println();
 	}
@@ -1125,9 +1138,9 @@ void loop() {
 			raincounterMA.add(rainCounter.value);
 			rainfallMA.add(rainFall.value);
 			#ifndef DEBUG_DISABLED
-			debugV("Update raincounter minute ringbuffer with value %u: ", rainCounter.value);
+			debugV("Update raincounter minute ringbuffer with value %.2f: ", rainCounter.value);
 			debugV("Raincounter minute ringbuffer contains %u elements, index is at %u", raincounterMA.elements(), raincounterMA.index());
-			debugV("Update rainfall minute ringbuffer with value %u: ", rainFall.value);
+			debugV("Update rainfall minute ringbuffer with value %.1f: ", rainFall.value);
 			debugV("Rainfall minute ringbuffer contains %u elements, index is at %u", rainfallMA.elements(), rainfallMA.index());
 			#endif
 			#pragma endregion
@@ -1144,7 +1157,7 @@ void loop() {
 		if ( lastminute % 15 == 0) {	// every 15 minutes
 			#pragma region update air pressure ringbuffer
 			Serial.print("Update air pressure ringbuffer: ");
-			debugV("Update air pressure ringbuffer with value %u: ", pressure.value*10);
+			debugV("Update air pressure ringbuffer with value %.0f: ", pressure.value*10);
 			pressureRing.add(pressure.value*10);
 			for (int i = 1; i<=pressureRing.size(); i++) {
 				debugV("Pressure ringbuffer at %d is %u", i, pressureRing.get(i));
@@ -1166,10 +1179,10 @@ void loop() {
 		if ( lastminute == 0 ) {	// every full hour
 			#pragma region update rain amount ringbuffers
 			raincounterSA.add(rainCounter.value);
-			debugV("Update raincounter hour ringbuffer with value %u: ", rainCounter.value);
+			debugV("Update raincounter hour ringbuffer with value %.2f: ", rainCounter.value);
 			debugV("Raincounter hour ringbuffer contains %u elements, index is at %u", raincounterSA.elements(), raincounterSA.index());
-			rainfallMA.add(rainFall.value);
-			debugV("Update rainfall hour ringbuffer with value %u: ", rainFall.value);
+			rainfallSA.add(rainFall.value);
+			debugV("Update rainfall hour ringbuffer with value %.1f: ", rainFall.value);
 			debugV("Rainfall hour ringbuffer contains %u elements, index is at %u", rainfallSA.elements(), rainfallSA.index());
 			#pragma endregion
 			#pragma region set 3 hourly pressure trend if enough data is available

@@ -52,9 +52,9 @@ size_t ringBuffer<T>::index() const {
 
 template<typename T>
 void ringBuffer<T>::add(T value) {
-	_array[_index] = value;
-	if ( _elements < _size ) _elements++;
 	( _index >= _size ) ? _index = 1 : _index++;
+	_array[_index-1] = value;
+	if ( _elements < _size ) _elements++;
 }
 
 template<typename T>
@@ -62,6 +62,7 @@ T ringBuffer<T>::get(const size_t index) {
 	if ( index > 0 && index <= _size ) {
 		return _array[index-1];
 	}
+	return T();
 }
 
 template<typename T>

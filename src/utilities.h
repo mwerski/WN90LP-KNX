@@ -49,10 +49,6 @@ double round(double n) { // rounds to 2 digits
 	return n;
 }
 
-char* toCharArray(String str) {	// string to character array
-	return &str[0];
-}
-
 String getChipID() {	// returns ESP chip ID
   String id;
   uint64_t chipid;

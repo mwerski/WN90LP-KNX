@@ -50,7 +50,7 @@ void sendfrostpoint() {
 	if (frostpoint.read) {
 		Serial.printf(" -> Sending frostpoint in °C (%0.2f) to bus\n", frostpoint.value);
 		(ParamAPP_Temperatur_DPT == 0) ? KoAPP_Frostpunkt_DPT9.value(frostpoint.value) : KoAPP_Frostpunkt_DPT14.value(frostpoint.value);
-		frostpoint.last = dewpoint.value;
+		frostpoint.last = frostpoint.value;
 		frostpoint.lastread = true;
 	} else {
 		Serial.println(" -- frostpoint not yet available, won't send to bus - delay task");
@@ -77,12 +77,10 @@ void sendHumidity() {
 void sendAbsHumidity() {
 	if (humidity.read && temperature.read) {
 		float absH = absoluteHumidity( temperature.value, humidity.value );
-		Serial.printf(" -> Sending absolute humidity in g/m3 (%0.0f) to bus\n", humidity.value);
-		switch (ParamAPP_Feuchte_DPT) {
-			case 0: KoAPP_Feuchte_DPT6.value(absH); break;
-			case 1: KoAPP_Feuchte_DPT9.value(absH); break;
-			case 2: KoAPP_Feuchte_DPT14.value(absH); break;
-		}
+		Serial.printf(" -> Sending absolute humidity in g/m3 (%0.2f) to bus\n", absH);
+		(ParamAPP_Feuchte_Absolut_DPT == 0) ? KoAPP_Absolute_Feuchte_DPT9.value(absH) : KoAPP_Absolute_Feuchte_DPT14.value(absH);
+		abshumidity.last = absH;
+		abshumidity.lastread = true;
 	} else {
 		Serial.println(" -- Absolute humidity not yet available, won't send to bus");
 	}
@@ -115,7 +113,7 @@ void sendGustSpeed() {
 void sendGustSpeedBft() {
 	if (gustSpeed.read) {
 		u_int8_t s = bft(gustSpeed.value);
-		Serial.printf(" -> Sending gust speed in beaufort (%0.0f) to bus\n", s);
+		Serial.printf(" -> Sending gust speed in beaufort (%u) to bus\n", s);
 		KoAPP_GustSpeed_BFT_DPT5.value(s);
 	} else {
 		Serial.println(" -- Gust speed in beaufort not yet available, won't send to bus");
@@ -125,7 +123,7 @@ void sendGustSpeedBft() {
 void sendWindSpeedBft() {
 	if (windSpeed.read) {
 		u_int8_t s = bft(windSpeed.value);
-		Serial.printf(" -> Sending wind speed in beaufort (%0.0f) to bus\n", s);
+		Serial.printf(" -> Sending wind speed in beaufort (%u) to bus\n", s);
 		KoAPP_WindSpeed_BFT_DPT5.value(s);
 	} else {
 		Serial.println(" -- Wind speed in feaufort not yet available, won't send to bus");
@@ -195,7 +193,7 @@ void sendRainFall() {
 void sendRainCounter() {
 	if (rainCounter.read) {
 		Serial.printf(" -> Sending raincounter in mm (%0.2f) to bus\n", rainCounter.value);
-		(ParamAPP_Regen_DPT == 0) ? KoAPP_RainFall_DPT9.value(rainCounter.value) : KoAPP_RainFall_DPT14.value(rainCounter.value);
+		(ParamAPP_Regen_DPT == 0) ? KoAPP_RainCounter_DPT9.value(rainCounter.value) : KoAPP_RainCounter_DPT14.value(rainCounter.value);
 		rainCounter.last = rainCounter.value;
 		rainCounter.lastread = true;
 	} else {
@@ -329,7 +327,7 @@ void callback_dateTime(GroupObject& go) {	// receive date & time in one DPT from
 	if (go.value()) {
 		dateKnown = true;
 		timeKnown = true;
-		myTime = KoAPP_Date.value();
+		myTime = KoAPP_DateTime.value();
 		unsigned short tmp_sec = myTime.tm_sec;
 		unsigned short tmp_min = myTime.tm_min;
 		unsigned short tmp_hour = myTime.tm_hour;
