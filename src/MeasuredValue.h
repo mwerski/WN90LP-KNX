@@ -26,7 +26,16 @@ class MeasuredValue
     static void civilFromDays(long daysSince1970, int &y, int &m, int &d);
     static long daysFromCivil(int y, int m, int d);
 
+    // Bezug fuer Zeitpunkte: Uhrzeiten (Sekunden seit Mitternacht) gelten fuer den aktuellen Tag
+    static void setDayContext(int64_t localMidnightUtc, int32_t tzOffset);
+    // Unixzeit eines Uhrzeit- oder Datumswerts; false ohne Tagesbezug oder bei anderen Formaten
+    static bool toUnix(float value, const WxValueDef *def, int64_t &unix);
+
   private:
+    static int64_t s_localMidnightUtc;
+    static int32_t s_tzOffset;
+    static bool s_dayContext;
+
     bool changeExceedsThreshold() const;
     void send();
     KNXValue busValue() const;

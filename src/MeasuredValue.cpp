@@ -2,6 +2,35 @@
 #include "Astro.h"
 #include "Forecast.h"
 
+int64_t MeasuredValue::s_localMidnightUtc = 0;
+int32_t MeasuredValue::s_tzOffset = 0;
+bool MeasuredValue::s_dayContext = false;
+
+void MeasuredValue::setDayContext(int64_t localMidnightUtc, int32_t tzOffset)
+{
+    s_localMidnightUtc = localMidnightUtc;
+    s_tzOffset = tzOffset;
+    s_dayContext = true;
+}
+
+bool MeasuredValue::toUnix(float value, const WxValueDef *def, int64_t &unix)
+{
+    if (isnan(value))
+        return false;
+    if (def->fmt == WxFmt::Time && s_dayContext)
+    {
+        unix = s_localMidnightUtc + lroundf(value);
+        return true;
+    }
+    if (def->fmt == WxFmt::Date)
+    {
+        // 0:00 Uhr Ortszeit des Datums
+        unix = ((int64_t)lroundf(value) + 10957) * 86400 - s_tzOffset;
+        return true;
+    }
+    return false;
+}
+
 void MeasuredValue::init(const WxValueDef *def, bool configured)
 {
     _def = def;
@@ -115,6 +144,32 @@ KNXValue MeasuredValue::busValue() const
             t.tm_hour = s / 3600;
             t.tm_min = (s / 60) % 60;
             t.tm_sec = s % 60;
+            return KNXValue(t);
+        }
+        case 12:
+        {
+            // Unix-Zeit (Sekunden seit 1970) als DPT 12.001
+            int64_t unix = 0;
+            toUnix(_value, _def, unix);
+            return KNXValue((uint32_t)max<int64_t>(unix, 0));
+        }
+        case 19:
+        {
+            // Datum und Uhrzeit (Ortszeit); knx-Stack erwartet Jahr vierstellig, Monat 1..12
+            int64_t unix = 0;
+            toUnix(_value, _def, unix);
+            const long days = (long)((unix + s_tzOffset) / 86400);
+            const long secs = (long)((unix + s_tzOffset) % 86400);
+            struct tm t = {};
+            int y, m, d;
+            civilFromDays(days, y, m, d);
+            t.tm_year = y;
+            t.tm_mon = m;
+            t.tm_mday = d;
+            t.tm_hour = secs / 3600;
+            t.tm_min = (secs / 60) % 60;
+            t.tm_sec = secs % 60;
+            t.tm_isdst = -1;
             return KNXValue(t);
         }
         case 11:

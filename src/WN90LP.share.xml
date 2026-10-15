@@ -200,14 +200,28 @@
               </ParameterType>
               <ParameterType Id="%AID%_PT-WxDpt10" Name="WxDpt10">
                 <TypeRestriction Base="Value" SizeInBit="2">
-                  <Enumeration Text="DPT 13.100 (4 Byte, s)" Value="0" Id="%ENID%" />
-                  <Enumeration Text="DPT 7.006 (2 Byte, min)" Value="1" Id="%ENID%" />
+                  <Enumeration Text="DPT 10.001 (3 Byte, Uhrzeit)" Value="0" Id="%ENID%" />
+                  <Enumeration Text="DPT 19.001 (8 Byte, Datum und Uhrzeit)" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Unix-Zeit (DPT 12.001, 4 Byte, s seit 1970)" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
               <ParameterType Id="%AID%_PT-WxDpt11" Name="WxDpt11">
                 <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="DPT 13.100 (4 Byte, s)" Value="0" Id="%ENID%" />
+                  <Enumeration Text="DPT 7.006 (2 Byte, min)" Value="1" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="%AID%_PT-WxDpt12" Name="WxDpt12">
+                <TypeRestriction Base="Value" SizeInBit="2">
                   <Enumeration Text="DPT 9 (2 Byte, h)" Value="0" Id="%ENID%" />
                   <Enumeration Text="DPT 14 (4 Byte, h)" Value="1" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="%AID%_PT-WxDpt13" Name="WxDpt13">
+                <TypeRestriction Base="Value" SizeInBit="2">
+                  <Enumeration Text="DPT 11.001 (3 Byte, Datum)" Value="0" Id="%ENID%" />
+                  <Enumeration Text="DPT 19.001 (8 Byte, Datum und Uhrzeit)" Value="1" Id="%ENID%" />
+                  <Enumeration Text="Unix-Zeit (DPT 12.001, 4 Byte, s seit 1970)" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
             </ParameterTypes>
@@ -640,88 +654,101 @@
                 <Parameter Id="%AID%_UP-%TT%00424" Name="Facade6ProfileAbs" ParameterType="%AID%_PT-WxAbs" Offset="1333" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="°" />
                 <Parameter Id="%AID%_UP-%TT%00425" Name="Facade6ProfileRel" ParameterType="%AID%_PT-WxRel" Offset="1337" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
                 <Parameter Id="%AID%_UP-%TT%00426" Name="SunriseActive" ParameterType="%AID%_PT-CheckBox" Offset="1341" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00427" Name="SunriseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1342" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00428" Name="SunsetActive" ParameterType="%AID%_PT-CheckBox" Offset="1352" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00429" Name="SunsetCycle" ParameterType="%AID%_PT-WxCycle" Offset="1353" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00430" Name="SolarNoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1363" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00431" Name="SolarNoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1364" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00432" Name="CivilDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1374" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00433" Name="CivilDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1375" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00434" Name="CivilDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1385" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00435" Name="CivilDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1386" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00436" Name="NauticalDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1396" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00437" Name="NauticalDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1397" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00438" Name="NauticalDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1407" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00439" Name="NauticalDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1408" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00440" Name="AstroDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1418" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00441" Name="AstroDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1419" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00442" Name="AstroDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1429" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00443" Name="AstroDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1430" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00444" Name="SunriseAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1440" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00445" Name="SunriseAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1441" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00446" Name="SunsetAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1451" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00447" Name="SunsetAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1452" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00448" Name="TransitElevationActive" ParameterType="%AID%_PT-CheckBox" Offset="1462" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00449" Name="TransitElevationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1463" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00450" Name="DayLengthActive" ParameterType="%AID%_PT-CheckBox" Offset="1473" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00451" Name="DayLengthDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1473" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00452" Name="DayLengthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1474" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00453" Name="DayProgressActive" ParameterType="%AID%_PT-CheckBox" Offset="1484" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00454" Name="DayProgressCycle" ParameterType="%AID%_PT-WxCycle" Offset="1485" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00455" Name="DayProgressAbs" ParameterType="%AID%_PT-WxAbs" Offset="1487" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00456" Name="DayProgressRel" ParameterType="%AID%_PT-WxRel" Offset="1491" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00457" Name="SunFallingActive" ParameterType="%AID%_PT-CheckBox" Offset="1495" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00458" Name="SunFallingCycle" ParameterType="%AID%_PT-WxCycle" Offset="1496" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00459" Name="DayNightSunActive" ParameterType="%AID%_PT-CheckBox" Offset="1506" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00460" Name="DayNightSunCycle" ParameterType="%AID%_PT-WxCycle" Offset="1507" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00461" Name="DayNightCivilActive" ParameterType="%AID%_PT-CheckBox" Offset="1517" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00462" Name="DayNightCivilCycle" ParameterType="%AID%_PT-WxCycle" Offset="1518" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00463" Name="DayNightNauticalActive" ParameterType="%AID%_PT-CheckBox" Offset="1528" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00464" Name="DayNightNauticalCycle" ParameterType="%AID%_PT-WxCycle" Offset="1529" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00465" Name="DayNightAstroActive" ParameterType="%AID%_PT-CheckBox" Offset="1539" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00466" Name="DayNightAstroCycle" ParameterType="%AID%_PT-WxCycle" Offset="1540" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00467" Name="ClearSkyRadiationActive" ParameterType="%AID%_PT-CheckBox" Offset="1550" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00468" Name="ClearSkyRadiationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1551" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00469" Name="ClearSkyRadiationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1553" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="50" SuffixText="W/m²" />
-                <Parameter Id="%AID%_UP-%TT%00470" Name="ClearSkyRadiationRel" ParameterType="%AID%_PT-WxRel" Offset="1557" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00471" Name="ClearSkyMaxActive" ParameterType="%AID%_PT-CheckBox" Offset="1561" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00472" Name="ClearSkyMaxCycle" ParameterType="%AID%_PT-WxCycle" Offset="1562" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00473" Name="SunshineTodayActive" ParameterType="%AID%_PT-CheckBox" Offset="1572" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00474" Name="SunshineTodayDpt" ParameterType="%AID%_PT-WxDpt11" Offset="1572" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00475" Name="SunshineTodayCycle" ParameterType="%AID%_PT-WxCycle" Offset="1573" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00476" Name="SunshineTodayAbs" ParameterType="%AID%_PT-WxAbs" Offset="1575" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.1" SuffixText="h" />
-                <Parameter Id="%AID%_UP-%TT%00477" Name="SunshineTodayRel" ParameterType="%AID%_PT-WxRel" Offset="1579" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00478" Name="SunshineYesterdayActive" ParameterType="%AID%_PT-CheckBox" Offset="1583" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00479" Name="SunshineYesterdayDpt" ParameterType="%AID%_PT-WxDpt11" Offset="1583" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00480" Name="SunshineYesterdayCycle" ParameterType="%AID%_PT-WxCycle" Offset="1584" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00481" Name="MoonPhaseActive" ParameterType="%AID%_PT-CheckBox" Offset="1594" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00482" Name="MoonPhaseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1595" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00483" Name="MoonPhaseTextActive" ParameterType="%AID%_PT-CheckBox" Offset="1605" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00484" Name="MoonPhaseTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="1606" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00485" Name="MoonIlluminationActive" ParameterType="%AID%_PT-CheckBox" Offset="1616" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00486" Name="MoonIlluminationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1617" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00487" Name="MoonIlluminationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1619" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00488" Name="MoonIlluminationRel" ParameterType="%AID%_PT-WxRel" Offset="1623" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00489" Name="MoonAgeActive" ParameterType="%AID%_PT-CheckBox" Offset="1627" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00490" Name="MoonAgeCycle" ParameterType="%AID%_PT-WxCycle" Offset="1628" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00491" Name="MoonAgeAbs" ParameterType="%AID%_PT-WxAbs" Offset="1630" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="d" />
-                <Parameter Id="%AID%_UP-%TT%00492" Name="MoonAgeRel" ParameterType="%AID%_PT-WxRel" Offset="1634" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00493" Name="MoonAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1638" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00494" Name="MoonAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1639" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00495" Name="MoonAzimuthAbs" ParameterType="%AID%_PT-WxAbs" Offset="1641" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="°" />
-                <Parameter Id="%AID%_UP-%TT%00496" Name="MoonAzimuthRel" ParameterType="%AID%_PT-WxRel" Offset="1645" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00497" Name="MoonElevationActive" ParameterType="%AID%_PT-CheckBox" Offset="1649" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00498" Name="MoonElevationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1650" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00499" Name="MoonElevationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1652" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="°" />
-                <Parameter Id="%AID%_UP-%TT%00500" Name="MoonElevationRel" ParameterType="%AID%_PT-WxRel" Offset="1656" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00501" Name="MoonriseActive" ParameterType="%AID%_PT-CheckBox" Offset="1660" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00502" Name="MoonriseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1661" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00503" Name="MoonsetActive" ParameterType="%AID%_PT-CheckBox" Offset="1671" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00504" Name="MoonsetCycle" ParameterType="%AID%_PT-WxCycle" Offset="1672" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00505" Name="NextFullMoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1682" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00506" Name="NextFullMoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1683" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00507" Name="NextNewMoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1693" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00508" Name="NextNewMoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1694" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00427" Name="SunriseDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1341" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00428" Name="SunriseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1342" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00429" Name="SunsetActive" ParameterType="%AID%_PT-CheckBox" Offset="1352" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00430" Name="SunsetDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1352" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00431" Name="SunsetCycle" ParameterType="%AID%_PT-WxCycle" Offset="1353" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00432" Name="SolarNoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1363" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00433" Name="SolarNoonDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1363" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00434" Name="SolarNoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1364" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00435" Name="CivilDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1374" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00436" Name="CivilDawnDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1374" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00437" Name="CivilDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1375" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00438" Name="CivilDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1385" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00439" Name="CivilDuskDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1385" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00440" Name="CivilDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1386" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00441" Name="NauticalDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1396" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00442" Name="NauticalDawnDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1396" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00443" Name="NauticalDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1397" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00444" Name="NauticalDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1407" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00445" Name="NauticalDuskDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1407" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00446" Name="NauticalDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1408" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00447" Name="AstroDawnActive" ParameterType="%AID%_PT-CheckBox" Offset="1418" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00448" Name="AstroDawnDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1418" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00449" Name="AstroDawnCycle" ParameterType="%AID%_PT-WxCycle" Offset="1419" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00450" Name="AstroDuskActive" ParameterType="%AID%_PT-CheckBox" Offset="1429" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00451" Name="AstroDuskDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1429" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00452" Name="AstroDuskCycle" ParameterType="%AID%_PT-WxCycle" Offset="1430" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00453" Name="SunriseAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1440" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00454" Name="SunriseAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1441" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00455" Name="SunsetAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1451" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00456" Name="SunsetAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1452" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00457" Name="TransitElevationActive" ParameterType="%AID%_PT-CheckBox" Offset="1462" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00458" Name="TransitElevationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1463" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00459" Name="DayLengthActive" ParameterType="%AID%_PT-CheckBox" Offset="1473" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00460" Name="DayLengthDpt" ParameterType="%AID%_PT-WxDpt11" Offset="1473" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00461" Name="DayLengthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1474" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00462" Name="DayProgressActive" ParameterType="%AID%_PT-CheckBox" Offset="1484" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00463" Name="DayProgressCycle" ParameterType="%AID%_PT-WxCycle" Offset="1485" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00464" Name="DayProgressAbs" ParameterType="%AID%_PT-WxAbs" Offset="1487" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00465" Name="DayProgressRel" ParameterType="%AID%_PT-WxRel" Offset="1491" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00466" Name="SunFallingActive" ParameterType="%AID%_PT-CheckBox" Offset="1495" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00467" Name="SunFallingCycle" ParameterType="%AID%_PT-WxCycle" Offset="1496" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00468" Name="DayNightSunActive" ParameterType="%AID%_PT-CheckBox" Offset="1506" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00469" Name="DayNightSunCycle" ParameterType="%AID%_PT-WxCycle" Offset="1507" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00470" Name="DayNightCivilActive" ParameterType="%AID%_PT-CheckBox" Offset="1517" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00471" Name="DayNightCivilCycle" ParameterType="%AID%_PT-WxCycle" Offset="1518" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00472" Name="DayNightNauticalActive" ParameterType="%AID%_PT-CheckBox" Offset="1528" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00473" Name="DayNightNauticalCycle" ParameterType="%AID%_PT-WxCycle" Offset="1529" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00474" Name="DayNightAstroActive" ParameterType="%AID%_PT-CheckBox" Offset="1539" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00475" Name="DayNightAstroCycle" ParameterType="%AID%_PT-WxCycle" Offset="1540" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00476" Name="ClearSkyRadiationActive" ParameterType="%AID%_PT-CheckBox" Offset="1550" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00477" Name="ClearSkyRadiationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1551" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00478" Name="ClearSkyRadiationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1553" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="50" SuffixText="W/m²" />
+                <Parameter Id="%AID%_UP-%TT%00479" Name="ClearSkyRadiationRel" ParameterType="%AID%_PT-WxRel" Offset="1557" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00480" Name="ClearSkyMaxActive" ParameterType="%AID%_PT-CheckBox" Offset="1561" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00481" Name="ClearSkyMaxCycle" ParameterType="%AID%_PT-WxCycle" Offset="1562" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00482" Name="SunshineTodayActive" ParameterType="%AID%_PT-CheckBox" Offset="1572" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00483" Name="SunshineTodayDpt" ParameterType="%AID%_PT-WxDpt12" Offset="1572" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00484" Name="SunshineTodayCycle" ParameterType="%AID%_PT-WxCycle" Offset="1573" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00485" Name="SunshineTodayAbs" ParameterType="%AID%_PT-WxAbs" Offset="1575" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.1" SuffixText="h" />
+                <Parameter Id="%AID%_UP-%TT%00486" Name="SunshineTodayRel" ParameterType="%AID%_PT-WxRel" Offset="1579" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00487" Name="SunshineYesterdayActive" ParameterType="%AID%_PT-CheckBox" Offset="1583" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00488" Name="SunshineYesterdayDpt" ParameterType="%AID%_PT-WxDpt12" Offset="1583" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00489" Name="SunshineYesterdayCycle" ParameterType="%AID%_PT-WxCycle" Offset="1584" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00490" Name="MoonPhaseActive" ParameterType="%AID%_PT-CheckBox" Offset="1594" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00491" Name="MoonPhaseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1595" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00492" Name="MoonPhaseTextActive" ParameterType="%AID%_PT-CheckBox" Offset="1605" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00493" Name="MoonPhaseTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="1606" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00494" Name="MoonIlluminationActive" ParameterType="%AID%_PT-CheckBox" Offset="1616" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00495" Name="MoonIlluminationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1617" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00496" Name="MoonIlluminationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1619" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00497" Name="MoonIlluminationRel" ParameterType="%AID%_PT-WxRel" Offset="1623" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00498" Name="MoonAgeActive" ParameterType="%AID%_PT-CheckBox" Offset="1627" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00499" Name="MoonAgeCycle" ParameterType="%AID%_PT-WxCycle" Offset="1628" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00500" Name="MoonAgeAbs" ParameterType="%AID%_PT-WxAbs" Offset="1630" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="d" />
+                <Parameter Id="%AID%_UP-%TT%00501" Name="MoonAgeRel" ParameterType="%AID%_PT-WxRel" Offset="1634" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00502" Name="MoonAzimuthActive" ParameterType="%AID%_PT-CheckBox" Offset="1638" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00503" Name="MoonAzimuthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1639" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00504" Name="MoonAzimuthAbs" ParameterType="%AID%_PT-WxAbs" Offset="1641" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="°" />
+                <Parameter Id="%AID%_UP-%TT%00505" Name="MoonAzimuthRel" ParameterType="%AID%_PT-WxRel" Offset="1645" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00506" Name="MoonElevationActive" ParameterType="%AID%_PT-CheckBox" Offset="1649" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00507" Name="MoonElevationCycle" ParameterType="%AID%_PT-WxCycle" Offset="1650" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00508" Name="MoonElevationAbs" ParameterType="%AID%_PT-WxAbs" Offset="1652" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="°" />
+                <Parameter Id="%AID%_UP-%TT%00509" Name="MoonElevationRel" ParameterType="%AID%_PT-WxRel" Offset="1656" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00510" Name="MoonriseActive" ParameterType="%AID%_PT-CheckBox" Offset="1660" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00511" Name="MoonriseDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1660" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00512" Name="MoonriseCycle" ParameterType="%AID%_PT-WxCycle" Offset="1661" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00513" Name="MoonsetActive" ParameterType="%AID%_PT-CheckBox" Offset="1671" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00514" Name="MoonsetDpt" ParameterType="%AID%_PT-WxDpt10" Offset="1671" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00515" Name="MoonsetCycle" ParameterType="%AID%_PT-WxCycle" Offset="1672" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00516" Name="NextFullMoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1682" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00517" Name="NextFullMoonDpt" ParameterType="%AID%_PT-WxDpt13" Offset="1682" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00518" Name="NextFullMoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1683" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00519" Name="NextNewMoonActive" ParameterType="%AID%_PT-CheckBox" Offset="1693" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00520" Name="NextNewMoonDpt" ParameterType="%AID%_PT-WxDpt13" Offset="1693" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00521" Name="NextNewMoonCycle" ParameterType="%AID%_PT-WxCycle" Offset="1694" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -1233,6 +1260,19 @@
               <ParameterRef Id="%AID%_UP-%TT%00506_R-%TT%0050601" RefId="%AID%_UP-%TT%00506" />
               <ParameterRef Id="%AID%_UP-%TT%00507_R-%TT%0050701" RefId="%AID%_UP-%TT%00507" />
               <ParameterRef Id="%AID%_UP-%TT%00508_R-%TT%0050801" RefId="%AID%_UP-%TT%00508" />
+              <ParameterRef Id="%AID%_UP-%TT%00509_R-%TT%0050901" RefId="%AID%_UP-%TT%00509" />
+              <ParameterRef Id="%AID%_UP-%TT%00510_R-%TT%0051001" RefId="%AID%_UP-%TT%00510" />
+              <ParameterRef Id="%AID%_UP-%TT%00511_R-%TT%0051101" RefId="%AID%_UP-%TT%00511" />
+              <ParameterRef Id="%AID%_UP-%TT%00512_R-%TT%0051201" RefId="%AID%_UP-%TT%00512" />
+              <ParameterRef Id="%AID%_UP-%TT%00513_R-%TT%0051301" RefId="%AID%_UP-%TT%00513" />
+              <ParameterRef Id="%AID%_UP-%TT%00514_R-%TT%0051401" RefId="%AID%_UP-%TT%00514" />
+              <ParameterRef Id="%AID%_UP-%TT%00515_R-%TT%0051501" RefId="%AID%_UP-%TT%00515" />
+              <ParameterRef Id="%AID%_UP-%TT%00516_R-%TT%0051601" RefId="%AID%_UP-%TT%00516" />
+              <ParameterRef Id="%AID%_UP-%TT%00517_R-%TT%0051701" RefId="%AID%_UP-%TT%00517" />
+              <ParameterRef Id="%AID%_UP-%TT%00518_R-%TT%0051801" RefId="%AID%_UP-%TT%00518" />
+              <ParameterRef Id="%AID%_UP-%TT%00519_R-%TT%0051901" RefId="%AID%_UP-%TT%00519" />
+              <ParameterRef Id="%AID%_UP-%TT%00520_R-%TT%0052001" RefId="%AID%_UP-%TT%00520" />
+              <ParameterRef Id="%AID%_UP-%TT%00521_R-%TT%0052101" RefId="%AID%_UP-%TT%00521" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -1488,14 +1528,32 @@
               <ComObjectRef Id="%AID%_O-%TT%00089_R-%TT%0008901" RefId="%AID%_O-%TT%00089" ObjectSize="2 Bytes" DatapointType="DPST-9-22" />
               <ComObjectRef Id="%AID%_O-%TT%00090_R-%TT%0009001" RefId="%AID%_O-%TT%00090" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
               <ComObjectRef Id="%AID%_O-%TT%00091_R-%TT%0009101" RefId="%AID%_O-%TT%00091" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00091_R-%TT%0009102" RefId="%AID%_O-%TT%00091" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00091_R-%TT%0009103" RefId="%AID%_O-%TT%00091" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00092_R-%TT%0009201" RefId="%AID%_O-%TT%00092" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00092_R-%TT%0009202" RefId="%AID%_O-%TT%00092" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00092_R-%TT%0009203" RefId="%AID%_O-%TT%00092" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00093_R-%TT%0009301" RefId="%AID%_O-%TT%00093" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00093_R-%TT%0009302" RefId="%AID%_O-%TT%00093" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00093_R-%TT%0009303" RefId="%AID%_O-%TT%00093" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00094_R-%TT%0009401" RefId="%AID%_O-%TT%00094" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00094_R-%TT%0009402" RefId="%AID%_O-%TT%00094" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00094_R-%TT%0009403" RefId="%AID%_O-%TT%00094" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00095_R-%TT%0009501" RefId="%AID%_O-%TT%00095" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00095_R-%TT%0009502" RefId="%AID%_O-%TT%00095" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00095_R-%TT%0009503" RefId="%AID%_O-%TT%00095" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00096_R-%TT%0009601" RefId="%AID%_O-%TT%00096" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00096_R-%TT%0009602" RefId="%AID%_O-%TT%00096" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00096_R-%TT%0009603" RefId="%AID%_O-%TT%00096" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00097_R-%TT%0009701" RefId="%AID%_O-%TT%00097" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00097_R-%TT%0009702" RefId="%AID%_O-%TT%00097" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00097_R-%TT%0009703" RefId="%AID%_O-%TT%00097" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00098_R-%TT%0009801" RefId="%AID%_O-%TT%00098" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00098_R-%TT%0009802" RefId="%AID%_O-%TT%00098" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00098_R-%TT%0009803" RefId="%AID%_O-%TT%00098" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00099_R-%TT%0009901" RefId="%AID%_O-%TT%00099" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00099_R-%TT%0009902" RefId="%AID%_O-%TT%00099" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00099_R-%TT%0009903" RefId="%AID%_O-%TT%00099" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00100_R-%TT%0010001" RefId="%AID%_O-%TT%00100" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
               <ComObjectRef Id="%AID%_O-%TT%00101_R-%TT%0010101" RefId="%AID%_O-%TT%00101" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
               <ComObjectRef Id="%AID%_O-%TT%00102_R-%TT%0010201" RefId="%AID%_O-%TT%00102" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
@@ -1520,9 +1578,17 @@
               <ComObjectRef Id="%AID%_O-%TT%00118_R-%TT%0011801" RefId="%AID%_O-%TT%00118" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
               <ComObjectRef Id="%AID%_O-%TT%00119_R-%TT%0011901" RefId="%AID%_O-%TT%00119" ObjectSize="4 Bytes" DatapointType="DPST-14-7" />
               <ComObjectRef Id="%AID%_O-%TT%00120_R-%TT%0012001" RefId="%AID%_O-%TT%00120" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00120_R-%TT%0012002" RefId="%AID%_O-%TT%00120" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00120_R-%TT%0012003" RefId="%AID%_O-%TT%00120" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00121_R-%TT%0012101" RefId="%AID%_O-%TT%00121" ObjectSize="3 Bytes" DatapointType="DPST-10-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00121_R-%TT%0012102" RefId="%AID%_O-%TT%00121" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00121_R-%TT%0012103" RefId="%AID%_O-%TT%00121" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00122_R-%TT%0012201" RefId="%AID%_O-%TT%00122" ObjectSize="3 Bytes" DatapointType="DPST-11-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00122_R-%TT%0012202" RefId="%AID%_O-%TT%00122" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00122_R-%TT%0012203" RefId="%AID%_O-%TT%00122" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
               <ComObjectRef Id="%AID%_O-%TT%00123_R-%TT%0012301" RefId="%AID%_O-%TT%00123" ObjectSize="3 Bytes" DatapointType="DPST-11-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00123_R-%TT%0012302" RefId="%AID%_O-%TT%00123" ObjectSize="8 Bytes" DatapointType="DPST-19-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00123_R-%TT%0012303" RefId="%AID%_O-%TT%00123" ObjectSize="4 Bytes" DatapointType="DPST-12-1" />
             </ComObjectRefs>
           </Static>
           <Dynamic>
@@ -2843,104 +2909,203 @@
                 <choose ParamRefId="%AID%_UP-%TT%00426_R-%TT%0042601">
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00427_R-%TT%0042701" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00091_R-%TT%0009101" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00428_R-%TT%0042801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00427_R-%TT%0042701">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00091_R-%TT%0009101" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00091_R-%TT%0009102" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00091_R-%TT%0009103" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenuntergang" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00428_R-%TT%0042801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00428_R-%TT%0042801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00429_R-%TT%0042901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00429_R-%TT%0042901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00429_R-%TT%0042901" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00092_R-%TT%0009201" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00430_R-%TT%0043001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00431_R-%TT%0043101" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00430_R-%TT%0043001">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00092_R-%TT%0009201" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00092_R-%TT%0009202" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00092_R-%TT%0009203" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenhöchststand (Transit)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00430_R-%TT%0043001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00430_R-%TT%0043001">
-                  <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00431_R-%TT%0043101" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00093_R-%TT%0009301" />
-                  </when>
-                </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn bürgerliche Dämmerung" UIHint="Headline" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00432_R-%TT%0043201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00432_R-%TT%0043201">
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00433_R-%TT%0043301" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00094_R-%TT%0009401" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00434_R-%TT%0043401" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00433_R-%TT%0043301">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00093_R-%TT%0009301" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00093_R-%TT%0009302" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00093_R-%TT%0009303" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn bürgerliche Dämmerung" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00435_R-%TT%0043501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00435_R-%TT%0043501">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00436_R-%TT%0043601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00437_R-%TT%0043701" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00436_R-%TT%0043601">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00094_R-%TT%0009401" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00094_R-%TT%0009402" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00094_R-%TT%0009403" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende bürgerliche Dämmerung" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00434_R-%TT%0043401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00434_R-%TT%0043401">
-                  <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00435_R-%TT%0043501" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00095_R-%TT%0009501" />
-                  </when>
-                </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn nautische Dämmerung" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00436_R-%TT%0043601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00436_R-%TT%0043601">
-                  <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00437_R-%TT%0043701" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00096_R-%TT%0009601" />
-                  </when>
-                </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende nautische Dämmerung" UIHint="Headline" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00438_R-%TT%0043801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00438_R-%TT%0043801">
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00439_R-%TT%0043901" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00097_R-%TT%0009701" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00440_R-%TT%0044001" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00439_R-%TT%0043901">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00095_R-%TT%0009501" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00095_R-%TT%0009502" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00095_R-%TT%0009503" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn astronomische Dämmerung" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00440_R-%TT%0044001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00440_R-%TT%0044001">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn nautische Dämmerung" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00441_R-%TT%0044101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00441_R-%TT%0044101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00441_R-%TT%0044101" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00098_R-%TT%0009801" />
-                  </when>
-                </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende astronomische Dämmerung" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00442_R-%TT%0044201" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00442_R-%TT%0044201">
-                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00442_R-%TT%0044201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00443_R-%TT%0044301" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00099_R-%TT%0009901" />
+                    <choose ParamRefId="%AID%_UP-%TT%00442_R-%TT%0044201">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00096_R-%TT%0009601" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00096_R-%TT%0009602" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00096_R-%TT%0009603" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenaufgang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende nautische Dämmerung" UIHint="Headline" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00444_R-%TT%0044401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00444_R-%TT%0044401">
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00445_R-%TT%0044501" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00100_R-%TT%0010001" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00446_R-%TT%0044601" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00445_R-%TT%0044501">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00097_R-%TT%0009701" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00097_R-%TT%0009702" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00097_R-%TT%0009703" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenuntergang" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00446_R-%TT%0044601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00446_R-%TT%0044601">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn astronomische Dämmerung" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00447_R-%TT%0044701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00447_R-%TT%0044701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00447_R-%TT%0044701" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00101_R-%TT%0010101" />
-                  </when>
-                </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Elevation beim Höchststand" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00448_R-%TT%0044801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00448_R-%TT%0044801">
-                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00448_R-%TT%0044801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00449_R-%TT%0044901" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00102_R-%TT%0010201" />
+                    <choose ParamRefId="%AID%_UP-%TT%00448_R-%TT%0044801">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00098_R-%TT%0009801" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00098_R-%TT%0009802" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00098_R-%TT%0009803" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tageslänge" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende astronomische Dämmerung" UIHint="Headline" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00450_R-%TT%0045001" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00450_R-%TT%0045001">
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00451_R-%TT%0045101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00452_R-%TT%0045201" IndentLevel="2" />
                     <choose ParamRefId="%AID%_UP-%TT%00451_R-%TT%0045101">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00099_R-%TT%0009901" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00099_R-%TT%0009902" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00099_R-%TT%0009903" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenaufgang" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00453_R-%TT%0045301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00453_R-%TT%0045301">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00454_R-%TT%0045401" IndentLevel="2" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%00100_R-%TT%0010001" />
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenuntergang" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00455_R-%TT%0045501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00455_R-%TT%0045501">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00456_R-%TT%0045601" IndentLevel="2" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%00101_R-%TT%0010101" />
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Elevation beim Höchststand" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00457_R-%TT%0045701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00457_R-%TT%0045701">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00458_R-%TT%0045801" IndentLevel="2" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%00102_R-%TT%0010201" />
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tageslänge" UIHint="Headline" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00459_R-%TT%0045901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00459_R-%TT%0045901">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00460_R-%TT%0046001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00461_R-%TT%0046101" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00460_R-%TT%0046001">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00103_R-%TT%0010301" />
                       </when>
@@ -2952,29 +3117,29 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tagesfortschritt (Aufgang bis Untergang)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="0 % bei Sonnenaufgang, 100 % bei Sonnenuntergang (z. B. für die Positionierung eines Sonnensymbols in der Visualisierung)." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00453_R-%TT%0045301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00453_R-%TT%0045301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00462_R-%TT%0046201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00462_R-%TT%0046201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00454_R-%TT%0045401" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00455_R-%TT%0045501" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00456_R-%TT%0045601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00463_R-%TT%0046301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00464_R-%TT%0046401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00465_R-%TT%0046501" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00104_R-%TT%0010401" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne steigt (0) / fällt (1)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00457_R-%TT%0045701" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00457_R-%TT%0045701">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00466_R-%TT%0046601" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00466_R-%TT%0046601">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00458_R-%TT%0045801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00467_R-%TT%0046701" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00105_R-%TT%0010501" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (Sonnenstand)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach Sonnenauf-/untergang mit Versatz oder nach Elevationsschwellen (morgens Tag ab, abends Nacht unter). Die Versätze gelten nur im ersten, die Schwellen nur im zweiten Verfahren." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00459_R-%TT%0045901" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00459_R-%TT%0045901">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00468_R-%TT%0046801" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00468_R-%TT%0046801">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00460_R-%TT%0046001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00469_R-%TT%0046901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00103_R-%TT%0010301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00104_R-%TT%0010401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00105_R-%TT%0010501" IndentLevel="2" />
@@ -2984,59 +3149,59 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (bürgerliche Dämmerung, -6°)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00461_R-%TT%0046101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00461_R-%TT%0046101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00470_R-%TT%0047001" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00470_R-%TT%0047001">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00462_R-%TT%0046201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00471_R-%TT%0047101" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00107_R-%TT%0010701" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (nautische Dämmerung, -12°)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00463_R-%TT%0046301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00463_R-%TT%0046301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00472_R-%TT%0047201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00472_R-%TT%0047201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00464_R-%TT%0046401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00473_R-%TT%0047301" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00108_R-%TT%0010801" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (astronomische Dämmerung, -18°)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00465_R-%TT%0046501" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00465_R-%TT%0046501">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00474_R-%TT%0047401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00474_R-%TT%0047401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00466_R-%TT%0046601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00475_R-%TT%0047501" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00109_R-%TT%0010901" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Globalstrahlung bei klarem Himmel" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Theoretischer Wert für den aktuellen Sonnenstand (Haurwitz)." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00467_R-%TT%0046701" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00467_R-%TT%0046701">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00476_R-%TT%0047601" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00476_R-%TT%0047601">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00468_R-%TT%0046801" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00469_R-%TT%0046901" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00470_R-%TT%0047001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00477_R-%TT%0047701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00478_R-%TT%0047801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00479_R-%TT%0047901" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00110_R-%TT%0011001" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Globalstrahlung bei klarem Himmel, Tagesmaximum" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00471_R-%TT%0047101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00471_R-%TT%0047101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00480_R-%TT%0048001" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00480_R-%TT%0048001">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00472_R-%TT%0047201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00481_R-%TT%0048101" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00111_R-%TT%0011101" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenscheindauer heute" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeit mit Globalstrahlung über der Schwelle (WMO: 120 W/m²), bleibt über Neustarts erhalten." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00473_R-%TT%0047301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00473_R-%TT%0047301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00482_R-%TT%0048201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00482_R-%TT%0048201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00474_R-%TT%0047401" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00475_R-%TT%0047501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00483_R-%TT%0048301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00484_R-%TT%0048401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00108_R-%TT%0010801" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00476_R-%TT%0047601" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00477_R-%TT%0047701" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00474_R-%TT%0047401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00485_R-%TT%0048501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00486_R-%TT%0048601" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00483_R-%TT%0048301">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00112_R-%TT%0011201" />
                       </when>
@@ -3047,12 +3212,12 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenscheindauer gestern" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00478_R-%TT%0047801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00478_R-%TT%0047801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00487_R-%TT%0048701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00487_R-%TT%0048701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00479_R-%TT%0047901" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00480_R-%TT%0048001" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00479_R-%TT%0047901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00488_R-%TT%0048801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00489_R-%TT%0048901" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00488_R-%TT%0048801">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00113_R-%TT%0011301" />
                       </when>
@@ -3066,92 +3231,136 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="Moon" Text="Mond" Icon="weather-partly-snowy-rainy">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondphase (0-7)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="0 Neumond, 1 zunehmende Sichel, 2 erstes Viertel, 3 zunehmender Mond, 4 Vollmond, 5 abnehmender Mond, 6 letztes Viertel, 7 abnehmende Sichel." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00481_R-%TT%0048101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00481_R-%TT%0048101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00490_R-%TT%0049001" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00490_R-%TT%0049001">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00482_R-%TT%0048201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00491_R-%TT%0049101" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00114_R-%TT%0011401" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondphase (Text)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00483_R-%TT%0048301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00483_R-%TT%0048301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00492_R-%TT%0049201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00492_R-%TT%0049201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00484_R-%TT%0048401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00493_R-%TT%0049301" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00115_R-%TT%0011501" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond beleuchtet" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00485_R-%TT%0048501" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00485_R-%TT%0048501">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00494_R-%TT%0049401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00494_R-%TT%0049401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00486_R-%TT%0048601" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00487_R-%TT%0048701" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00488_R-%TT%0048801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00495_R-%TT%0049501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00496_R-%TT%0049601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00497_R-%TT%0049701" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00116_R-%TT%0011601" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondalter (Tage seit Neumond)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00489_R-%TT%0048901" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00489_R-%TT%0048901">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00498_R-%TT%0049801" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00498_R-%TT%0049801">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00490_R-%TT%0049001" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00491_R-%TT%0049101" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00492_R-%TT%0049201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00499_R-%TT%0049901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00500_R-%TT%0050001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00501_R-%TT%0050101" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00117_R-%TT%0011701" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond Azimut" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00493_R-%TT%0049301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00493_R-%TT%0049301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00502_R-%TT%0050201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00502_R-%TT%0050201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00494_R-%TT%0049401" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00495_R-%TT%0049501" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00496_R-%TT%0049601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00503_R-%TT%0050301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00504_R-%TT%0050401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00505_R-%TT%0050501" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00118_R-%TT%0011801" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond Elevation" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00497_R-%TT%0049701" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00497_R-%TT%0049701">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00506_R-%TT%0050601" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00506_R-%TT%0050601">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00498_R-%TT%0049801" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00499_R-%TT%0049901" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00500_R-%TT%0050001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00507_R-%TT%0050701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00508_R-%TT%0050801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00509_R-%TT%0050901" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00119_R-%TT%0011901" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondaufgang" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Leer, wenn der Mond an diesem Tag nicht aufgeht." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00501_R-%TT%0050101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00501_R-%TT%0050101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00510_R-%TT%0051001" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00510_R-%TT%0051001">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00502_R-%TT%0050201" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00120_R-%TT%0012001" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00511_R-%TT%0051101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00512_R-%TT%0051201" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00511_R-%TT%0051101">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00120_R-%TT%0012001" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00120_R-%TT%0012002" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00120_R-%TT%0012003" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Monduntergang" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00503_R-%TT%0050301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00503_R-%TT%0050301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00513_R-%TT%0051301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00513_R-%TT%0051301">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00504_R-%TT%0050401" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00121_R-%TT%0012101" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00514_R-%TT%0051401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00515_R-%TT%0051501" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00514_R-%TT%0051401">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00121_R-%TT%0012101" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00121_R-%TT%0012102" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00121_R-%TT%0012103" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nächster Vollmond" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00505_R-%TT%0050501" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00505_R-%TT%0050501">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00516_R-%TT%0051601" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00516_R-%TT%0051601">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00506_R-%TT%0050601" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00122_R-%TT%0012201" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00517_R-%TT%0051701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00518_R-%TT%0051801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00517_R-%TT%0051701">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00122_R-%TT%0012201" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00122_R-%TT%0012202" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00122_R-%TT%0012203" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nächster Neumond" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00507_R-%TT%0050701" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00507_R-%TT%0050701">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00519_R-%TT%0051901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00519_R-%TT%0051901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00508_R-%TT%0050801" IndentLevel="2" />
-                    <ComObjectRefRef RefId="%AID%_O-%TT%00123_R-%TT%0012301" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00520_R-%TT%0052001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00521_R-%TT%0052101" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00520_R-%TT%0052001">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00123_R-%TT%0012301" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00123_R-%TT%0012302" />
+                      </when>
+                      <when test="2">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00123_R-%TT%0012303" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
               </ParameterBlock>

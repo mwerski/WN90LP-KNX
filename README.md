@@ -44,6 +44,8 @@ und optional per MQTT bereit.
   Sonne steigt/fällt, Tag/Nacht nach Sonnenstand (Versatz oder Elevationsschwellen) und je Dämmerungsstufe,
   Strahlung bei klarem Himmel, Sonnenscheindauer heute/gestern (WMO, > 120 W/m²)
 - Mond: Phase (Nummer und Text), Beleuchtung, Alter, Azimut/Elevation, Auf-/Untergang, nächster Voll- und Neumond (DPT 11.001)
+- Zeitpunkte wahlweise als DPT 10.001 bzw. 11.001, DPT 19.001 (Datum und Uhrzeit) oder Unix-Zeit (DPT 12.001);
+  in MQTT und InfluxDB zusätzlich immer als `<feld>_unix`
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX

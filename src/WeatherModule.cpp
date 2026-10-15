@@ -599,6 +599,7 @@ void WeatherModule::updateAstro()
     const int32_t secOfDay = local.hour * 3600 + local.minute * 60 + local.second;
     const int32_t tzOffset = (int32_t)((int64_t)localDays * 86400 + secOfDay - (int64_t)utc);
     const time_t midnight = utc - secOfDay;
+    MeasuredValue::setDayContext(midnight, tzOffset);
 
     // Tageswerte einmal je Tag (und nach dem ersten Erhalt der Uhrzeit)
     const uint32_t key = dayKeyOf(local);
@@ -857,6 +858,9 @@ void WeatherModule::publishMqtt()
         if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::Time || fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
+            int64_t unix;
+            if (MeasuredValue::toUnix(v.value(), &WX_VALUES[i], unix))
+                doc[std::string(WX_VALUES[i].mqttKey) + "_unix"] = unix;
             continue;
         }
         const float f = powf(10.0f, WX_VALUES[i].decimals);
@@ -910,7 +914,18 @@ std::string WeatherModule::buildInfluxBody()
         for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
         {
             const WxValueDef &def = WX_VALUES[i];
-            if (def.sensor != pt.sensor || !def.influxKey || !_values[i].valid())
+            if (def.sensor != pt.sensor || !_values[i].valid())
+                continue;
+            int64_t unix;
+            if (MeasuredValue::toUnix(_values[i].value(), &def, unix))
+            {
+                // Zeitpunkte als Unixzeit (Gleitkommafeld, wie alle Felder)
+                if (!fields.empty())
+                    fields += ',';
+                fields += std::string(def.mqttKey) + "_unix=" + std::to_string(unix);
+                continue;
+            }
+            if (!def.influxKey)
                 continue;
             // Immer Gleitkomma (ohne i-Suffix), damit keine Feldtyp-Konflikte entstehen
             snprintf(num, sizeof(num), "%.*f", def.decimals, _values[i].value());

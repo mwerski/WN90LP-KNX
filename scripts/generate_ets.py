@@ -56,8 +56,11 @@ ALARM = [("DPT 1.005 (1 Bit, Alarm)", "DPST-1-5", "1 Bit", 1, 5, 1.0)]
 DAYNIGHT = [("DPT 1.024 (1 Bit, 0 = Tag, 1 = Nacht)", "DPST-1-24", "1 Bit", 1, 2, 1.0)]
 ANGLE = [T14(7, "DPT 14.007 (4 Byte, °)")]
 IRRADIANCE = [T9(22, "DPT 9.022 (2 Byte, W/m²)")]
-TIME = [("DPT 10.001 (3 Byte, Uhrzeit)", "DPST-10-1", "3 Bytes", 10, 1, 1.0)]
-DATE = [("DPT 11.001 (3 Byte, Datum)", "DPST-11-1", "3 Bytes", 11, 1, 1.0)]
+# Zeitpunkte: KNX-Uhrzeit, KNX-Datum+Uhrzeit oder Unix-Zeit (Sekunden seit 1970 als DPT 12.001)
+DATETIME = ("DPT 19.001 (8 Byte, Datum und Uhrzeit)", "DPST-19-1", "8 Bytes", 19, 1, 1.0)
+UNIX = ("Unix-Zeit (DPT 12.001, 4 Byte, s seit 1970)", "DPST-12-1", "4 Bytes", 12, 1, 1.0)
+TIME = [("DPT 10.001 (3 Byte, Uhrzeit)", "DPST-10-1", "3 Bytes", 10, 1, 1.0), DATETIME, UNIX]
+DATE = [("DPT 11.001 (3 Byte, Datum)", "DPST-11-1", "3 Bytes", 11, 1, 1.0), DATETIME, UNIX]
 # Dauer in Sekunden; 7.006 wird ueber die 16-Bit-Kodierung von 7.001 gesendet (gleiche Bytes)
 DURATION = [("DPT 13.100 (4 Byte, s)", "DPST-13-100", "4 Bytes", 13, 100, 1.0),
             ("DPT 7.006 (2 Byte, min)", "DPST-7-6", "2 Bytes", 7, 1, 1.0 / 60)]
