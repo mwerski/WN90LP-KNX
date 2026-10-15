@@ -1,4 +1,5 @@
 #include "MeasuredValue.h"
+#include "Forecast.h"
 
 void MeasuredValue::init(const WxValueDef *def, bool configured)
 {
@@ -97,6 +98,11 @@ KNXValue MeasuredValue::busValue() const
     {
         case 1:
             return KNXValue(bus >= 0.5f);
+        case 6:
+            return KNXValue((int8_t)constrain(lroundf(bus), -128L, 127L));
+        case 16:
+            // Text: der Messwert ist die Zambretti-Nummer
+            return KNXValue(Forecast::text((uint8_t)lroundf(bus), false));
         case 5:
             if (opt.sub == 10)
                 return KNXValue((uint8_t)constrain(lroundf(bus), 0L, 255L));

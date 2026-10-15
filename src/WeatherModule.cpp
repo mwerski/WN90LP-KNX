@@ -1,6 +1,7 @@
 #include "WeatherModule.h"
 #include "NetworkModule.h"
 #include "WeatherCalc.h"
+#include "Forecast.h"
 #include <ArduinoJson.h>
 
 WeatherModule openknxWeatherModule;
@@ -37,6 +38,10 @@ void WeatherModule::setup(bool configured)
         rainWindow = ParamWX_RainWindow;
         rainMinAmount = (float)ParamWX_RainMinAmount;
         _mqttInterval = (uint32_t)ParamWX_MqttInterval * 1000;
+        _heavyRain = (float)ParamWX_SymHeavyRain;
+        _stormBft = ParamWX_SymStormGust;
+        _uvHigh = ParamWX_SymUvHigh;
+        _sunnyRatio = ParamWX_SymSunnyRatio / 100.0f;
     }
 
     for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
@@ -106,6 +111,11 @@ void WeatherModule::loop(bool configured)
         updateRain();
         set(WxId::Trend1h, _pressure.trend(1));
         set(WxId::Trend3h, _pressure.trend(3));
+    }
+    if (delayCheck(_forecastTimer, 10000))
+    {
+        _forecastTimer = millis();
+        updateForecast();
     }
     if (_rain.saveRequested())
         openknx.flash.save(true);
@@ -213,6 +223,82 @@ void WeatherModule::updateRain()
     set(WxId::Raining, _rain.raining() ? 1.0f : 0.0f);
 }
 
+void WeatherModule::updateForecast()
+{
+    // Tendenz ueber 3 h; in den ersten 3 h nach dem Start aus 1 h hochgerechnet
+    float trend3h = _pressure.trend(3);
+    if (isnan(trend3h))
+        trend3h = _pressure.trend(1) * 3.0f;
+    set(WxId::Tendency, isnan(trend3h) ? NAN : Forecast::tendency(trend3h));
+
+    const MeasuredValue &sea = val(WxId::PressureSea);
+    const MeasuredValue &wind = val(WxId::WindSpeed);
+    const MeasuredValue &dir = val(WxId::WindDir);
+    // Bei Windstille ist die Richtung bedeutungslos
+    const float windDir = (wind.valid() && wind.value() >= 1.0f && dir.valid()) ? dir.value() : NAN;
+    const uint8_t month = openknx.time.isValid() ? openknx.time.getLocalTime().month : 0;
+    const uint8_t z = Forecast::zambretti(sea.valid() ? sea.value() : NAN, trend3h, windDir, month);
+    set(WxId::Forecast, z ? z : NAN);
+    set(WxId::ForecastText, z ? z : NAN);
+
+    // Wettersymbol fuer Displays: 0 sonnig, 1 bewoelkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV
+    if (!val(WxId::Light).valid() && !_rain.hasData())
+    {
+        val(WxId::WeatherSymbol).invalidate();
+        return;
+    }
+    const MeasuredValue &rate = val(WxId::RainRate);
+    const MeasuredValue &gust = val(WxId::GustSpeed);
+    const MeasuredValue &uv = val(WxId::UvIndex);
+    const bool heavy = rate.valid() && rate.value() >= _heavyRain;
+    uint8_t symbol;
+    if (_rain.raining())
+    {
+        if (heavy && gust.valid() && WeatherCalc::beaufort(gust.value()) >= _stormBft)
+            symbol = 4;
+        else
+            symbol = heavy ? 3 : 2;
+    }
+    else if (uv.valid() && uv.value() >= _uvHigh)
+        symbol = 5;
+    else
+        symbol = sunny(z) ? 0 : 1;
+    set(WxId::WeatherSymbol, symbol);
+}
+
+bool WeatherModule::sunny(uint8_t zambretti)
+{
+    const MeasuredValue &light = val(WxId::Light);
+#ifdef OPENKNX_SUN_POSITION
+    if (openknx.sun.isSunCalculatioValid())
+    {
+        const float elevation = openknx.sun.elevation();
+        if (elevation > 3.0f && light.valid())
+        {
+            // Klarer Himmel nach Haurwitz (W/m2) mit ca. 110 lx pro W/m2
+            const float s = sinf(elevation * DEG_TO_RAD);
+            const float clearSky = 110.0f * 1098.0f * s * expf(-0.057f / s);
+            const float ratio = light.value() / clearSky;
+            // Glaettung ueber ca. 5 min (Aufruf alle 10 s), damit einzelne Wolken nicht flackern
+            _lightRatio = isnan(_lightRatio) ? ratio : _lightRatio + (ratio - _lightRatio) * (10.0f / 300.0f);
+            // Hysterese 10 Prozentpunkte
+            if (_lightRatio >= _sunnyRatio)
+                _sunny = true;
+            else if (_lightRatio < _sunnyRatio - 0.1f)
+                _sunny = false;
+            return _sunny;
+        }
+        // Nacht oder Daemmerung: Prognose A-F (schoenes Wetter) gilt als klar
+        _lightRatio = NAN;
+        _sunny = zambretti >= 1 && zambretti <= 6;
+        return _sunny;
+    }
+#endif
+    // Ohne Uhrzeit/Standort: feste Helligkeitsschwelle
+    _sunny = light.valid() && light.value() >= 20000.0f;
+    return _sunny;
+}
+
 void WeatherModule::updateFault(uint16_t ko, bool &state, bool faulty, const char *name)
 {
     if (state == faulty)
@@ -264,6 +350,11 @@ void WeatherModule::publishMqtt()
         const MeasuredValue &v = _values[i];
         if (!v.valid())
             continue;
+        if ((WxId)i == WxId::ForecastText)
+        {
+            doc[WX_VALUES[i].mqttKey] = Forecast::text((uint8_t)v.value(), true);
+            continue;
+        }
         const float f = powf(10.0f, WX_VALUES[i].decimals);
         doc[WX_VALUES[i].mqttKey] = roundf(v.value() * f) / f;
     }
@@ -308,6 +399,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx raw", "Rohwerte der Modbus-Register");
     openknx.console.printHelpLine("wx rain", "Regenstatistik");
     openknx.console.printHelpLine("wx pressure", "Luftdruckverlauf und Tendenz");
+    openknx.console.printHelpLine("wx forecast", "Prognose und Wettersymbol");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -351,6 +443,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showRain();
     else if (cmd == "wx pressure")
         showPressure();
+    else if (cmd == "wx forecast")
+        showForecast();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)
@@ -437,4 +531,23 @@ void WeatherModule::showPressure()
     for (uint8_t i = 0; i < _pressure.samples(); i++)
         logInfoP("vor %3u min: %.1f hPa", i * 15, _pressure.sample(i));
     logIndentDown();
+}
+
+void WeatherModule::showForecast()
+{
+    static const char *symbols[] = {"sonnig", "bewoelkt", "Schauer", "starker Regen", "Gewitter", "hoher UV-Index"};
+    const MeasuredValue &z = val(WxId::Forecast);
+    const MeasuredValue &sym = val(WxId::WeatherSymbol);
+    logInfoP("Luftdruck Meereshoehe %.1f hPa, Tendenz 3 h %.1f hPa (1 h %.1f hPa)", val(WxId::PressureSea).value(), _pressure.trend(3),
+             _pressure.trend(1));
+    if (z.valid())
+        logInfoP("Zambretti: %c (%u) %s", 'A' + (int)z.value() - 1, (uint8_t)z.value(), Forecast::text((uint8_t)z.value(), true));
+    else
+        logInfoP("Zambretti: noch keine Prognose (Luftdruck/Tendenz fehlen)");
+    if (sym.valid())
+        logInfoP("Wettersymbol: %u (%s), Regen %s, Intensitaet %.1f mm/h, Helligkeitsanteil %.0f %%", (uint8_t)sym.value(),
+                 symbols[min<uint8_t>((uint8_t)sym.value(), 5)], _rain.raining() ? "ja" : "nein", val(WxId::RainRate).value(),
+                 _lightRatio * 100.0f);
+    else
+        logInfoP("Wettersymbol: keine Daten");
 }

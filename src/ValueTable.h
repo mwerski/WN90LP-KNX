@@ -40,6 +40,10 @@ enum class WxId : uint8_t
     Pm10,
     Pm25Norm,
     Pm10Norm,
+    Tendency,
+    Forecast,
+    ForecastText,
+    WeatherSymbol,
     Count
 };
 
@@ -71,7 +75,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 35
+#define WX_VALUE_COUNT 39
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -112,5 +116,9 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Feinstaub PM10", "pm10", "ug/m3", WX_Pm10Active, WX_KoPm10, WxSensor::Sds, true, 1, 1, {{9, 1, 1.0f}}},
     {"Feinstaub PM2,5 (feuchtekorrigiert)", "pm25_normalized", "ug/m3", WX_Pm25NormActive, WX_KoPm25Norm, WxSensor::Sds, true, 1, 1, {{9, 1, 1.0f}}},
     {"Feinstaub PM10 (feuchtekorrigiert)", "pm10_normalized", "ug/m3", WX_Pm10NormActive, WX_KoPm10Norm, WxSensor::Sds, true, 1, 1, {{9, 1, 1.0f}}},
+    {"Wettertendenz", "weather_tendency", "", WX_TendencyActive, WX_KoTendency, WxSensor::None, false, 0, 1, {{6, 10, 1.0f}}},
+    {"Wetterprognose (Zambretti-Nummer)", "forecast", "", WX_ForecastActive, WX_KoForecast, WxSensor::None, false, 0, 1, {{5, 10, 1.0f}}},
+    {"Wetterprognose (Text)", "forecast_text", "", WX_ForecastTextActive, WX_KoForecastText, WxSensor::None, false, 0, 1, {{16, 1, 1.0f}}},
+    {"Wettersymbol (Display)", "weather_symbol", "", WX_WeatherSymbolActive, WX_KoWeatherSymbol, WxSensor::None, false, 0, 1, {{5, 10, 1.0f}}},
 };
 

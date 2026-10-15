@@ -50,6 +50,8 @@ RAIN9 = [T9(26, "DPT 9.026 (2 Byte, mm)")]
 PM = [T9(30, "DPT 9.030 (2 Byte, µg/m³)")]
 BFT = [("DPT 5.010 (1 Byte)", "DPST-5-10", "1 Byte", 5, 10, 1.0)]
 BOOL = [("DPT 1.002 (1 Bit)", "DPST-1-2", "1 Bit", 1, 2, 1.0)]
+TENDENCY = [("DPT 6.010 (1 Byte, -2..+2)", "DPST-6-10", "1 Byte", 6, 10, 1.0)]
+TEXT = [("DPT 16.001 (14 Byte, Text)", "DPST-16-1", "14 Bytes", 16, 1, 1.0)]
 
 # Gruppen = ETS-Seiten
 GROUPS = [
@@ -61,6 +63,7 @@ GROUPS = [
     ("Light", "Helligkeit und UV", "white-balance-sunny", None),
     ("Rain", "Regen", "weather-pouring", None),
     ("Particles", "Feinstaub", "blur", "sds"),
+    ("Forecast", "Prognose und Display", "weather-partly-snowy-rainy", None),
 ]
 
 
@@ -136,6 +139,21 @@ VALUES = [
       mqtt="pm25_normalized"),
     V("Pm10Norm", "Particles", "Feinstaub PM10 (feuchtekorrigiert)", "µg/m³", PM, 300, 2, 0, sensor="sds",
       mqtt="pm10_normalized"),
+    # Ab ETS 0.3, hinten angefuegt, damit die KO-Nummern der bisherigen Werte gleich bleiben
+    V("Tendency", "Forecast", "Wettertendenz", "", TENDENCY, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="weather_tendency",
+      info="Aus der Luftdruckänderung über 3 Stunden: -2 stark fallend (Sturm möglich), -1 fallend (Verschlechterung), "
+           "0 gleichbleibend, +1 steigend (Besserung), +2 stark steigend. In den ersten 3 Stunden nach dem Start aus 1 Stunde hochgerechnet."),
+    V("Forecast", "Forecast", "Wetterprognose (Zambretti-Nummer)", "", BFT, 1800, 0, 0, thresholds=False, decimals=0,
+      mqtt="forecast",
+      info="Prognose für etwa 12 Stunden nach Zambretti aus Luftdruck auf Meereshöhe, Tendenz, Windrichtung und Jahreszeit: "
+           "1 (A, beständig schön) bis 26 (Z, Sturm mit viel Regen). Die Höhe des Standorts auf der Seite Allgemein muss stimmen."),
+    V("ForecastText", "Forecast", "Wetterprognose (Text)", "", TEXT, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="forecast_text", info="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“."),
+    V("WeatherSymbol", "Forecast", "Wettersymbol (Display)", "", BFT, 600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="weather_symbol",
+      info="0 sonnig, 1 bewölkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV-Index (z. B. für Tantron-Displays). "
+           "Gewitter ist eine Schätzung aus starkem Regen und Böen, die WN90LP misst keine Blitze."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -148,7 +166,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 16
+GENERAL_SIZE = 24
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -159,6 +177,10 @@ GENERAL = [
     ("MqttInterval", "%AID%_PT-WxCycle", 9, 0, "Messwerte per MQTT senden alle (0 = nie)", "60", "s"),
     ("RainWindow", "%AID%_PT-WxRainWindow", 11, 0, "Regen beginnt bei Niederschlag innerhalb von", "10", "min"),
     ("RainMinAmount", "%AID%_PT-WxRainAmount", 12, 0, "von mindestens", "0.1", "mm"),
+    ("SymHeavyRain", "%AID%_PT-WxRainRate", 16, 0, "Starker Regen ab", "10", "mm/h"),
+    ("SymStormGust", "%AID%_PT-WxBft", 20, 0, "Gewitter: starker Regen und Böen ab", "7", "Bft"),
+    ("SymUvHigh", "%AID%_PT-WxUv", 21, 0, "Hoher UV-Index ab", "6", None),
+    ("SymSunnyRatio", "%AID%_PT-WxPercent", 22, 0, "Sonnig ab Anteil der Helligkeit bei klarem Himmel", "60", "%"),
 ]
 
 DPT_TYPES = {}  # Labels -> ParameterType-Id
@@ -276,6 +298,18 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxRainAmount" Name="WxRainAmount">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.01" maxInclusive="10" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxRainRate" Name="WxRainRate">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.5" maxInclusive="100" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxBft" Name="WxBft">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="12" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxUv" Name="WxUv">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="15" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxPercent" Name="WxPercent">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="10" maxInclusive="100" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxRainStop" Name="WxRainStop">',
         '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="240" />',
         '              </ParameterType>',
@@ -363,6 +397,14 @@ def build():
             w(f'{" " * ind}  <when test="1">')
             ind += 4
         w(f'{" " * ind}<ParameterBlock Id="%AID%_PB-nnn" Name="{gkey}" Text="{escape(gtext)}" Icon="{icon}">')
+        if gkey == "Forecast":
+            q = " " * (ind + 2)
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Wettersymbol" UIHint="Headline" />')
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Vorrang: Gewitter, starker Regen, Schauer (Regen aktiv), hoher UV-Index, sonnig/bewölkt. '
+              'Sonnig/bewölkt vergleicht tagsüber die Helligkeit mit dem Wert bei klarem Himmel für den Sonnenstand '
+              '(benötigt Uhrzeit und Gerätestandort); nachts entscheidet die Prognose." UIHint="Information" />')
+            for n in ("SymHeavyRain", "SymStormGust", "SymUvHigh", "SymSunnyRatio"):
+                w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
         for v in VALUES:
             if v["group"] != gkey:
                 continue

@@ -8,7 +8,7 @@
 #include "ValueTable.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.2.0"
+#define WX_FIRMWARE_VERSION "0.3.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -34,6 +34,8 @@ class WeatherModule : public OpenKNX::Module
     void invalidateWn90();
     void processSds();
     void updateRain();
+    void updateForecast();
+    bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
     void publishMqtt();
@@ -43,6 +45,7 @@ class WeatherModule : public OpenKNX::Module
     void showRaw();
     void showRain();
     void showPressure();
+    void showForecast();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -58,6 +61,15 @@ class WeatherModule : public OpenKNX::Module
     bool _oneWireEnabled = false;
     float _tempOffset = 0;
     int16_t _altitude = 0;
+
+    // Wettersymbol
+    float _heavyRain = 10;
+    uint8_t _stormBft = 7;
+    uint8_t _uvHigh = 6;
+    float _sunnyRatio = 0.6f;
+    float _lightRatio = NAN; // geglaettet: Helligkeit / Helligkeit bei klarem Himmel
+    bool _sunny = false;
+    uint32_t _forecastTimer = 0;
 
     bool _faultWn90 = false;
     bool _faultSds = false;

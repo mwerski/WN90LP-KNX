@@ -20,6 +20,10 @@ und optional per MQTT bereit.
   „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
   Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
 - Feinstaub PM2,5 / PM10, auch feuchtekorrigiert
+- Prognose: Wettertendenz (-2..+2 aus der Luftdruckänderung über 3 h), Zambretti-Prognose (1–26) und
+  Prognosetext (DPT 16), Wettersymbol für Displays (z. B. Tantron 4"): 0 sonnig, 1 bewölkt, 2 Schauer,
+  3 starker Regen, 4 Gewitter (Schätzung aus Regen und Böen), 5 hoher UV-Index.
+  Sonnig/bewölkt nutzt den Sonnenstand; dafür in der ETS den Gerätestandort eintragen und eine Uhrzeit bereitstellen.
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
 - WLAN, IP-Einstellungen, mDNS, NTP, OTA, Webserver mit Web-Konsole und MQTT aus OFM-Network
@@ -79,6 +83,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx raw` | Rohwerte der Modbus-Register 0x0165–0x016E |
 | `wx rain` | Regenstatistik |
 | `wx pressure` | Luftdruckverlauf und Tendenz |
+| `wx forecast` | Zambretti-Prognose und Wettersymbol mit Begründung |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.
