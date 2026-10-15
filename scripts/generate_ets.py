@@ -170,6 +170,7 @@ GENERAL_SIZE = 24
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
+    ("CalcTempSource", "%AID%_PT-WxTempSource", 0, 2, "Temperatur für Berechnungen", "0", None),
     ("SdsDutyCycle", "%AID%_PT-WxDutyCycle", 1, 0, "Messintervall Feinstaubsensor (0 = Dauerbetrieb)", "5", "min"),
     ("Altitude", "%AID%_PT-WxAltitude", 2, 0, "Höhe des Standorts über Meeresspiegel", "0", "m"),
     ("TempOffset", "%AID%_PT-WxTempOffset", 4, 0, "Korrektur der Lufttemperatur", "0", "K"),
@@ -298,6 +299,12 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxRainAmount" Name="WxRainAmount">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.01" maxInclusive="10" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
+        '                <TypeRestriction Base="Value" SizeInBit="1">',
+        '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="1-Wire-Sensor" Value="1" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxRainRate" Name="WxRainRate">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.5" maxInclusive="100" />',
         '              </ParameterType>',
@@ -336,6 +343,12 @@ def build():
     w('                  </when>')
     w('                </choose>')
     w(f'                <ParameterRefRef RefId="{ids.ref("OneWirePresent")}" IndentLevel="1" />')
+    w(f'                <choose ParamRefId="{ids.ref("OneWirePresent")}">')
+    w('                  <when test="1">')
+    w(f'                    <ParameterRefRef RefId="{ids.ref("CalcTempSource")}" IndentLevel="2" />')
+    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gilt für Taupunkt, Frostpunkt, absolute Feuchte, Behaglichkeitswerte und Luftdruck auf Meereshöhe. Die Luftfeuchte stammt immer von der Wetterstation. Fällt der 1-Wire-Sensor aus, wird die Temperatur der Wetterstation verwendet." UIHint="Information" />')
+    w('                  </when>')
+    w('                </choose>')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Standort und Korrektur" UIHint="Headline" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("Altitude")}" IndentLevel="1" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("TempOffset")}" IndentLevel="1" />')

@@ -31,6 +31,12 @@
               <ParameterType Id="%AID%_PT-WxRainAmount" Name="WxRainAmount">
                 <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.01" maxInclusive="10" />
               </ParameterType>
+              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">
+                <TypeRestriction Base="Value" SizeInBit="1">
+                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />
+                  <Enumeration Text="1-Wire-Sensor" Value="1" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <ParameterType Id="%AID%_PT-WxRainRate" Name="WxRainRate">
                 <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.5" maxInclusive="100" />
               </ParameterType>
@@ -95,181 +101,182 @@
                 <Memory CodeSegment="%MID%" Offset="0" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00001" Name="SdsPresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="0" Text="Feinstaubsensor SDS011 vorhanden" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00002" Name="OneWirePresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="1" Text="Temperatursensor 1-Wire (DS18B20) vorhanden" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00003" Name="SdsDutyCycle" ParameterType="%AID%_PT-WxDutyCycle" Offset="1" BitOffset="0" Text="Messintervall Feinstaubsensor (0 = Dauerbetrieb)" Value="5" SuffixText="min" />
-                <Parameter Id="%AID%_UP-%TT%00004" Name="Altitude" ParameterType="%AID%_PT-WxAltitude" Offset="2" BitOffset="0" Text="Höhe des Standorts über Meeresspiegel" Value="0" SuffixText="m" />
-                <Parameter Id="%AID%_UP-%TT%00005" Name="TempOffset" ParameterType="%AID%_PT-WxTempOffset" Offset="4" BitOffset="0" Text="Korrektur der Lufttemperatur" Value="0" SuffixText="K" />
-                <Parameter Id="%AID%_UP-%TT%00006" Name="RainStopDelay" ParameterType="%AID%_PT-WxRainStop" Offset="8" BitOffset="0" Text="Regen endet, wenn so lange kein Niederschlag gemessen wurde" Value="15" SuffixText="min" />
-                <Parameter Id="%AID%_UP-%TT%00007" Name="MqttInterval" ParameterType="%AID%_PT-WxCycle" Offset="9" BitOffset="0" Text="Messwerte per MQTT senden alle (0 = nie)" Value="60" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00008" Name="RainWindow" ParameterType="%AID%_PT-WxRainWindow" Offset="11" BitOffset="0" Text="Regen beginnt bei Niederschlag innerhalb von" Value="10" SuffixText="min" />
-                <Parameter Id="%AID%_UP-%TT%00009" Name="RainMinAmount" ParameterType="%AID%_PT-WxRainAmount" Offset="12" BitOffset="0" Text="von mindestens" Value="0.1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00010" Name="SymHeavyRain" ParameterType="%AID%_PT-WxRainRate" Offset="16" BitOffset="0" Text="Starker Regen ab" Value="10" SuffixText="mm/h" />
-                <Parameter Id="%AID%_UP-%TT%00011" Name="SymStormGust" ParameterType="%AID%_PT-WxBft" Offset="20" BitOffset="0" Text="Gewitter: starker Regen und Böen ab" Value="7" SuffixText="Bft" />
-                <Parameter Id="%AID%_UP-%TT%00012" Name="SymUvHigh" ParameterType="%AID%_PT-WxUv" Offset="21" BitOffset="0" Text="Hoher UV-Index ab" Value="6" />
-                <Parameter Id="%AID%_UP-%TT%00013" Name="SymSunnyRatio" ParameterType="%AID%_PT-WxPercent" Offset="22" BitOffset="0" Text="Sonnig ab Anteil der Helligkeit bei klarem Himmel" Value="60" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00014" Name="TempActive" ParameterType="%AID%_PT-CheckBox" Offset="24" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00015" Name="TempDpt" ParameterType="%AID%_PT-WxDpt1" Offset="24" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00016" Name="TempCycle" ParameterType="%AID%_PT-WxCycle" Offset="25" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00017" Name="TempAbs" ParameterType="%AID%_PT-WxAbs" Offset="27" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00018" Name="TempRel" ParameterType="%AID%_PT-WxRel" Offset="31" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00019" Name="Temp1WActive" ParameterType="%AID%_PT-CheckBox" Offset="35" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00020" Name="Temp1WDpt" ParameterType="%AID%_PT-WxDpt1" Offset="35" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00021" Name="Temp1WCycle" ParameterType="%AID%_PT-WxCycle" Offset="36" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00022" Name="Temp1WAbs" ParameterType="%AID%_PT-WxAbs" Offset="38" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00023" Name="Temp1WRel" ParameterType="%AID%_PT-WxRel" Offset="42" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00024" Name="HumidityActive" ParameterType="%AID%_PT-CheckBox" Offset="46" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00025" Name="HumidityDpt" ParameterType="%AID%_PT-WxDpt2" Offset="46" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00026" Name="HumidityCycle" ParameterType="%AID%_PT-WxCycle" Offset="47" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00027" Name="HumidityAbs" ParameterType="%AID%_PT-WxAbs" Offset="49" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00028" Name="HumidityRel" ParameterType="%AID%_PT-WxRel" Offset="53" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00029" Name="AbsHumidityActive" ParameterType="%AID%_PT-CheckBox" Offset="57" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00030" Name="AbsHumidityCycle" ParameterType="%AID%_PT-WxCycle" Offset="58" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00031" Name="AbsHumidityAbs" ParameterType="%AID%_PT-WxAbs" Offset="60" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="g/m³" />
-                <Parameter Id="%AID%_UP-%TT%00032" Name="AbsHumidityRel" ParameterType="%AID%_PT-WxRel" Offset="64" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00033" Name="DewPointActive" ParameterType="%AID%_PT-CheckBox" Offset="68" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00034" Name="DewPointDpt" ParameterType="%AID%_PT-WxDpt1" Offset="68" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00035" Name="DewPointCycle" ParameterType="%AID%_PT-WxCycle" Offset="69" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00036" Name="DewPointAbs" ParameterType="%AID%_PT-WxAbs" Offset="71" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00037" Name="DewPointRel" ParameterType="%AID%_PT-WxRel" Offset="75" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00038" Name="FrostPointActive" ParameterType="%AID%_PT-CheckBox" Offset="79" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00039" Name="FrostPointDpt" ParameterType="%AID%_PT-WxDpt1" Offset="79" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00040" Name="FrostPointCycle" ParameterType="%AID%_PT-WxCycle" Offset="80" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00041" Name="FrostPointAbs" ParameterType="%AID%_PT-WxAbs" Offset="82" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00042" Name="FrostPointRel" ParameterType="%AID%_PT-WxRel" Offset="86" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00043" Name="HumidexActive" ParameterType="%AID%_PT-CheckBox" Offset="90" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00044" Name="HumidexDpt" ParameterType="%AID%_PT-WxDpt1" Offset="90" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00045" Name="HumidexCycle" ParameterType="%AID%_PT-WxCycle" Offset="91" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00046" Name="HumidexAbs" ParameterType="%AID%_PT-WxAbs" Offset="93" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00047" Name="HumidexRel" ParameterType="%AID%_PT-WxRel" Offset="97" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00048" Name="HeatIndexActive" ParameterType="%AID%_PT-CheckBox" Offset="101" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00049" Name="HeatIndexDpt" ParameterType="%AID%_PT-WxDpt1" Offset="101" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00050" Name="HeatIndexCycle" ParameterType="%AID%_PT-WxCycle" Offset="102" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00051" Name="HeatIndexAbs" ParameterType="%AID%_PT-WxAbs" Offset="104" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00052" Name="HeatIndexRel" ParameterType="%AID%_PT-WxRel" Offset="108" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00053" Name="WindChillActive" ParameterType="%AID%_PT-CheckBox" Offset="112" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00054" Name="WindChillDpt" ParameterType="%AID%_PT-WxDpt1" Offset="112" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00055" Name="WindChillCycle" ParameterType="%AID%_PT-WxCycle" Offset="113" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00056" Name="WindChillAbs" ParameterType="%AID%_PT-WxAbs" Offset="115" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00057" Name="WindChillRel" ParameterType="%AID%_PT-WxRel" Offset="119" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00058" Name="DiscomfortActive" ParameterType="%AID%_PT-CheckBox" Offset="123" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00059" Name="DiscomfortDpt" ParameterType="%AID%_PT-WxDpt1" Offset="123" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00060" Name="DiscomfortCycle" ParameterType="%AID%_PT-WxCycle" Offset="124" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00061" Name="DiscomfortAbs" ParameterType="%AID%_PT-WxAbs" Offset="126" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
-                <Parameter Id="%AID%_UP-%TT%00062" Name="DiscomfortRel" ParameterType="%AID%_PT-WxRel" Offset="130" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00063" Name="WindSpeedActive" ParameterType="%AID%_PT-CheckBox" Offset="134" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00064" Name="WindSpeedDpt" ParameterType="%AID%_PT-WxDpt3" Offset="134" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00065" Name="WindSpeedCycle" ParameterType="%AID%_PT-WxCycle" Offset="135" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00066" Name="WindSpeedAbs" ParameterType="%AID%_PT-WxAbs" Offset="137" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="m/s" />
-                <Parameter Id="%AID%_UP-%TT%00067" Name="WindSpeedRel" ParameterType="%AID%_PT-WxRel" Offset="141" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00068" Name="GustSpeedActive" ParameterType="%AID%_PT-CheckBox" Offset="145" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00069" Name="GustSpeedDpt" ParameterType="%AID%_PT-WxDpt3" Offset="145" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00070" Name="GustSpeedCycle" ParameterType="%AID%_PT-WxCycle" Offset="146" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00071" Name="GustSpeedAbs" ParameterType="%AID%_PT-WxAbs" Offset="148" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="m/s" />
-                <Parameter Id="%AID%_UP-%TT%00072" Name="GustSpeedRel" ParameterType="%AID%_PT-WxRel" Offset="152" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00073" Name="WindBftActive" ParameterType="%AID%_PT-CheckBox" Offset="156" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00074" Name="WindBftCycle" ParameterType="%AID%_PT-WxCycle" Offset="157" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00075" Name="WindBftAbs" ParameterType="%AID%_PT-WxAbs" Offset="159" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="Bft" />
-                <Parameter Id="%AID%_UP-%TT%00076" Name="WindBftRel" ParameterType="%AID%_PT-WxRel" Offset="163" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00077" Name="GustBftActive" ParameterType="%AID%_PT-CheckBox" Offset="167" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00078" Name="GustBftCycle" ParameterType="%AID%_PT-WxCycle" Offset="168" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00079" Name="GustBftAbs" ParameterType="%AID%_PT-WxAbs" Offset="170" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="Bft" />
-                <Parameter Id="%AID%_UP-%TT%00080" Name="GustBftRel" ParameterType="%AID%_PT-WxRel" Offset="174" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00081" Name="WindDirActive" ParameterType="%AID%_PT-CheckBox" Offset="178" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00082" Name="WindDirDpt" ParameterType="%AID%_PT-WxDpt4" Offset="178" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00083" Name="WindDirCycle" ParameterType="%AID%_PT-WxCycle" Offset="179" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00084" Name="WindDirAbs" ParameterType="%AID%_PT-WxAbs" Offset="181" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="22.5" SuffixText="°" />
-                <Parameter Id="%AID%_UP-%TT%00085" Name="WindDirRel" ParameterType="%AID%_PT-WxRel" Offset="185" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00086" Name="PressureActive" ParameterType="%AID%_PT-CheckBox" Offset="189" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00087" Name="PressureDpt" ParameterType="%AID%_PT-WxDpt5" Offset="189" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00088" Name="PressureCycle" ParameterType="%AID%_PT-WxCycle" Offset="190" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00089" Name="PressureAbs" ParameterType="%AID%_PT-WxAbs" Offset="192" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="hPa" />
-                <Parameter Id="%AID%_UP-%TT%00090" Name="PressureRel" ParameterType="%AID%_PT-WxRel" Offset="196" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00091" Name="PressureSeaActive" ParameterType="%AID%_PT-CheckBox" Offset="200" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00092" Name="PressureSeaDpt" ParameterType="%AID%_PT-WxDpt5" Offset="200" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00093" Name="PressureSeaCycle" ParameterType="%AID%_PT-WxCycle" Offset="201" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00094" Name="PressureSeaAbs" ParameterType="%AID%_PT-WxAbs" Offset="203" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="hPa" />
-                <Parameter Id="%AID%_UP-%TT%00095" Name="PressureSeaRel" ParameterType="%AID%_PT-WxRel" Offset="207" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00096" Name="Trend1hActive" ParameterType="%AID%_PT-CheckBox" Offset="211" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00097" Name="Trend1hDpt" ParameterType="%AID%_PT-WxDpt5" Offset="211" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00098" Name="Trend1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="212" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="900" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00099" Name="Trend1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="214" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="hPa" />
-                <Parameter Id="%AID%_UP-%TT%00100" Name="Trend1hRel" ParameterType="%AID%_PT-WxRel" Offset="218" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00101" Name="Trend3hActive" ParameterType="%AID%_PT-CheckBox" Offset="222" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00102" Name="Trend3hDpt" ParameterType="%AID%_PT-WxDpt5" Offset="222" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00103" Name="Trend3hCycle" ParameterType="%AID%_PT-WxCycle" Offset="223" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="900" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00104" Name="Trend3hAbs" ParameterType="%AID%_PT-WxAbs" Offset="225" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="hPa" />
-                <Parameter Id="%AID%_UP-%TT%00105" Name="Trend3hRel" ParameterType="%AID%_PT-WxRel" Offset="229" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00106" Name="LightActive" ParameterType="%AID%_PT-CheckBox" Offset="233" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00107" Name="LightCycle" ParameterType="%AID%_PT-WxCycle" Offset="234" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00108" Name="LightAbs" ParameterType="%AID%_PT-WxAbs" Offset="236" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0" SuffixText="lx" />
-                <Parameter Id="%AID%_UP-%TT%00109" Name="LightRel" ParameterType="%AID%_PT-WxRel" Offset="240" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="20" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00110" Name="UvIndexActive" ParameterType="%AID%_PT-CheckBox" Offset="244" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00111" Name="UvIndexDpt" ParameterType="%AID%_PT-WxDpt6" Offset="244" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00112" Name="UvIndexCycle" ParameterType="%AID%_PT-WxCycle" Offset="245" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00113" Name="UvIndexAbs" ParameterType="%AID%_PT-WxAbs" Offset="247" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00114" Name="UvIndexRel" ParameterType="%AID%_PT-WxRel" Offset="251" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00115" Name="RainTotalActive" ParameterType="%AID%_PT-CheckBox" Offset="255" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00116" Name="RainTotalDpt" ParameterType="%AID%_PT-WxDpt7" Offset="255" BitOffset="5" Text="Datenpunkttyp" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00117" Name="RainTotalCycle" ParameterType="%AID%_PT-WxCycle" Offset="256" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00118" Name="RainTotalAbs" ParameterType="%AID%_PT-WxAbs" Offset="258" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00119" Name="RainTotalRel" ParameterType="%AID%_PT-WxRel" Offset="262" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00120" Name="RainRateActive" ParameterType="%AID%_PT-CheckBox" Offset="266" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00121" Name="RainRateCycle" ParameterType="%AID%_PT-WxCycle" Offset="267" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00122" Name="RainRateAbs" ParameterType="%AID%_PT-WxAbs" Offset="269" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm/h" />
-                <Parameter Id="%AID%_UP-%TT%00123" Name="RainRateRel" ParameterType="%AID%_PT-WxRel" Offset="273" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00124" Name="Rain5mActive" ParameterType="%AID%_PT-CheckBox" Offset="277" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00125" Name="Rain5mCycle" ParameterType="%AID%_PT-WxCycle" Offset="278" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00126" Name="Rain5mAbs" ParameterType="%AID%_PT-WxAbs" Offset="280" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.2" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00127" Name="Rain5mRel" ParameterType="%AID%_PT-WxRel" Offset="284" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00128" Name="Rain1hActive" ParameterType="%AID%_PT-CheckBox" Offset="288" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00129" Name="Rain1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="289" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00130" Name="Rain1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="291" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00131" Name="Rain1hRel" ParameterType="%AID%_PT-WxRel" Offset="295" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00132" Name="Rain6hActive" ParameterType="%AID%_PT-CheckBox" Offset="299" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00133" Name="Rain6hCycle" ParameterType="%AID%_PT-WxCycle" Offset="300" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00134" Name="Rain6hAbs" ParameterType="%AID%_PT-WxAbs" Offset="302" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00135" Name="Rain6hRel" ParameterType="%AID%_PT-WxRel" Offset="306" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00136" Name="Rain24hActive" ParameterType="%AID%_PT-CheckBox" Offset="310" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00137" Name="Rain24hCycle" ParameterType="%AID%_PT-WxCycle" Offset="311" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00138" Name="Rain24hAbs" ParameterType="%AID%_PT-WxAbs" Offset="313" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00139" Name="Rain24hRel" ParameterType="%AID%_PT-WxRel" Offset="317" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00140" Name="Rain48hActive" ParameterType="%AID%_PT-CheckBox" Offset="321" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00141" Name="Rain48hCycle" ParameterType="%AID%_PT-WxCycle" Offset="322" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00142" Name="Rain48hAbs" ParameterType="%AID%_PT-WxAbs" Offset="324" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00143" Name="Rain48hRel" ParameterType="%AID%_PT-WxRel" Offset="328" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00144" Name="Rain72hActive" ParameterType="%AID%_PT-CheckBox" Offset="332" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00145" Name="Rain72hCycle" ParameterType="%AID%_PT-WxCycle" Offset="333" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00146" Name="Rain72hAbs" ParameterType="%AID%_PT-WxAbs" Offset="335" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00147" Name="Rain72hRel" ParameterType="%AID%_PT-WxRel" Offset="339" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00148" Name="RainTodayActive" ParameterType="%AID%_PT-CheckBox" Offset="343" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00149" Name="RainTodayCycle" ParameterType="%AID%_PT-WxCycle" Offset="344" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00150" Name="RainTodayAbs" ParameterType="%AID%_PT-WxAbs" Offset="346" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="mm" />
-                <Parameter Id="%AID%_UP-%TT%00151" Name="RainTodayRel" ParameterType="%AID%_PT-WxRel" Offset="350" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00152" Name="RainingActive" ParameterType="%AID%_PT-CheckBox" Offset="354" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00153" Name="RainingCycle" ParameterType="%AID%_PT-WxCycle" Offset="355" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00154" Name="Pm25Active" ParameterType="%AID%_PT-CheckBox" Offset="365" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00155" Name="Pm25Cycle" ParameterType="%AID%_PT-WxCycle" Offset="366" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00156" Name="Pm25Abs" ParameterType="%AID%_PT-WxAbs" Offset="368" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
-                <Parameter Id="%AID%_UP-%TT%00157" Name="Pm25Rel" ParameterType="%AID%_PT-WxRel" Offset="372" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00158" Name="Pm10Active" ParameterType="%AID%_PT-CheckBox" Offset="376" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00159" Name="Pm10Cycle" ParameterType="%AID%_PT-WxCycle" Offset="377" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00160" Name="Pm10Abs" ParameterType="%AID%_PT-WxAbs" Offset="379" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
-                <Parameter Id="%AID%_UP-%TT%00161" Name="Pm10Rel" ParameterType="%AID%_PT-WxRel" Offset="383" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00162" Name="Pm25NormActive" ParameterType="%AID%_PT-CheckBox" Offset="387" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00163" Name="Pm25NormCycle" ParameterType="%AID%_PT-WxCycle" Offset="388" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00164" Name="Pm25NormAbs" ParameterType="%AID%_PT-WxAbs" Offset="390" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
-                <Parameter Id="%AID%_UP-%TT%00165" Name="Pm25NormRel" ParameterType="%AID%_PT-WxRel" Offset="394" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00166" Name="Pm10NormActive" ParameterType="%AID%_PT-CheckBox" Offset="398" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00167" Name="Pm10NormCycle" ParameterType="%AID%_PT-WxCycle" Offset="399" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00168" Name="Pm10NormAbs" ParameterType="%AID%_PT-WxAbs" Offset="401" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
-                <Parameter Id="%AID%_UP-%TT%00169" Name="Pm10NormRel" ParameterType="%AID%_PT-WxRel" Offset="405" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
-                <Parameter Id="%AID%_UP-%TT%00170" Name="TendencyActive" ParameterType="%AID%_PT-CheckBox" Offset="409" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00171" Name="TendencyCycle" ParameterType="%AID%_PT-WxCycle" Offset="410" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00172" Name="ForecastActive" ParameterType="%AID%_PT-CheckBox" Offset="420" BitOffset="7" Text="Aktiv" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00173" Name="ForecastCycle" ParameterType="%AID%_PT-WxCycle" Offset="421" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00174" Name="ForecastTextActive" ParameterType="%AID%_PT-CheckBox" Offset="431" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00175" Name="ForecastTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="432" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
-                <Parameter Id="%AID%_UP-%TT%00176" Name="WeatherSymbolActive" ParameterType="%AID%_PT-CheckBox" Offset="442" BitOffset="7" Text="Aktiv" Value="1" />
-                <Parameter Id="%AID%_UP-%TT%00177" Name="WeatherSymbolCycle" ParameterType="%AID%_PT-WxCycle" Offset="443" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00003" Name="CalcTempSource" ParameterType="%AID%_PT-WxTempSource" Offset="0" BitOffset="2" Text="Temperatur für Berechnungen" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00004" Name="SdsDutyCycle" ParameterType="%AID%_PT-WxDutyCycle" Offset="1" BitOffset="0" Text="Messintervall Feinstaubsensor (0 = Dauerbetrieb)" Value="5" SuffixText="min" />
+                <Parameter Id="%AID%_UP-%TT%00005" Name="Altitude" ParameterType="%AID%_PT-WxAltitude" Offset="2" BitOffset="0" Text="Höhe des Standorts über Meeresspiegel" Value="0" SuffixText="m" />
+                <Parameter Id="%AID%_UP-%TT%00006" Name="TempOffset" ParameterType="%AID%_PT-WxTempOffset" Offset="4" BitOffset="0" Text="Korrektur der Lufttemperatur" Value="0" SuffixText="K" />
+                <Parameter Id="%AID%_UP-%TT%00007" Name="RainStopDelay" ParameterType="%AID%_PT-WxRainStop" Offset="8" BitOffset="0" Text="Regen endet, wenn so lange kein Niederschlag gemessen wurde" Value="15" SuffixText="min" />
+                <Parameter Id="%AID%_UP-%TT%00008" Name="MqttInterval" ParameterType="%AID%_PT-WxCycle" Offset="9" BitOffset="0" Text="Messwerte per MQTT senden alle (0 = nie)" Value="60" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00009" Name="RainWindow" ParameterType="%AID%_PT-WxRainWindow" Offset="11" BitOffset="0" Text="Regen beginnt bei Niederschlag innerhalb von" Value="10" SuffixText="min" />
+                <Parameter Id="%AID%_UP-%TT%00010" Name="RainMinAmount" ParameterType="%AID%_PT-WxRainAmount" Offset="12" BitOffset="0" Text="von mindestens" Value="0.1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00011" Name="SymHeavyRain" ParameterType="%AID%_PT-WxRainRate" Offset="16" BitOffset="0" Text="Starker Regen ab" Value="10" SuffixText="mm/h" />
+                <Parameter Id="%AID%_UP-%TT%00012" Name="SymStormGust" ParameterType="%AID%_PT-WxBft" Offset="20" BitOffset="0" Text="Gewitter: starker Regen und Böen ab" Value="7" SuffixText="Bft" />
+                <Parameter Id="%AID%_UP-%TT%00013" Name="SymUvHigh" ParameterType="%AID%_PT-WxUv" Offset="21" BitOffset="0" Text="Hoher UV-Index ab" Value="6" />
+                <Parameter Id="%AID%_UP-%TT%00014" Name="SymSunnyRatio" ParameterType="%AID%_PT-WxPercent" Offset="22" BitOffset="0" Text="Sonnig ab Anteil der Helligkeit bei klarem Himmel" Value="60" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00015" Name="TempActive" ParameterType="%AID%_PT-CheckBox" Offset="24" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00016" Name="TempDpt" ParameterType="%AID%_PT-WxDpt1" Offset="24" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00017" Name="TempCycle" ParameterType="%AID%_PT-WxCycle" Offset="25" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00018" Name="TempAbs" ParameterType="%AID%_PT-WxAbs" Offset="27" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00019" Name="TempRel" ParameterType="%AID%_PT-WxRel" Offset="31" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00020" Name="Temp1WActive" ParameterType="%AID%_PT-CheckBox" Offset="35" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00021" Name="Temp1WDpt" ParameterType="%AID%_PT-WxDpt1" Offset="35" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00022" Name="Temp1WCycle" ParameterType="%AID%_PT-WxCycle" Offset="36" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00023" Name="Temp1WAbs" ParameterType="%AID%_PT-WxAbs" Offset="38" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00024" Name="Temp1WRel" ParameterType="%AID%_PT-WxRel" Offset="42" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00025" Name="HumidityActive" ParameterType="%AID%_PT-CheckBox" Offset="46" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00026" Name="HumidityDpt" ParameterType="%AID%_PT-WxDpt2" Offset="46" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00027" Name="HumidityCycle" ParameterType="%AID%_PT-WxCycle" Offset="47" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00028" Name="HumidityAbs" ParameterType="%AID%_PT-WxAbs" Offset="49" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00029" Name="HumidityRel" ParameterType="%AID%_PT-WxRel" Offset="53" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00030" Name="AbsHumidityActive" ParameterType="%AID%_PT-CheckBox" Offset="57" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00031" Name="AbsHumidityCycle" ParameterType="%AID%_PT-WxCycle" Offset="58" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00032" Name="AbsHumidityAbs" ParameterType="%AID%_PT-WxAbs" Offset="60" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="g/m³" />
+                <Parameter Id="%AID%_UP-%TT%00033" Name="AbsHumidityRel" ParameterType="%AID%_PT-WxRel" Offset="64" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00034" Name="DewPointActive" ParameterType="%AID%_PT-CheckBox" Offset="68" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00035" Name="DewPointDpt" ParameterType="%AID%_PT-WxDpt1" Offset="68" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00036" Name="DewPointCycle" ParameterType="%AID%_PT-WxCycle" Offset="69" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00037" Name="DewPointAbs" ParameterType="%AID%_PT-WxAbs" Offset="71" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00038" Name="DewPointRel" ParameterType="%AID%_PT-WxRel" Offset="75" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00039" Name="FrostPointActive" ParameterType="%AID%_PT-CheckBox" Offset="79" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00040" Name="FrostPointDpt" ParameterType="%AID%_PT-WxDpt1" Offset="79" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00041" Name="FrostPointCycle" ParameterType="%AID%_PT-WxCycle" Offset="80" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00042" Name="FrostPointAbs" ParameterType="%AID%_PT-WxAbs" Offset="82" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00043" Name="FrostPointRel" ParameterType="%AID%_PT-WxRel" Offset="86" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00044" Name="HumidexActive" ParameterType="%AID%_PT-CheckBox" Offset="90" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00045" Name="HumidexDpt" ParameterType="%AID%_PT-WxDpt1" Offset="90" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00046" Name="HumidexCycle" ParameterType="%AID%_PT-WxCycle" Offset="91" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00047" Name="HumidexAbs" ParameterType="%AID%_PT-WxAbs" Offset="93" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00048" Name="HumidexRel" ParameterType="%AID%_PT-WxRel" Offset="97" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00049" Name="HeatIndexActive" ParameterType="%AID%_PT-CheckBox" Offset="101" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00050" Name="HeatIndexDpt" ParameterType="%AID%_PT-WxDpt1" Offset="101" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00051" Name="HeatIndexCycle" ParameterType="%AID%_PT-WxCycle" Offset="102" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00052" Name="HeatIndexAbs" ParameterType="%AID%_PT-WxAbs" Offset="104" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00053" Name="HeatIndexRel" ParameterType="%AID%_PT-WxRel" Offset="108" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00054" Name="WindChillActive" ParameterType="%AID%_PT-CheckBox" Offset="112" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00055" Name="WindChillDpt" ParameterType="%AID%_PT-WxDpt1" Offset="112" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00056" Name="WindChillCycle" ParameterType="%AID%_PT-WxCycle" Offset="113" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00057" Name="WindChillAbs" ParameterType="%AID%_PT-WxAbs" Offset="115" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00058" Name="WindChillRel" ParameterType="%AID%_PT-WxRel" Offset="119" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00059" Name="DiscomfortActive" ParameterType="%AID%_PT-CheckBox" Offset="123" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00060" Name="DiscomfortDpt" ParameterType="%AID%_PT-WxDpt1" Offset="123" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00061" Name="DiscomfortCycle" ParameterType="%AID%_PT-WxCycle" Offset="124" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00062" Name="DiscomfortAbs" ParameterType="%AID%_PT-WxAbs" Offset="126" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00063" Name="DiscomfortRel" ParameterType="%AID%_PT-WxRel" Offset="130" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00064" Name="WindSpeedActive" ParameterType="%AID%_PT-CheckBox" Offset="134" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00065" Name="WindSpeedDpt" ParameterType="%AID%_PT-WxDpt3" Offset="134" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00066" Name="WindSpeedCycle" ParameterType="%AID%_PT-WxCycle" Offset="135" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00067" Name="WindSpeedAbs" ParameterType="%AID%_PT-WxAbs" Offset="137" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="m/s" />
+                <Parameter Id="%AID%_UP-%TT%00068" Name="WindSpeedRel" ParameterType="%AID%_PT-WxRel" Offset="141" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00069" Name="GustSpeedActive" ParameterType="%AID%_PT-CheckBox" Offset="145" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00070" Name="GustSpeedDpt" ParameterType="%AID%_PT-WxDpt3" Offset="145" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00071" Name="GustSpeedCycle" ParameterType="%AID%_PT-WxCycle" Offset="146" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00072" Name="GustSpeedAbs" ParameterType="%AID%_PT-WxAbs" Offset="148" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="m/s" />
+                <Parameter Id="%AID%_UP-%TT%00073" Name="GustSpeedRel" ParameterType="%AID%_PT-WxRel" Offset="152" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00074" Name="WindBftActive" ParameterType="%AID%_PT-CheckBox" Offset="156" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00075" Name="WindBftCycle" ParameterType="%AID%_PT-WxCycle" Offset="157" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00076" Name="WindBftAbs" ParameterType="%AID%_PT-WxAbs" Offset="159" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="Bft" />
+                <Parameter Id="%AID%_UP-%TT%00077" Name="WindBftRel" ParameterType="%AID%_PT-WxRel" Offset="163" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00078" Name="GustBftActive" ParameterType="%AID%_PT-CheckBox" Offset="167" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00079" Name="GustBftCycle" ParameterType="%AID%_PT-WxCycle" Offset="168" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00080" Name="GustBftAbs" ParameterType="%AID%_PT-WxAbs" Offset="170" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="Bft" />
+                <Parameter Id="%AID%_UP-%TT%00081" Name="GustBftRel" ParameterType="%AID%_PT-WxRel" Offset="174" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00082" Name="WindDirActive" ParameterType="%AID%_PT-CheckBox" Offset="178" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00083" Name="WindDirDpt" ParameterType="%AID%_PT-WxDpt4" Offset="178" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00084" Name="WindDirCycle" ParameterType="%AID%_PT-WxCycle" Offset="179" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="60" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00085" Name="WindDirAbs" ParameterType="%AID%_PT-WxAbs" Offset="181" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="22.5" SuffixText="°" />
+                <Parameter Id="%AID%_UP-%TT%00086" Name="WindDirRel" ParameterType="%AID%_PT-WxRel" Offset="185" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00087" Name="PressureActive" ParameterType="%AID%_PT-CheckBox" Offset="189" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00088" Name="PressureDpt" ParameterType="%AID%_PT-WxDpt5" Offset="189" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00089" Name="PressureCycle" ParameterType="%AID%_PT-WxCycle" Offset="190" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00090" Name="PressureAbs" ParameterType="%AID%_PT-WxAbs" Offset="192" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="hPa" />
+                <Parameter Id="%AID%_UP-%TT%00091" Name="PressureRel" ParameterType="%AID%_PT-WxRel" Offset="196" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00092" Name="PressureSeaActive" ParameterType="%AID%_PT-CheckBox" Offset="200" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00093" Name="PressureSeaDpt" ParameterType="%AID%_PT-WxDpt5" Offset="200" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00094" Name="PressureSeaCycle" ParameterType="%AID%_PT-WxCycle" Offset="201" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00095" Name="PressureSeaAbs" ParameterType="%AID%_PT-WxAbs" Offset="203" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="hPa" />
+                <Parameter Id="%AID%_UP-%TT%00096" Name="PressureSeaRel" ParameterType="%AID%_PT-WxRel" Offset="207" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00097" Name="Trend1hActive" ParameterType="%AID%_PT-CheckBox" Offset="211" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00098" Name="Trend1hDpt" ParameterType="%AID%_PT-WxDpt5" Offset="211" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00099" Name="Trend1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="212" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="900" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00100" Name="Trend1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="214" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="hPa" />
+                <Parameter Id="%AID%_UP-%TT%00101" Name="Trend1hRel" ParameterType="%AID%_PT-WxRel" Offset="218" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00102" Name="Trend3hActive" ParameterType="%AID%_PT-CheckBox" Offset="222" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00103" Name="Trend3hDpt" ParameterType="%AID%_PT-WxDpt5" Offset="222" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00104" Name="Trend3hCycle" ParameterType="%AID%_PT-WxCycle" Offset="223" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="900" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00105" Name="Trend3hAbs" ParameterType="%AID%_PT-WxAbs" Offset="225" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="hPa" />
+                <Parameter Id="%AID%_UP-%TT%00106" Name="Trend3hRel" ParameterType="%AID%_PT-WxRel" Offset="229" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00107" Name="LightActive" ParameterType="%AID%_PT-CheckBox" Offset="233" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00108" Name="LightCycle" ParameterType="%AID%_PT-WxCycle" Offset="234" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00109" Name="LightAbs" ParameterType="%AID%_PT-WxAbs" Offset="236" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0" SuffixText="lx" />
+                <Parameter Id="%AID%_UP-%TT%00110" Name="LightRel" ParameterType="%AID%_PT-WxRel" Offset="240" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="20" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00111" Name="UvIndexActive" ParameterType="%AID%_PT-CheckBox" Offset="244" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00112" Name="UvIndexDpt" ParameterType="%AID%_PT-WxDpt6" Offset="244" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00113" Name="UvIndexCycle" ParameterType="%AID%_PT-WxCycle" Offset="245" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00114" Name="UvIndexAbs" ParameterType="%AID%_PT-WxAbs" Offset="247" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00115" Name="UvIndexRel" ParameterType="%AID%_PT-WxRel" Offset="251" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00116" Name="RainTotalActive" ParameterType="%AID%_PT-CheckBox" Offset="255" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00117" Name="RainTotalDpt" ParameterType="%AID%_PT-WxDpt7" Offset="255" BitOffset="5" Text="Datenpunkttyp" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00118" Name="RainTotalCycle" ParameterType="%AID%_PT-WxCycle" Offset="256" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00119" Name="RainTotalAbs" ParameterType="%AID%_PT-WxAbs" Offset="258" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00120" Name="RainTotalRel" ParameterType="%AID%_PT-WxRel" Offset="262" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00121" Name="RainRateActive" ParameterType="%AID%_PT-CheckBox" Offset="266" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00122" Name="RainRateCycle" ParameterType="%AID%_PT-WxCycle" Offset="267" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00123" Name="RainRateAbs" ParameterType="%AID%_PT-WxAbs" Offset="269" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm/h" />
+                <Parameter Id="%AID%_UP-%TT%00124" Name="RainRateRel" ParameterType="%AID%_PT-WxRel" Offset="273" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00125" Name="Rain5mActive" ParameterType="%AID%_PT-CheckBox" Offset="277" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00126" Name="Rain5mCycle" ParameterType="%AID%_PT-WxCycle" Offset="278" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00127" Name="Rain5mAbs" ParameterType="%AID%_PT-WxAbs" Offset="280" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.2" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00128" Name="Rain5mRel" ParameterType="%AID%_PT-WxRel" Offset="284" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00129" Name="Rain1hActive" ParameterType="%AID%_PT-CheckBox" Offset="288" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00130" Name="Rain1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="289" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00131" Name="Rain1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="291" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00132" Name="Rain1hRel" ParameterType="%AID%_PT-WxRel" Offset="295" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00133" Name="Rain6hActive" ParameterType="%AID%_PT-CheckBox" Offset="299" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00134" Name="Rain6hCycle" ParameterType="%AID%_PT-WxCycle" Offset="300" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00135" Name="Rain6hAbs" ParameterType="%AID%_PT-WxAbs" Offset="302" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00136" Name="Rain6hRel" ParameterType="%AID%_PT-WxRel" Offset="306" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00137" Name="Rain24hActive" ParameterType="%AID%_PT-CheckBox" Offset="310" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00138" Name="Rain24hCycle" ParameterType="%AID%_PT-WxCycle" Offset="311" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00139" Name="Rain24hAbs" ParameterType="%AID%_PT-WxAbs" Offset="313" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00140" Name="Rain24hRel" ParameterType="%AID%_PT-WxRel" Offset="317" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00141" Name="Rain48hActive" ParameterType="%AID%_PT-CheckBox" Offset="321" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00142" Name="Rain48hCycle" ParameterType="%AID%_PT-WxCycle" Offset="322" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00143" Name="Rain48hAbs" ParameterType="%AID%_PT-WxAbs" Offset="324" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00144" Name="Rain48hRel" ParameterType="%AID%_PT-WxRel" Offset="328" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00145" Name="Rain72hActive" ParameterType="%AID%_PT-CheckBox" Offset="332" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00146" Name="Rain72hCycle" ParameterType="%AID%_PT-WxCycle" Offset="333" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00147" Name="Rain72hAbs" ParameterType="%AID%_PT-WxAbs" Offset="335" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00148" Name="Rain72hRel" ParameterType="%AID%_PT-WxRel" Offset="339" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00149" Name="RainTodayActive" ParameterType="%AID%_PT-CheckBox" Offset="343" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00150" Name="RainTodayCycle" ParameterType="%AID%_PT-WxCycle" Offset="344" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00151" Name="RainTodayAbs" ParameterType="%AID%_PT-WxAbs" Offset="346" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00152" Name="RainTodayRel" ParameterType="%AID%_PT-WxRel" Offset="350" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00153" Name="RainingActive" ParameterType="%AID%_PT-CheckBox" Offset="354" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00154" Name="RainingCycle" ParameterType="%AID%_PT-WxCycle" Offset="355" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00155" Name="Pm25Active" ParameterType="%AID%_PT-CheckBox" Offset="365" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00156" Name="Pm25Cycle" ParameterType="%AID%_PT-WxCycle" Offset="366" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00157" Name="Pm25Abs" ParameterType="%AID%_PT-WxAbs" Offset="368" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00158" Name="Pm25Rel" ParameterType="%AID%_PT-WxRel" Offset="372" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00159" Name="Pm10Active" ParameterType="%AID%_PT-CheckBox" Offset="376" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00160" Name="Pm10Cycle" ParameterType="%AID%_PT-WxCycle" Offset="377" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00161" Name="Pm10Abs" ParameterType="%AID%_PT-WxAbs" Offset="379" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00162" Name="Pm10Rel" ParameterType="%AID%_PT-WxRel" Offset="383" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00163" Name="Pm25NormActive" ParameterType="%AID%_PT-CheckBox" Offset="387" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00164" Name="Pm25NormCycle" ParameterType="%AID%_PT-WxCycle" Offset="388" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00165" Name="Pm25NormAbs" ParameterType="%AID%_PT-WxAbs" Offset="390" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00166" Name="Pm25NormRel" ParameterType="%AID%_PT-WxRel" Offset="394" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00167" Name="Pm10NormActive" ParameterType="%AID%_PT-CheckBox" Offset="398" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00168" Name="Pm10NormCycle" ParameterType="%AID%_PT-WxCycle" Offset="399" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00169" Name="Pm10NormAbs" ParameterType="%AID%_PT-WxAbs" Offset="401" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00170" Name="Pm10NormRel" ParameterType="%AID%_PT-WxRel" Offset="405" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00171" Name="TendencyActive" ParameterType="%AID%_PT-CheckBox" Offset="409" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00172" Name="TendencyCycle" ParameterType="%AID%_PT-WxCycle" Offset="410" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00173" Name="ForecastActive" ParameterType="%AID%_PT-CheckBox" Offset="420" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00174" Name="ForecastCycle" ParameterType="%AID%_PT-WxCycle" Offset="421" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00175" Name="ForecastTextActive" ParameterType="%AID%_PT-CheckBox" Offset="431" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00176" Name="ForecastTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="432" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00177" Name="WeatherSymbolActive" ParameterType="%AID%_PT-CheckBox" Offset="442" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00178" Name="WeatherSymbolCycle" ParameterType="%AID%_PT-WxCycle" Offset="443" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -450,6 +457,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00175_R-%TT%0017501" RefId="%AID%_UP-%TT%00175" />
               <ParameterRef Id="%AID%_UP-%TT%00176_R-%TT%0017601" RefId="%AID%_UP-%TT%00176" />
               <ParameterRef Id="%AID%_UP-%TT%00177_R-%TT%0017701" RefId="%AID%_UP-%TT%00177" />
+              <ParameterRef Id="%AID%_UP-%TT%00178_R-%TT%0017801" RefId="%AID%_UP-%TT%00178" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -568,22 +576,28 @@
                 <ParameterRefRef RefId="%AID%_UP-%TT%00001_R-%TT%0000101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00003_R-%TT%0000301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00004_R-%TT%0000401" IndentLevel="2" />
                   </when>
                 </choose>
                 <ParameterRefRef RefId="%AID%_UP-%TT%00002_R-%TT%0000201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00002_R-%TT%0000201">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00003_R-%TT%0000301" IndentLevel="2" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gilt für Taupunkt, Frostpunkt, absolute Feuchte, Behaglichkeitswerte und Luftdruck auf Meereshöhe. Die Luftfeuchte stammt immer von der Wetterstation. Fällt der 1-Wire-Sensor aus, wird die Temperatur der Wetterstation verwendet." UIHint="Information" />
+                  </when>
+                </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Standort und Korrektur" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00004_R-%TT%0000401" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00005_R-%TT%0000501" IndentLevel="1" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00006_R-%TT%0000601" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regen" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Einzelne Zählerschritte (z. B. durch Tau oder Erschütterungen) lösen so noch keinen Regen aus." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00008_R-%TT%0000801" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00009_R-%TT%0000901" IndentLevel="1" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00006_R-%TT%0000601" IndentLevel="1" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="1" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00007_R-%TT%0000701" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach der ersten Inbetriebnahme enthalten die Regenmengen nur die Zeit seit dem Start (z. B. 72 Stunden erst nach drei Tagen vollständig). Danach bleiben sie über Neustarts erhalten." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00007_R-%TT%0000701" IndentLevel="1" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00008_R-%TT%0000801" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Störungsmeldungen" UIHint="Headline" />
                 <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
                 <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
@@ -599,14 +613,14 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Temperature" Text="Temperatur" Icon="thermometer">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00014_R-%TT%0001401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00014_R-%TT%0001401">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00015_R-%TT%0001501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00015_R-%TT%0001501">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00015_R-%TT%0001501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00016_R-%TT%0001601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00017_R-%TT%0001701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00018_R-%TT%0001801" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00015_R-%TT%0001501">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00019_R-%TT%0001901" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00016_R-%TT%0001601">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00004_R-%TT%0000401" />
                       </when>
@@ -619,14 +633,14 @@
                 <choose ParamRefId="%AID%_UP-%TT%00002_R-%TT%0000201">
                   <when test="1">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur 1-Wire" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00019_R-%TT%0001901" IndentLevel="1" />
-                    <choose ParamRefId="%AID%_UP-%TT%00019_R-%TT%0001901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
                       <when test="1">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00020_R-%TT%0002001" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00021_R-%TT%0002101" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00022_R-%TT%0002201" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00023_R-%TT%0002301" IndentLevel="2" />
-                        <choose ParamRefId="%AID%_UP-%TT%00020_R-%TT%0002001">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="2" />
+                        <choose ParamRefId="%AID%_UP-%TT%00021_R-%TT%0002101">
                           <when test="0">
                             <ComObjectRefRef RefId="%AID%_O-%TT%00005_R-%TT%0000501" />
                           </when>
@@ -641,14 +655,14 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Humidity" Text="Luftfeuchte" Icon="water-percent">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Luftfeuchte" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00024_R-%TT%0002401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00024_R-%TT%0002401">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00025_R-%TT%0002501">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00025_R-%TT%0002501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00026_R-%TT%0002601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00027_R-%TT%0002701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00028_R-%TT%0002801" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00025_R-%TT%0002501">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00026_R-%TT%0002601">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00006_R-%TT%0000601" />
                       </when>
@@ -659,24 +673,24 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Luftfeuchte" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00029_R-%TT%0002901" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00029_R-%TT%0002901">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00030_R-%TT%0003001">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00030_R-%TT%0003001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00031_R-%TT%0003101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00032_R-%TT%0003201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00007_R-%TT%0000701" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00033_R-%TT%0003301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00033_R-%TT%0003301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00034_R-%TT%0003401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00035_R-%TT%0003501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00036_R-%TT%0003601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00037_R-%TT%0003701" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00034_R-%TT%0003401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00038_R-%TT%0003801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00035_R-%TT%0003501">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00008_R-%TT%0000801" />
                       </when>
@@ -687,14 +701,14 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Frostpunkt" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00038_R-%TT%0003801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00038_R-%TT%0003801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00039_R-%TT%0003901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00039_R-%TT%0003901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00039_R-%TT%0003901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00040_R-%TT%0004001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00041_R-%TT%0004101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00042_R-%TT%0004201" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00039_R-%TT%0003901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00043_R-%TT%0004301" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00040_R-%TT%0004001">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00009_R-%TT%0000901" />
                       </when>
@@ -708,14 +722,14 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="Comfort" Text="Behaglichkeit" Icon="calculator-variant-outline">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Humidex" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur aus Temperatur und Taupunkt (kanadischer Index)." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00043_R-%TT%0004301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00043_R-%TT%0004301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00044_R-%TT%0004401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00044_R-%TT%0004401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00045_R-%TT%0004501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00046_R-%TT%0004601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00047_R-%TT%0004701" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00044_R-%TT%0004401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00048_R-%TT%0004801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00045_R-%TT%0004501">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00010_R-%TT%0001001" />
                       </when>
@@ -727,14 +741,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Hitzeindex" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur bei Wärme aus Temperatur und Luftfeuchte." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00048_R-%TT%0004801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00048_R-%TT%0004801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00049_R-%TT%0004901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00049_R-%TT%0004901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00050_R-%TT%0005001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00051_R-%TT%0005101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00052_R-%TT%0005201" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00049_R-%TT%0004901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00050_R-%TT%0005001">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00011_R-%TT%0001101" />
                       </when>
@@ -746,14 +760,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windchill" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur bei Kälte und Wind. Gilt nur bis 10 °C und ab 5 km/h, sonst wird die Lufttemperatur gesendet." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00053_R-%TT%0005301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00054_R-%TT%0005401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00055_R-%TT%0005501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00056_R-%TT%0005601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00057_R-%TT%0005701" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00054_R-%TT%0005401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00055_R-%TT%0005501">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00012_R-%TT%0001201" />
                       </when>
@@ -765,14 +779,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Discomfort-Index" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Unbehaglichkeitsindex nach Thom aus Temperatur und Luftfeuchte." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00058_R-%TT%0005801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00058_R-%TT%0005801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00059_R-%TT%0005901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00059_R-%TT%0005901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00060_R-%TT%0006001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00062_R-%TT%0006201" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00059_R-%TT%0005901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00063_R-%TT%0006301" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00060_R-%TT%0006001">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00013_R-%TT%0001301" />
                       </when>
@@ -785,14 +799,14 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Wind" Text="Wind" Icon="windsock">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windgeschwindigkeit" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00063_R-%TT%0006301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00063_R-%TT%0006301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00064_R-%TT%0006401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00064_R-%TT%0006401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00064_R-%TT%0006401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00065_R-%TT%0006501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00066_R-%TT%0006601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00067_R-%TT%0006701" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00064_R-%TT%0006401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00065_R-%TT%0006501">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00014_R-%TT%0001401" />
                       </when>
@@ -806,14 +820,14 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Böengeschwindigkeit" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00068_R-%TT%0006801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00068_R-%TT%0006801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00069_R-%TT%0006901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00071_R-%TT%0007101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00072_R-%TT%0007201" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00069_R-%TT%0006901">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00070_R-%TT%0007001">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00015_R-%TT%0001501" />
                       </when>
@@ -827,34 +841,34 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windstärke (Beaufort)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00073_R-%TT%0007301" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00073_R-%TT%0007301">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00074_R-%TT%0007401">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00074_R-%TT%0007401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00075_R-%TT%0007501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00076_R-%TT%0007601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00016_R-%TT%0001601" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Böenstärke (Beaufort)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00077_R-%TT%0007701">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00078_R-%TT%0007801">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00079_R-%TT%0007901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00080_R-%TT%0008001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00017_R-%TT%0001701" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windrichtung" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00081_R-%TT%0008101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00081_R-%TT%0008101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00082_R-%TT%0008201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00082_R-%TT%0008201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00083_R-%TT%0008301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00084_R-%TT%0008401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00085_R-%TT%0008501" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00082_R-%TT%0008201">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00083_R-%TT%0008301">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00018_R-%TT%0001801" />
                       </when>
@@ -867,14 +881,14 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Pressure" Text="Luftdruck" Icon="gauge">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdruck (absolut)" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00086_R-%TT%0008601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00086_R-%TT%0008601">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00087_R-%TT%0008701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00087_R-%TT%0008701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00088_R-%TT%0008801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00089_R-%TT%0008901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00090_R-%TT%0009001" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00087_R-%TT%0008701">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00091_R-%TT%0009101" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00088_R-%TT%0008801">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00019_R-%TT%0001901" />
                       </when>
@@ -886,14 +900,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdruck (auf Meereshöhe)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Benötigt die Höhe des Standorts auf der Seite Allgemein." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00091_R-%TT%0009101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00091_R-%TT%0009101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00092_R-%TT%0009201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00092_R-%TT%0009201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00092_R-%TT%0009201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00093_R-%TT%0009301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00094_R-%TT%0009401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00095_R-%TT%0009501" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00092_R-%TT%0009201">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00096_R-%TT%0009601" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00093_R-%TT%0009301">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00020_R-%TT%0002001" />
                       </when>
@@ -905,14 +919,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdrucktendenz 1 Stunde" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Differenz zum Luftdruck vor einer Stunde; verfügbar frühestens eine Stunde nach dem Start." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00096_R-%TT%0009601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00096_R-%TT%0009601">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00097_R-%TT%0009701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00097_R-%TT%0009701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00097_R-%TT%0009701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00098_R-%TT%0009801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00099_R-%TT%0009901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00100_R-%TT%0010001" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00097_R-%TT%0009701">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00098_R-%TT%0009801">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00021_R-%TT%0002101" />
                       </when>
@@ -924,14 +938,14 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdrucktendenz 3 Stunden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Differenz zum Luftdruck vor drei Stunden; verfügbar frühestens drei Stunden nach dem Start." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00101_R-%TT%0010101">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00102_R-%TT%0010201">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00103_R-%TT%0010301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00104_R-%TT%0010401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00105_R-%TT%0010501" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00102_R-%TT%0010201">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00106_R-%TT%0010601" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00103_R-%TT%0010301">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00022_R-%TT%0002201" />
                       </when>
@@ -944,24 +958,24 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Light" Text="Helligkeit und UV" Icon="white-balance-sunny">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Helligkeit" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00106_R-%TT%0010601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00106_R-%TT%0010601">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00107_R-%TT%0010701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00107_R-%TT%0010701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00107_R-%TT%0010701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00108_R-%TT%0010801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00109_R-%TT%0010901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00110_R-%TT%0011001" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00023_R-%TT%0002301" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="UV-Index" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00110_R-%TT%0011001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00110_R-%TT%0011001">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00111_R-%TT%0011101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00111_R-%TT%0011101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00111_R-%TT%0011101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00112_R-%TT%0011201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00113_R-%TT%0011301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00114_R-%TT%0011401" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00111_R-%TT%0011101">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00115_R-%TT%0011501" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00112_R-%TT%0011201">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00024_R-%TT%0002401" />
                       </when>
@@ -975,14 +989,14 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="Rain" Text="Regen" Icon="weather-pouring">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge gesamt" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Fortlaufender Zähler seit Inbetriebnahme, bleibt bei Neustart und Update erhalten. DPT 14 empfohlen: DPT 9 wird bei großen Werten grob (ab 1000 mm in Schritten von 0,64 mm)." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00115_R-%TT%0011501" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00115_R-%TT%0011501">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00116_R-%TT%0011601" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00116_R-%TT%0011601">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00116_R-%TT%0011601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00117_R-%TT%0011701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00118_R-%TT%0011801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00119_R-%TT%0011901" IndentLevel="2" />
-                    <choose ParamRefId="%AID%_UP-%TT%00116_R-%TT%0011601">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00120_R-%TT%0012001" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00117_R-%TT%0011701">
                       <when test="0">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00025_R-%TT%0002501" />
                       </when>
@@ -994,96 +1008,96 @@
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenintensität" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Hochgerechnet aus der Regenmenge der letzten 10 Minuten." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00120_R-%TT%0012001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00120_R-%TT%0012001">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00121_R-%TT%0012101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00121_R-%TT%0012101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00121_R-%TT%0012101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00122_R-%TT%0012201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00123_R-%TT%0012301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00124_R-%TT%0012401" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00026_R-%TT%0002601" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 5 Minuten" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00124_R-%TT%0012401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00124_R-%TT%0012401">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00125_R-%TT%0012501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00125_R-%TT%0012501">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00125_R-%TT%0012501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00126_R-%TT%0012601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00127_R-%TT%0012701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00128_R-%TT%0012801" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00027_R-%TT%0002701" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte Stunde" UIHint="Headline" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00128_R-%TT%0012801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00128_R-%TT%0012801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00129_R-%TT%0012901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00129_R-%TT%0012901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00129_R-%TT%0012901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00130_R-%TT%0013001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00131_R-%TT%0013101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00132_R-%TT%0013201" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00028_R-%TT%0002801" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 6 Stunden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00132_R-%TT%0013201" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00132_R-%TT%0013201">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00133_R-%TT%0013301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00133_R-%TT%0013301">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00133_R-%TT%0013301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00134_R-%TT%0013401" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00135_R-%TT%0013501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00136_R-%TT%0013601" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00029_R-%TT%0002901" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 24 Stunden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00136_R-%TT%0013601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00136_R-%TT%0013601">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00137_R-%TT%0013701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00137_R-%TT%0013701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00137_R-%TT%0013701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00138_R-%TT%0013801" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00139_R-%TT%0013901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00140_R-%TT%0014001" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00030_R-%TT%0003001" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 48 Stunden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00140_R-%TT%0014001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00140_R-%TT%0014001">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00141_R-%TT%0014101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00141_R-%TT%0014101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00141_R-%TT%0014101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00142_R-%TT%0014201" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00143_R-%TT%0014301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00144_R-%TT%0014401" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00031_R-%TT%0003101" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 72 Stunden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wird stündlich aktualisiert und umfasst je nach Zeitpunkt bis zu eine Stunde mehr." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00144_R-%TT%0014401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00144_R-%TT%0014401">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00145_R-%TT%0014501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00145_R-%TT%0014501">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00145_R-%TT%0014501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00146_R-%TT%0014601" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00147_R-%TT%0014701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00148_R-%TT%0014801" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00032_R-%TT%0003201" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge heute" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wird um Mitternacht zurückgesetzt; benötigt eine gültige Uhrzeit (KO Uhrzeit/Datum oder NTP)." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00148_R-%TT%0014801" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00148_R-%TT%0014801">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00149_R-%TT%0014901" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00149_R-%TT%0014901">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00149_R-%TT%0014901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00150_R-%TT%0015001" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00151_R-%TT%0015101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00152_R-%TT%0015201" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00033_R-%TT%0003301" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regen" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = es regnet: Mindestmenge im Zeitfenster erreicht (Seite Allgemein). Wird bei jeder Änderung gesendet." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00152_R-%TT%0015201" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00152_R-%TT%0015201">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00153_R-%TT%0015301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00153_R-%TT%0015301">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00153_R-%TT%0015301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00154_R-%TT%0015401" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00034_R-%TT%0003401" />
                   </when>
                 </choose>
@@ -1092,42 +1106,42 @@
                 <when test="1">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Particles" Text="Feinstaub" Icon="blur">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM2,5" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00154_R-%TT%0015401" IndentLevel="1" />
-                    <choose ParamRefId="%AID%_UP-%TT%00154_R-%TT%0015401">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00155_R-%TT%0015501" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00155_R-%TT%0015501">
                       <when test="1">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00155_R-%TT%0015501" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00156_R-%TT%0015601" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00157_R-%TT%0015701" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00158_R-%TT%0015801" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00035_R-%TT%0003501" />
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM10" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00158_R-%TT%0015801" IndentLevel="1" />
-                    <choose ParamRefId="%AID%_UP-%TT%00158_R-%TT%0015801">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00159_R-%TT%0015901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00159_R-%TT%0015901">
                       <when test="1">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00159_R-%TT%0015901" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00160_R-%TT%0016001" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00161_R-%TT%0016101" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00162_R-%TT%0016201" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00036_R-%TT%0003601" />
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM2,5 (feuchtekorrigiert)" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00162_R-%TT%0016201" IndentLevel="1" />
-                    <choose ParamRefId="%AID%_UP-%TT%00162_R-%TT%0016201">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00163_R-%TT%0016301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00163_R-%TT%0016301">
                       <when test="1">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00163_R-%TT%0016301" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00164_R-%TT%0016401" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00165_R-%TT%0016501" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00166_R-%TT%0016601" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00037_R-%TT%0003701" />
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM10 (feuchtekorrigiert)" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00166_R-%TT%0016601" IndentLevel="1" />
-                    <choose ParamRefId="%AID%_UP-%TT%00166_R-%TT%0016601">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00167_R-%TT%0016701" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00167_R-%TT%0016701">
                       <when test="1">
-                        <ParameterRefRef RefId="%AID%_UP-%TT%00167_R-%TT%0016701" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00168_R-%TT%0016801" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00169_R-%TT%0016901" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00170_R-%TT%0017001" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00038_R-%TT%0003801" />
                       </when>
                     </choose>
@@ -1137,43 +1151,43 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="Forecast" Text="Prognose und Display" Icon="weather-partly-snowy-rainy">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wettersymbol" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Vorrang: Gewitter, starker Regen, Schauer (Regen aktiv), hoher UV-Index, sonnig/bewölkt. Sonnig/bewölkt vergleicht tagsüber die Helligkeit mit dem Wert bei klarem Himmel für den Sonnenstand (benötigt Uhrzeit und Gerätestandort); nachts entscheidet die Prognose." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00011_R-%TT%0001101" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00012_R-%TT%0001201" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00013_R-%TT%0001301" IndentLevel="1" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00014_R-%TT%0001401" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wettertendenz" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Aus der Luftdruckänderung über 3 Stunden: -2 stark fallend (Sturm möglich), -1 fallend (Verschlechterung), 0 gleichbleibend, +1 steigend (Besserung), +2 stark steigend. In den ersten 3 Stunden nach dem Start aus 1 Stunde hochgerechnet." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00170_R-%TT%0017001" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00170_R-%TT%0017001">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00171_R-%TT%0017101">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00171_R-%TT%0017101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00039_R-%TT%0003901" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wetterprognose (Zambretti-Nummer)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Prognose für etwa 12 Stunden nach Zambretti aus Luftdruck auf Meereshöhe, Tendenz, Windrichtung und Jahreszeit: 1 (A, beständig schön) bis 26 (Z, Sturm mit viel Regen). Die Höhe des Standorts auf der Seite Allgemein muss stimmen." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00172_R-%TT%0017201">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00173_R-%TT%0017301">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00173_R-%TT%0017301" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00040_R-%TT%0004001" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wetterprognose (Text)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Kurztext der Zambretti-Prognose, z. B. „Wechsel,Regen“." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00174_R-%TT%0017401" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00174_R-%TT%0017401">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00175_R-%TT%0017501">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00175_R-%TT%0017501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00041_R-%TT%0004101" />
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Wettersymbol (Display)" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="0 sonnig, 1 bewölkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV-Index (z. B. für Tantron-Displays). Gewitter ist eine Schätzung aus starkem Regen und Böen, die WN90LP misst keine Blitze." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00176_R-%TT%0017601">
+                <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00177_R-%TT%0017701">
                   <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00177_R-%TT%0017701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00178_R-%TT%0017801" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00042_R-%TT%0004201" />
                   </when>
                 </choose>

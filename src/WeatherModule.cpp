@@ -31,6 +31,7 @@ void WeatherModule::setup(bool configured)
     {
         _sdsEnabled = ParamWX_SdsPresent;
         _oneWireEnabled = ParamWX_OneWirePresent;
+        _calcWithOneWire = _oneWireEnabled && ParamWX_CalcTempSource == 1;
         sdsDutyCycle = ParamWX_SdsDutyCycle;
         _altitude = ParamWX_Altitude;
         _tempOffset = (float)ParamWX_TempOffset;
@@ -150,33 +151,49 @@ void WeatherModule::processWn90()
     set(WxId::UvIndex, reg(R::Uv, 0.1f));
     set(WxId::Pressure, pressure);
 
+    // Abgeleitete Werte wahlweise mit der 1-Wire-Temperatur
+    const float t = calcTemperature(temp);
     if (!isnan(pressure))
     {
         _pressure.feed(pressure);
-        set(WxId::PressureSea, (isnan(temp) || _altitude == 0) ? pressure : baroToSeaLevelC(pressure, temp, _altitude));
+        set(WxId::PressureSea, (isnan(t) || _altitude == 0) ? pressure : baroToSeaLevelC(pressure, t, _altitude));
     }
     else
         val(WxId::PressureSea).invalidate();
 
-    if (!isnan(temp) && !isnan(hum))
+    if (!isnan(t) && !isnan(hum))
     {
-        const float dew = dewPoint(temp, hum);
-        set(WxId::AbsHumidity, absoluteHumidity(temp, hum));
+        const float dew = dewPoint(t, hum);
+        set(WxId::AbsHumidity, absoluteHumidity(t, hum));
         set(WxId::DewPoint, dew);
-        set(WxId::FrostPoint, WeatherCalc::frostPoint(temp, hum));
-        set(WxId::Humidex, humidex(temp, dew));
-        set(WxId::HeatIndex, WeatherCalc::heatIndex(temp, hum));
-        set(WxId::Discomfort, discomfortIndex(temp, hum));
+        set(WxId::FrostPoint, WeatherCalc::frostPoint(t, hum));
+        set(WxId::Humidex, humidex(t, dew));
+        set(WxId::HeatIndex, WeatherCalc::heatIndex(t, hum));
+        set(WxId::Discomfort, discomfortIndex(t, hum));
     }
     else
     {
         for (WxId id : {WxId::AbsHumidity, WxId::DewPoint, WxId::FrostPoint, WxId::Humidex, WxId::HeatIndex, WxId::Discomfort})
             val(id).invalidate();
     }
-    set(WxId::WindChill, (isnan(temp) || isnan(wind)) ? NAN : WeatherCalc::windChill(temp, wind));
+    set(WxId::WindChill, (isnan(t) || isnan(wind)) ? NAN : WeatherCalc::windChill(t, wind));
 
     if (_wn90.valid(R::RainCounter))
         _rain.feed(_wn90.raw(R::RainCounter));
+}
+
+float WeatherModule::calcTemperature(float stationTemp, const char **source)
+{
+    const MeasuredValue &oneWire = val(WxId::Temp1W);
+    if (_calcWithOneWire && oneWire.valid())
+    {
+        if (source)
+            *source = "1-Wire";
+        return oneWire.value();
+    }
+    if (source)
+        *source = _calcWithOneWire ? "Wetterstation (1-Wire ausgefallen)" : "Wetterstation";
+    return stationTemp;
 }
 
 void WeatherModule::invalidateWn90()
@@ -497,6 +514,10 @@ void WeatherModule::showSensors()
                  _oneWire.failures());
     else
         logInfoP("1-Wire: nicht aktiviert");
+    const char *source = "";
+    const MeasuredValue &temp = val(WxId::Temp);
+    const float t = calcTemperature(temp.valid() ? temp.value() : NAN, &source);
+    logInfoP("Temperatur fuer Berechnungen: %.2f C aus %s", t, source);
     logInfoP("Uhrzeit: %s", openknx.time.isValid() ? "gueltig" : "unbekannt");
 }
 

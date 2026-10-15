@@ -8,7 +8,7 @@
 #include "ValueTable.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.3.0"
+#define WX_FIRMWARE_VERSION "0.4.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -31,6 +31,7 @@ class WeatherModule : public OpenKNX::Module
     void set(WxId id, float value) { val(id).set(value); }
 
     void processWn90();
+    float calcTemperature(float stationTemp, const char **source = nullptr);
     void invalidateWn90();
     void processSds();
     void updateRain();
@@ -59,6 +60,7 @@ class WeatherModule : public OpenKNX::Module
     bool _sendAllowed = false;
     bool _sdsEnabled = false;
     bool _oneWireEnabled = false;
+    bool _calcWithOneWire = false; // 1-Wire-Temperatur fuer abgeleitete Werte verwenden
     float _tempOffset = 0;
     int16_t _altitude = 0;
 

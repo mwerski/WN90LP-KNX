@@ -20,6 +20,8 @@ und optional per MQTT bereit.
   „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
   Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
 - Feinstaub PM2,5 / PM10, auch feuchtekorrigiert
+- Optional verwenden die Berechnungen (Taupunkt, Behaglichkeit, Luftdruck auf Meereshöhe …) die 1-Wire-Temperatur
+  statt der Temperatur der Wetterstation; bei Ausfall des 1-Wire-Sensors automatisch wieder die Wetterstation.
 - Prognose: Wettertendenz (-2..+2 aus der Luftdruckänderung über 3 h), Zambretti-Prognose (1–26) und
   Prognosetext (DPT 16), Wettersymbol für Displays (z. B. Tantron 4"): 0 sonnig, 1 bewölkt, 2 Schauer,
   3 starker Regen, 4 Gewitter (Schätzung aus Regen und Böen), 5 hoher UV-Index.
