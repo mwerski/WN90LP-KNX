@@ -6,9 +6,11 @@
 #include "RainStatistics.h"
 #include "Sds011Sensor.h"
 #include "ValueTable.h"
+#include "HaDiscovery.h"
+#include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.4.0"
+#define WX_FIRMWARE_VERSION "0.5.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -27,6 +29,24 @@ class WeatherModule : public OpenKNX::Module
     bool processCommand(const std::string cmd, bool diagnoseKo) override;
 
   private:
+    struct WindAlarm
+    {
+        uint8_t source = 0; // 0 Boee, 1 Wind, 2 Wind 10-min-Mittel
+        float threshold = 10;
+        uint32_t onDelayMs = 3000;
+        uint32_t offDelayMs = 600000;
+        bool state = false;
+        bool timing = false;
+        uint32_t since = 0;
+    };
+
+    struct MinMax
+    {
+        uint32_t dayKey = 0;
+        float tempMin = NAN, tempMax = NAN, gustMax = NAN;
+        float tempMinYesterday = NAN, tempMaxYesterday = NAN, gustMaxYesterday = NAN;
+    };
+
     MeasuredValue &val(WxId id) { return _values[(uint8_t)id]; }
     void set(WxId id, float value) { val(id).set(value); }
 
@@ -36,6 +56,11 @@ class WeatherModule : public OpenKNX::Module
     void processSds();
     void updateRain();
     void updateForecast();
+    void updateWindAlarms();
+    void updateSunAndTwilight();
+    void updateWarnings();
+    void updateMinMax(float temp, float gust);
+    void checkMinMaxDay();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -47,6 +72,7 @@ class WeatherModule : public OpenKNX::Module
     void showRain();
     void showPressure();
     void showForecast();
+    void showMinMax();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -72,6 +98,25 @@ class WeatherModule : public OpenKNX::Module
     float _lightRatio = NAN; // geglaettet: Helligkeit / Helligkeit bei klarem Himmel
     bool _sunny = false;
     uint32_t _forecastTimer = 0;
+
+    WindStats _windStats;
+    WindAlarm _alarms[3];
+    uint32_t _alarmTimer = 0;
+
+    float _twilightNight = 30, _twilightDay = 60;
+    uint32_t _twilightDelayMs = 120000;
+    int8_t _night = -1; // -1 unbekannt
+    bool _twilightTiming = false;
+    uint32_t _twilightSince = 0;
+
+    float _iceThreshold = 1.0f;
+    bool _frost = false;
+    bool _ice = false;
+    uint32_t _lastMoisture = 0;
+    bool _moistureSeen = false;
+
+    MinMax _minMax;
+    HaDiscovery _ha;
 
     bool _faultWn90 = false;
     bool _faultSds = false;

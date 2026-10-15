@@ -26,6 +26,12 @@ und optional per MQTT bereit.
   Prognosetext (DPT 16), Wettersymbol für Displays (z. B. Tantron 4"): 0 sonnig, 1 bewölkt, 2 Schauer,
   3 starker Regen, 4 Gewitter (Schätzung aus Regen und Böen), 5 hoher UV-Index.
   Sonnig/bewölkt nutzt den Sonnenstand; dafür in der ETS den Gerätestandort eintragen und eine Uhrzeit bereitstellen.
+- Wind: 10-Minuten-Mittel und stärkste Böe der letzten 10 Minuten; drei Windalarm-Stufen (DPT 1.005) mit
+  Schwelle, Auslöse- und Rücknahmeverzögerung für Markisen/Jalousien (bei Störung der Wetterstation: Alarm)
+- Sonnenstand (Azimut/Elevation) und Tag/Nacht aus der Helligkeit mit Hysterese und Verzögerung
+- Minimum/Maximum: Temperatur und stärkste Böe heute und gestern (remanent)
+- Warnungen: Frost und Glättegefahr
+- Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
 - WLAN, IP-Einstellungen, mDNS, NTP, OTA, Webserver mit Web-Konsole und MQTT aus OFM-Network
@@ -86,6 +92,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx rain` | Regenstatistik |
 | `wx pressure` | Luftdruckverlauf und Tendenz |
 | `wx forecast` | Zambretti-Prognose und Wettersymbol mit Begründung |
+| `wx minmax` | Minimum/Maximum, Windalarme, Dämmerung, Frost/Glätte |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.
@@ -95,3 +102,6 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 Bei aktivem MQTT (ETS, Netzwerkseite) sendet das Gerät im eingestellten Intervall ein JSON-Objekt an
 `openknx/<Präfix>/state` mit den gültigen Messwerten (Feldnamen wie `temperature`, `humidity`,
 `windspeed`, `pressure`, `raincounter`, `rain_today`, `pm25` …) sowie `wifi_rssi` und `uptime`.
+
+Mit „Home Assistant MQTT Discovery“ (ETS, Wetterstation → Allgemein) meldet das Gerät nach jedem Verbinden
+alle aktiven Messwerte unter `homeassistant/sensor|binary_sensor/<Knoten>/<Feld>/config` an (retained).

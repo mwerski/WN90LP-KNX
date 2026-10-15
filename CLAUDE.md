@@ -53,6 +53,12 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **WLAN:** `main.cpp` setzt Scan aller Kanäle/stärkster AP vor `openknx.init` und `WiFi.setSleep(false)`
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
+- **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
+- **Allgemeine Parameter** (GENERAL, 64 Byte): Bytes 0–36 belegt, ab 37 drei Windalarm-Blöcke à 9 Byte.
+- **Flash-Version 2** im Modul: [Version][Regen (RainStatistics::FLASH_SIZE)][Min/Max 28 Byte]; Version 1 wird noch gelesen.
+- **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
+- **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
+  erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.
 
 ## Regeln
 

@@ -52,6 +52,9 @@ BFT = [("DPT 5.010 (1 Byte)", "DPST-5-10", "1 Byte", 5, 10, 1.0)]
 BOOL = [("DPT 1.002 (1 Bit)", "DPST-1-2", "1 Bit", 1, 2, 1.0)]
 TENDENCY = [("DPT 6.010 (1 Byte, -2..+2)", "DPST-6-10", "1 Byte", 6, 10, 1.0)]
 TEXT = [("DPT 16.001 (14 Byte, Text)", "DPST-16-1", "14 Bytes", 16, 1, 1.0)]
+ALARM = [("DPT 1.005 (1 Bit, Alarm)", "DPST-1-5", "1 Bit", 1, 5, 1.0)]
+DAYNIGHT = [("DPT 1.024 (1 Bit, 0 = Tag, 1 = Nacht)", "DPST-1-24", "1 Bit", 1, 2, 1.0)]
+ANGLE = [T14(7, "DPT 14.007 (4 Byte, °)")]
 
 # Gruppen = ETS-Seiten
 GROUPS = [
@@ -59,19 +62,24 @@ GROUPS = [
     ("Humidity", "Luftfeuchte", "water-percent", None),
     ("Comfort", "Behaglichkeit", "calculator-variant-outline", None),
     ("Wind", "Wind", "windsock", None),
+    ("WindAlarm", "Windalarm", "alert-outline", None),
     ("Pressure", "Luftdruck", "gauge", None),
     ("Light", "Helligkeit und UV", "white-balance-sunny", None),
     ("Rain", "Regen", "weather-pouring", None),
     ("Particles", "Feinstaub", "blur", "sds"),
     ("Forecast", "Prognose und Display", "weather-partly-snowy-rainy", None),
+    ("Sun", "Sonne und Dämmerung", "white-balance-sunny", None),
+    ("MinMax", "Minimum und Maximum", "thermometer", None),
+    ("Warnings", "Warnungen", "alert-outline", None),
 ]
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
-      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0):
+      thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
                 abs=abs_, rel=rel, active=active, sensor=sensor, thresholds=thresholds,
-                decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt)
+                decimals=decimals, mqtt=mqtt or key.lower(), absmax=absmax, info=info, dpt=dpt,
+                extra=extra or [])
 
 
 # Reihenfolge = KO-Reihenfolge und Reihenfolge im Parameterspeicher
@@ -154,6 +162,40 @@ VALUES = [
       mqtt="weather_symbol",
       info="0 sonnig, 1 bewölkt, 2 Schauer, 3 starker Regen, 4 Gewitter, 5 hoher UV-Index (z. B. für Tantron-Displays). "
            "Gewitter ist eine Schätzung aus starkem Regen und Böen, die WN90LP misst keine Blitze."),
+    # Ab ETS 0.5
+    V("WindAvg10", "Wind", "Windgeschwindigkeit (10-min-Mittel)", "m/s", SPEED, 300, 1, 0, True, mqtt="windspeed_avg10",
+      info="Gleitendes Mittel der letzten 10 Minuten (meteorologischer Standard)."),
+    V("GustMax10", "Wind", "Böe (Maximum 10 min)", "m/s", SPEED, 300, 1, 0, True, mqtt="gust_max10",
+      info="Stärkste Böe der letzten 10 Minuten."),
+    V("WindAlarm1", "WindAlarm", "Windalarm Stufe 1", "", ALARM, 300, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="wind_alarm1", extra=["Alarm1Source", "Alarm1Threshold", "Alarm1OnDelay", "Alarm1OffDelay"]),
+    V("WindAlarm2", "WindAlarm", "Windalarm Stufe 2", "", ALARM, 300, 0, 0, False, thresholds=False, decimals=0,
+      mqtt="wind_alarm2", extra=["Alarm2Source", "Alarm2Threshold", "Alarm2OnDelay", "Alarm2OffDelay"]),
+    V("WindAlarm3", "WindAlarm", "Windalarm Stufe 3", "", ALARM, 300, 0, 0, False, thresholds=False, decimals=0,
+      mqtt="wind_alarm3", extra=["Alarm3Source", "Alarm3Threshold", "Alarm3OnDelay", "Alarm3OffDelay"]),
+    V("SunAzimuth", "Sun", "Sonnenstand Azimut", "°", ANGLE, 300, 2, 0, mqtt="sun_azimuth",
+      info="0° = Nord, 90° = Ost. Benötigt Gerätestandort und gültige Uhrzeit."),
+    V("SunElevation", "Sun", "Sonnenstand Elevation", "°", ANGLE, 300, 1, 0, mqtt="sun_elevation",
+      info="Höhe über dem Horizont, negativ nachts. Benötigt Gerätestandort und gültige Uhrzeit."),
+    V("DayNight", "Sun", "Tag/Nacht (Dämmerung)", "", DAYNIGHT, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="night", extra=["TwilightNight", "TwilightDay", "TwilightDelay"],
+      info="Aus der Helligkeit: Nacht unterhalb der unteren, Tag oberhalb der oberen Schwelle, jeweils nach der Verzögerung."),
+    V("TempMinToday", "MinMax", "Temperatur Minimum heute", "°C", TEMP, 3600, 0, 0, True, thresholds=False, mqtt="temp_min_today"),
+    V("TempMaxToday", "MinMax", "Temperatur Maximum heute", "°C", TEMP, 3600, 0, 0, True, thresholds=False, mqtt="temp_max_today"),
+    V("TempMinYesterday", "MinMax", "Temperatur Minimum gestern", "°C", TEMP, 3600, 0, 0, thresholds=False,
+      mqtt="temp_min_yesterday"),
+    V("TempMaxYesterday", "MinMax", "Temperatur Maximum gestern", "°C", TEMP, 3600, 0, 0, thresholds=False,
+      mqtt="temp_max_yesterday"),
+    V("GustMaxToday", "MinMax", "Stärkste Böe heute", "m/s", SPEED, 3600, 0, 0, True, thresholds=False, mqtt="gust_max_today"),
+    V("GustMaxYesterday", "MinMax", "Stärkste Böe gestern", "m/s", SPEED, 3600, 0, 0, thresholds=False,
+      mqtt="gust_max_yesterday"),
+    V("Frost", "Warnings", "Frost", "", ALARM, 1800, 0, 0, True, thresholds=False, decimals=0, mqtt="frost",
+      info="1 bei Temperatur unter 0 °C, zurück ab +0,5 °C (Temperatur für Berechnungen)."),
+    V("IceWarning", "Warnings", "Glättegefahr", "", ALARM, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="ice_warning", extra=["IceThreshold"],
+      info="1, wenn die Temperatur unter der Schwelle liegt und Feuchtigkeit vorhanden ist: Regen in der letzten Stunde "
+           "oder Taupunkt höchstens 1 K unter der Temperatur. Zurück, wenn die Temperatur 1 K über der Schwelle liegt "
+           "oder 30 Minuten keine Feuchtigkeit mehr vorhanden war."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -166,7 +208,7 @@ FAULTS = [
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 24
+GENERAL_SIZE = 64
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -182,7 +224,52 @@ GENERAL = [
     ("SymStormGust", "%AID%_PT-WxBft", 20, 0, "Gewitter: starker Regen und Böen ab", "7", "Bft"),
     ("SymUvHigh", "%AID%_PT-WxUv", 21, 0, "Hoher UV-Index ab", "6", None),
     ("SymSunnyRatio", "%AID%_PT-WxPercent", 22, 0, "Sonnig ab Anteil der Helligkeit bei klarem Himmel", "60", "%"),
+    ("TwilightDelay", "%AID%_PT-WxDelayMin", 23, 0, "Verzögerung", "2", "min"),
+    ("TwilightNight", "%AID%_PT-WxLux", 24, 0, "Nacht unterhalb von", "30", "lx"),
+    ("TwilightDay", "%AID%_PT-WxLux", 28, 0, "Tag oberhalb von", "60", "lx"),
+    ("IceThreshold", "%AID%_PT-WxIceTemp", 32, 0, "Glättegefahr bei Temperatur bis", "1", "°C"),
+    ("HaDiscovery", "%AID%_PT-OnOffYesNo", 36, 0, "Home Assistant MQTT Discovery", "0", None),
+    ("Alarm1Source", "%AID%_PT-WxWindSource", 37, 0, "Auslösen durch", "0", None),
+    ("Alarm1Threshold", "%AID%_PT-WxWindMs", 38, 0, "Schwelle", "10", "m/s"),
+    ("Alarm1OnDelay", "%AID%_PT-WxDelaySec", 42, 0, "Auslösen nach", "3", "s"),
+    ("Alarm1OffDelay", "%AID%_PT-WxDelayMinAlarm", 43, 0, "Zurücknehmen nach (unter der Schwelle)", "10", "min"),
+    ("Alarm2Source", "%AID%_PT-WxWindSource", 46, 0, "Auslösen durch", "0", None),
+    ("Alarm2Threshold", "%AID%_PT-WxWindMs", 47, 0, "Schwelle", "13", "m/s"),
+    ("Alarm2OnDelay", "%AID%_PT-WxDelaySec", 51, 0, "Auslösen nach", "3", "s"),
+    ("Alarm2OffDelay", "%AID%_PT-WxDelayMinAlarm", 52, 0, "Zurücknehmen nach (unter der Schwelle)", "10", "min"),
+    ("Alarm3Source", "%AID%_PT-WxWindSource", 55, 0, "Auslösen durch", "0", None),
+    ("Alarm3Threshold", "%AID%_PT-WxWindMs", 56, 0, "Schwelle", "17", "m/s"),
+    ("Alarm3OnDelay", "%AID%_PT-WxDelaySec", 60, 0, "Auslösen nach", "3", "s"),
+    ("Alarm3OffDelay", "%AID%_PT-WxDelayMinAlarm", 61, 0, "Zurücknehmen nach (unter der Schwelle)", "10", "min"),
 ]
+
+# Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
+HA_BY_UNIT = {
+    "°C": ("temperature", "°C"), "%": ("humidity", "%"), "g/m³": ("absolute_humidity", "g/m³"),
+    "m/s": ("wind_speed", "m/s"), "hPa": ("atmospheric_pressure", "hPa"), "lx": ("illuminance", "lx"),
+    "mm": ("precipitation", "mm"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
+}
+HA_BY_KEY = {
+    "Trend1h": (None, "hPa"), "Trend3h": (None, "hPa"), "Pm25": ("pm25", "µg/m³"), "Pm10": ("pm10", "µg/m³"),
+    "Pm25Norm": ("pm25", "µg/m³"), "Pm10Norm": ("pm10", "µg/m³"), "Raining": ("moisture", None),
+    "WindAlarm1": ("safety", None), "WindAlarm2": ("safety", None), "WindAlarm3": ("safety", None),
+    "Frost": ("cold", None), "IceWarning": ("cold", None), "DayNight": (None, None),
+}
+
+
+def ha_meta(v):
+    if v["key"] in HA_BY_KEY:
+        return HA_BY_KEY[v["key"]]
+    return HA_BY_UNIT.get(v["unit"], (None, None))
+
+
+def cstr(text):
+    """C-Stringliteral, Nicht-ASCII als \\u-Escape (UTF-8 im Programm, ASCII im Quelltext)."""
+    if text is None:
+        return "nullptr"
+    out = "".join(c if ord(c) < 128 else f"\\u{ord(c):04x}" for c in text)
+    return f'"{out}"'
+
 
 DPT_TYPES = {}  # Labels -> ParameterType-Id
 
@@ -299,6 +386,31 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxRainAmount" Name="WxRainAmount">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.01" maxInclusive="10" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxDelayMin" Name="WxDelayMin">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="60" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxDelayMinAlarm" Name="WxDelayMinAlarm">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="120" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxDelaySec" Name="WxDelaySec">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="60" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxLux" Name="WxLux">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="1" maxInclusive="10000" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxIceTemp" Name="WxIceTemp">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="-5" maxInclusive="5" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxWindMs" Name="WxWindMs">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="1" maxInclusive="50" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxWindSource" Name="WxWindSource">',
+        '                <TypeRestriction Base="Value" SizeInBit="2">',
+        '                  <Enumeration Text="Böe (Momentanwert)" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="Windgeschwindigkeit (Momentanwert)" Value="1" Id="%ENID%" />',
+        '                  <Enumeration Text="Windgeschwindigkeit (10-min-Mittel)" Value="2" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -361,6 +473,8 @@ def build():
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("MqttInterval")}" IndentLevel="1" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("HaDiscovery")}" IndentLevel="1" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Discovery meldet alle aktiven Messwerte unter homeassistant/... an (retained); Home Assistant legt sie dann automatisch als Sensoren an." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Störungsmeldungen" UIHint="Headline" />')
     w('                <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />')
     w(f'                <choose ParamRefId="{ids.ref("SdsPresent")}">')
@@ -388,6 +502,8 @@ def build():
         if len(v["dpts"]) > 1:
             w(f'{p}    <ParameterRefRef RefId="{ids.ref(k + "Dpt")}" IndentLevel="2" />')
         w(f'{p}    <ParameterRefRef RefId="{ids.ref(k + "Cycle")}" IndentLevel="2" />')
+        for n in v["extra"]:
+            w(f'{p}    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
         if v["thresholds"]:
             w(f'{p}    <ParameterRefRef RefId="{ids.ref(k + "Abs")}" IndentLevel="2" />')
             w(f'{p}    <ParameterRefRef RefId="{ids.ref(k + "Rel")}" IndentLevel="2" />')
@@ -418,6 +534,10 @@ def build():
               '(benötigt Uhrzeit und Gerätestandort); nachts entscheidet die Prognose." UIHint="Information" />')
             for n in ("SymHeavyRain", "SymStormGust", "SymUvHigh", "SymSunnyRatio"):
                 w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
+        if gkey == "WindAlarm":
+            w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Schutz für Markisen und Jalousien: Der Alarm wird ausgelöst, wenn der Wind die Schwelle für die eingestellte Zeit überschreitet, und erst zurückgenommen, wenn er die eingestellte Zeit darunter bleibt. Beaufort 6 ≈ 10,8 m/s, 7 ≈ 13,9 m/s, 8 ≈ 17,2 m/s. Bei einer Störung der Wetterstation wird der Alarm ausgelöst." UIHint="Information" />')
+        if gkey == "MinMax":
+            w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Werte seit Mitternacht bzw. des Vortags (benötigt gültige Uhrzeit), bleiben über Neustarts erhalten. Temperatur = Temperatur für Berechnungen." UIHint="Information" />')
         for v in VALUES:
             if v["group"] != gkey:
                 continue
@@ -512,6 +632,8 @@ def build():
     h.append("    WxSensor sensor;")
     h.append("    bool thresholds;      // false: bei jeder Aenderung senden")
     h.append("    uint8_t decimals;")
+    h.append("    const char *haClass;  // Home Assistant device_class (nullptr = keine)")
+    h.append("    const char *haUnit;   // Home Assistant unit_of_measurement (nullptr = keine)")
     h.append("    uint8_t dptCount;")
     h.append("    WxDptOption dpts[3];")
     h.append("};")
@@ -531,7 +653,7 @@ def build():
             name = name.replace(a, b)
         h.append(f'    {{"{name}", "{v["mqtt"]}", "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")
