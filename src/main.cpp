@@ -8,7 +8,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <ModbusMaster.h>
 #include <PubSubClient.h>
-#include <Json.h>
+#include <ArduinoJson.h>
 #include <knx.h>
 #include <RemoteDebug.h>
 #include <TimeLib.h>
@@ -88,7 +88,6 @@ netconfig net;
 #pragma region MQTT
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
-Json mqttMsg;
 void mqtt_reconnect() {
 	Serial.print("Attempting MQTT connection...");
 	// Attempt to connect
@@ -1001,35 +1000,36 @@ void RS485_RX() {
 }
 
 void MQTTpublish() {
-	mqttMsg.add("chip_id", getChipID());
-	mqttMsg.add("wifi_rssi", WiFi.RSSI());
+	JsonDocument mqttMsg;
+	mqttMsg["chip_id"] = getChipID();
+	mqttMsg["wifi_rssi"] = WiFi.RSSI();
 
-	if ( temperature.read ) mqttMsg.add("temperature", temperature.value );
-	if ( temperature1.read ) mqttMsg.add("temperature1", temperature1.value );
-	if ( humidity.read ) mqttMsg.add("humidity", humidity.value );
-	if ( abshumidity.read ) mqttMsg.add("humidity_abs", round(abshumidity.value) );
-	if ( dewpoint.read ) mqttMsg.add("dewpoint", round(dewpoint.value) );
-	if ( frostpoint.read ) mqttMsg.add("frostpoint", frostpoint.value );
-	if ( humIdex.read ) mqttMsg.add("humidex", round(humIdex.value) );
-	if ( heatindex.read ) mqttMsg.add("heatindex", round(heatindex.value) );
-	if ( windchill.read ) mqttMsg.add("windchill", round(windchill.value) );
-	if ( discomfort.read ) mqttMsg.add("discomfort", round(discomfort.value) );
-	if ( pressure.read ) mqttMsg.add("pressure", pressure.value );
-	if ( pressureTrend1.read ) mqttMsg.add("pressuretrend1", pressureTrend1.value );
-	if ( pressureTrend3.read ) mqttMsg.add("pressuretrend3", pressureTrend3.value );
-	if ( light.read ) mqttMsg.add("light", light.value );
-	if ( uvIndex.read ) mqttMsg.add("uvindex", uvIndex.value );
-	if ( windSpeed.read ) mqttMsg.add("windspeed", windSpeed.value );
-	if ( gustSpeed.read ) mqttMsg.add("gustspeed", gustSpeed.value );
-	if ( windSpeedBFT.read ) mqttMsg.add("windspeed_bft", windSpeedBFT.value );
-	if ( gustSpeedBFT.read ) mqttMsg.add("gustspeed_bft", gustSpeedBFT.value );
-	if ( windDirection.read ) mqttMsg.add("winddirection", windDirection.value );
-	if ( rainFall.read ) mqttMsg.add("rainfall", rainFall.value );
-	if ( rainCounter.read ) mqttMsg.add("raincounter", rainCounter.value );
-	if ( pm25.read ) mqttMsg.add("pm25", pm25.value );
-	if ( pm10.read ) mqttMsg.add("pm10", pm10.value );
-	if ( pm25_normalized.read ) mqttMsg.add("pm25_normalized", pm25_normalized.value );
-	if ( pm10_normalized.read ) mqttMsg.add("pm10_normalized", pm10_normalized.value );
+	if ( temperature.read ) mqttMsg["temperature"] = temperature.value;
+	if ( temperature1.read ) mqttMsg["temperature1"] = temperature1.value;
+	if ( humidity.read ) mqttMsg["humidity"] = humidity.value;
+	if ( abshumidity.read ) mqttMsg["humidity_abs"] = round(abshumidity.value);
+	if ( dewpoint.read ) mqttMsg["dewpoint"] = round(dewpoint.value);
+	if ( frostpoint.read ) mqttMsg["frostpoint"] = frostpoint.value;
+	if ( humIdex.read ) mqttMsg["humidex"] = round(humIdex.value);
+	if ( heatindex.read ) mqttMsg["heatindex"] = round(heatindex.value);
+	if ( windchill.read ) mqttMsg["windchill"] = round(windchill.value);
+	if ( discomfort.read ) mqttMsg["discomfort"] = round(discomfort.value);
+	if ( pressure.read ) mqttMsg["pressure"] = pressure.value;
+	if ( pressureTrend1.read ) mqttMsg["pressuretrend1"] = pressureTrend1.value;
+	if ( pressureTrend3.read ) mqttMsg["pressuretrend3"] = pressureTrend3.value;
+	if ( light.read ) mqttMsg["light"] = light.value;
+	if ( uvIndex.read ) mqttMsg["uvindex"] = uvIndex.value;
+	if ( windSpeed.read ) mqttMsg["windspeed"] = windSpeed.value;
+	if ( gustSpeed.read ) mqttMsg["gustspeed"] = gustSpeed.value;
+	if ( windSpeedBFT.read ) mqttMsg["windspeed_bft"] = windSpeedBFT.value;
+	if ( gustSpeedBFT.read ) mqttMsg["gustspeed_bft"] = gustSpeedBFT.value;
+	if ( windDirection.read ) mqttMsg["winddirection"] = windDirection.value;
+	if ( rainFall.read ) mqttMsg["rainfall"] = rainFall.value;
+	if ( rainCounter.read ) mqttMsg["raincounter"] = rainCounter.value;
+	if ( pm25.read ) mqttMsg["pm25"] = pm25.value;
+	if ( pm10.read ) mqttMsg["pm10"] = pm10.value;
+	if ( pm25_normalized.read ) mqttMsg["pm25_normalized"] = pm25_normalized.value;
+	if ( pm10_normalized.read ) mqttMsg["pm10_normalized"] = pm10_normalized.value;
 
 	if (!mqttClient.connected()) mqtt_reconnect();
 
@@ -1045,7 +1045,9 @@ void MQTTpublish() {
 			mqttClient.publish(net.mqttTopic, msgChar );
 		}
 		*/
-		if (mqttMsg.size() > 0) mqttClient.publish(net.mqttTopic, mqttMsg.toString().c_str() );
+		String payload;
+		serializeJson(mqttMsg, payload);
+		mqttClient.publish(net.mqttTopic, payload.c_str());
 	// mqttClient.publish(net.mqttTopic,toCharArray(msg) );	}
 //	Serial.println();
 	}
