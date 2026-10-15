@@ -14,8 +14,13 @@ static const char PAGE[] = R"HTML(<div class='container'>
 <p id='wx-state'>Lade Daten&hellip;</p>
 <div id='wx-groups'></div>
 <style>
-#wx-groups table{width:100%;border-collapse:collapse;margin-bottom:1.2em}
+#wx-groups table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:1.2em}
+#wx-groups col.n{width:56%}
+#wx-groups col.v,#wx-groups col.s{width:22%}
+#wx-groups h3{margin:1.2em 0 .3em}
+#wx-groups td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #wx-groups th{text-align:left;padding:.4em .3em;border-bottom:2px solid #8884}
+#wx-groups th.v,#wx-groups th.s{text-align:right}
 #wx-groups td{padding:.25em .3em;border-bottom:1px solid #8882}
 #wx-groups td.v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 #wx-groups td.s{text-align:right;white-space:nowrap;opacity:.6}
@@ -47,23 +52,27 @@ function render(j){
   });
   st.appendChild(document.createTextNode('Uhrzeit: '+(j.time?'g\u00fcltig':'unbekannt')+' \u00b7 MQTT: '+(j.mqtt?'verbunden':'aus')+
     ' \u00b7 WLAN '+j.rssi+' dBm \u00b7 Laufzeit '+Math.floor(j.up/3600)+' h \u00b7 Firmware '+j.fw));
-  var box=document.getElementById('wx-groups');box.textContent='';
+  // Neuen Inhalt vollstaendig aufbauen und in einem Schritt austauschen (kein Flackern)
+  var old=document.getElementById('wx-groups'),box=el('div');box.id='wx-groups';
   var groups={},order=[];
   j.values.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
   order.forEach(function(g){
     box.appendChild(el('h3','',g));
-    var t=el('table'),h=el('tr');
-    ['Wert','aktuell','zuletzt gesendet'].forEach(function(c){h.appendChild(el('th','',c));});
+    var t=el('table'),cg=el('colgroup'),h=el('tr');
+    ['n','v','s'].forEach(function(c){cg.appendChild(el('col',c));});
+    t.appendChild(cg);
+    [['n','Wert'],['v','aktuell'],['s','zuletzt gesendet']].forEach(function(c){h.appendChild(el('th',c[0],c[1]));});
     t.appendChild(h);
     groups[g].forEach(function(x){
       var r=el('tr',(x.a?'':'off')+(x.v===null?' inv':''));
-      r.appendChild(el('td','',x.n+(x.a?'':' (nicht aktiv)')));
+      var n=el('td','',x.n+(x.a?'':' (nicht aktiv)'));n.title=n.textContent;r.appendChild(n);
       r.appendChild(el('td','v',fmt(x,x.v)));
       r.appendChild(el('td','s',x.a&&x.s!==null?fmt(x,x.s):''));
       t.appendChild(r);
     });
     box.appendChild(t);
   });
+  old.parentNode.replaceChild(box,old);
   return true;
 }
 function poll(){

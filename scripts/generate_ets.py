@@ -899,9 +899,10 @@ def build():
     sensors = {None: "WxSensor::None", "sds": "WxSensor::Sds", "onewire": "WxSensor::OneWire"}
     for v in VALUES:
         opts = ", ".join(f"{{{d[3]}, {d[4]}, {cfloat(d[5])}}}" for d in v["dpts"])
-        unit = v["unit"].replace("°C", "C").replace("°", "Grad").replace("³", "3").replace("µ", "u")
+        unit = v["unit"].replace("°C", "C").replace("°", "Grad").replace("²", "2").replace("³", "3").replace("µ", "u")
         name = v["text"]
-        for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss")):
+        for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss"),
+                     (" °C", " C"), ("°", " Grad"), ("²", "2"), ("³", "3"), ("µ", "u"), ("–", "-")):
             name = name.replace(a, b)
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '

@@ -1026,7 +1026,7 @@ void WeatherModule::showValues()
             snprintf(sent, sizeof(sent), "(%.*f)", v.def()->decimals, v.lastSent());
         else
             snprintf(sent, sizeof(sent), "%s", v.active() ? "(-)" : "");
-        logInfoP("%-36s %c %-14s %s", WX_VALUES[i].name, v.active() ? 'A' : ' ', value, sent);
+        logInfoP("%-44.44s %c %-16s %s", WX_VALUES[i].name, v.active() ? 'A' : ' ', value, sent);
     }
     logIndentDown();
 }
