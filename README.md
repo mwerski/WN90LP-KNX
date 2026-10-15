@@ -46,7 +46,11 @@ OpenKNXproducer create --Debug -h include/knxprod.h -o <ABSOLUTER_PFAD>/src/WN90
 | `ota_WN90` | Release per OTA (ArduinoOTA, Port 3232), IP in `platformio.custom.ini` |
 | `ota_develop_WN90` | Entwicklung per OTA |
 
-Beim Umstieg von der alten Firmware (andere Partitionstabelle) einmal über USB löschen und flashen:
+Geräte, die bereits die OpenKNX-Partitionstabelle haben (alte Firmware ab Commit 19d6929), lassen sich
+direkt per OTA umstellen; die alte Firmware nimmt ArduinoOTA auf Port 3232 an. Die neue Firmware startet
+danach unkonfiguriert und verbindet sich mit den im ESP32 gespeicherten WLAN-Zugangsdaten.
+
+Ältere Geräte mit anderer Partitionstabelle einmal über USB löschen und flashen:
 
 ```
 pio run -e release_WN90 -t erase
