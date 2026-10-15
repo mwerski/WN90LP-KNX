@@ -105,6 +105,7 @@ void WeatherModule::setup(bool configured)
         _values[i].init(def, configured && sensorOk && condOk);
     }
 
+    _web.setup();
     _wn90.setup();
     _rain.setup(rainWindow, rainMinAmount, rainStopDelay);
     if (_sdsEnabled)
@@ -189,6 +190,8 @@ void WeatherModule::loop(bool configured)
         publishMqtt();
         _ha.loop(_values, WX_VALUE_COUNT);
     }
+    if (_web.due())
+        _web.update(buildStatusJson());
 }
 
 void WeatherModule::processWn90()
@@ -735,6 +738,61 @@ void WeatherModule::publishMqtt()
     serializeJson(doc, payload);
     openknxNetwork.mqtt.publishP("state", payload);
 #endif
+}
+
+std::string WeatherModule::buildStatusJson()
+{
+    JsonDocument doc;
+    doc["fw"] = WX_FIRMWARE_VERSION;
+    doc["up"] = millis() / 1000;
+    doc["rssi"] = WiFi.RSSI();
+    doc["time"] = openknx.time.isValid();
+#ifdef OPENKNX_MQTT
+    doc["mqtt"] = openknxNetwork.mqtt.connected();
+#endif
+    doc["wn90"] = _wn90.faulty() ? "Stoerung" : (_wn90.ok() ? "ok" : "keine Daten");
+    if (_sdsEnabled)
+        doc["sds"] = _sds.faulty() ? "Stoerung" : "ok";
+    if (_oneWireEnabled)
+        doc["ow"] = _oneWire.faulty() ? "Stoerung" : "ok";
+
+    JsonArray values = doc["values"].to<JsonArray>();
+    for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
+    {
+        const WxValueDef &def = WX_VALUES[i];
+        const MeasuredValue &v = _values[i];
+        // Werte fehlender Sensoren und abgeschalteter Fassaden gar nicht anzeigen
+        if (def.sensor == WxSensor::Sds && !_sdsEnabled)
+            continue;
+        if (def.sensor == WxSensor::OneWire && !_oneWireEnabled)
+            continue;
+        if (def.condParam != 0xFFFF && !v.active())
+            continue;
+        JsonObject o = values.add<JsonObject>();
+        o["n"] = def.label;
+        o["g"] = def.group;
+        o["k"] = def.mqttKey;
+        o["u"] = def.unitUtf8;
+        o["d"] = def.decimals;
+        o["a"] = v.active();
+        if (def.dpts[0].main == 1)
+            o["b"] = true;
+        const float f = powf(10.0f, def.decimals);
+        if (v.valid())
+            o["v"] = roundf(v.value() * f) / f;
+        else
+            o["v"] = nullptr;
+        if (v.sent())
+            o["s"] = roundf(v.lastSent() * f) / f;
+        else
+            o["s"] = nullptr;
+        if ((WxId)i == WxId::ForecastText && v.valid())
+            o["t"] = Forecast::text((uint8_t)v.value(), true);
+    }
+
+    std::string json;
+    serializeJson(doc, json);
+    return json;
 }
 
 // ---------------------------------------------------------------------------

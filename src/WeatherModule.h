@@ -7,11 +7,12 @@
 #include "Season.h"
 #include "Sds011Sensor.h"
 #include "ValueTable.h"
+#include "WebStatus.h"
 #include "HaDiscovery.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.7.0"
+#define WX_FIRMWARE_VERSION "0.8.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -86,6 +87,7 @@ class WeatherModule : public OpenKNX::Module
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
     void publishMqtt();
+    std::string buildStatusJson();
 
     void showValues();
     void showSensors();
@@ -151,6 +153,7 @@ class WeatherModule : public OpenKNX::Module
     float _ghi = NAN;
     Season _season;
     HaDiscovery _ha;
+    WebStatus _web;
 
     bool _faultWn90 = false;
     bool _faultSds = false;

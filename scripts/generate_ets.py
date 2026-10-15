@@ -833,7 +833,10 @@ def build():
     h.append("")
     h.append("struct WxValueDef")
     h.append("{")
-    h.append("    const char *name;     // Anzeige (Konsole)")
+    h.append("    const char *name;     // Anzeige (Konsole, ASCII)")
+    h.append("    const char *label;    // Anzeige (Webseite, UTF-8)")
+    h.append("    const char *group;    // ETS-Seite (Webseite, UTF-8)")
+    h.append("    const char *unitUtf8; // Einheit (Webseite, UTF-8)")
     h.append("    const char *mqttKey;  // Feldname im MQTT-JSON")
     h.append("    const char *unit;")
     h.append("    uint16_t paramOffset; // erstes Byte des Parameterblocks")
@@ -861,7 +864,8 @@ def build():
         name = v["text"]
         for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "Ae"), ("Ö", "Oe"), ("Ü", "Ue"), ("ß", "ss")):
             name = name.replace(a, b)
-        h.append(f'    {{"{name}", "{v["mqtt"]}", "{unit}", WX_{v["key"]}Active, '
+        gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
+        h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
                  f'{v["decimals"]}, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")

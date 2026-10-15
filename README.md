@@ -88,6 +88,12 @@ pio run -e release_WN90 -t upload
 
 Nach einer Änderung der Applikationsversion immer vollständig programmieren (nicht „partiell“).
 
+## Statusseite
+
+Bei aktivem Webserver (ETS, Netzwerkseite) zeigt `http://<IP>/weather` (Menüpunkt „Wetter“) alle Messwerte
+gruppiert nach ETS-Seiten mit aktuellem und zuletzt gesendetem Wert sowie den Zustand der Sensoren, der Uhrzeit
+und von MQTT. Die Seite aktualisiert sich alle 5 Sekunden; die Rohdaten liefert `/weather.json`.
+
 ## Konsole
 
 Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`):
