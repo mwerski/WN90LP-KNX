@@ -1622,6 +1622,7 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00008_R-%TT%0000801" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00019_R-%TT%0001901" IndentLevel="1" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Das direkte Schreiben in eine InfluxDB wird auf der Seite Datenexport (InfluxDB) eingestellt." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Discovery meldet alle aktiven Messwerte unter homeassistant/... an (retained); Home Assistant legt sie dann automatisch als Sensoren an." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Störungsmeldungen" UIHint="Headline" />
                 <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />
@@ -1633,6 +1634,27 @@
                 <choose ParamRefId="%AID%_UP-%TT%00002_R-%TT%0000201">
                   <when test="1">
                     <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />
+                  </when>
+                </choose>
+              </ParameterBlock>
+              <ParameterBlock Id="%AID%_PB-nnn" Name="Influx" Text="Datenexport (InfluxDB)" Icon="application-cog-outline">
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Schreibt alle gültigen Messwerte direkt per HTTP in eine InfluxDB 1.x (Schnittstelle /write, ohne TLS). Drei Punkte je Intervall: Wetterstation, 1-Wire und SDS011, unterschieden über den Tag sensor. Zahlen werden als Gleitkommawerte geschrieben, den Zeitstempel setzt der Server." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00091_R-%TT%0009101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00091_R-%TT%0009101">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00094_R-%TT%0009401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00092_R-%TT%0009201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00095_R-%TT%0009501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00096_R-%TT%0009601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00097_R-%TT%0009701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00098_R-%TT%0009801" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00093_R-%TT%0009301" IndentLevel="2" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Datenstruktur" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00099_R-%TT%0009901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00100_R-%TT%0010001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" IndentLevel="2" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Das Passwort steht im ETS-Projekt und im Gerät im Klartext." UIHint="Information" />
                   </when>
                 </choose>
               </ParameterBlock>
@@ -3361,27 +3383,6 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%00123_R-%TT%0012303" />
                       </when>
                     </choose>
-                  </when>
-                </choose>
-              </ParameterBlock>
-              <ParameterBlock Id="%AID%_PB-nnn" Name="Influx" Text="InfluxDB" Icon="application-cog-outline">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Schreibt alle gültigen Messwerte direkt per HTTP in eine InfluxDB 1.x (Schnittstelle /write, ohne TLS). Drei Punkte je Intervall: Wetterstation, 1-Wire und SDS011, unterschieden über den Tag sensor. Zahlen werden als Gleitkommawerte geschrieben, den Zeitstempel setzt der Server." UIHint="Information" />
-                <ParameterRefRef RefId="%AID%_UP-%TT%00091_R-%TT%0009101" IndentLevel="1" />
-                <choose ParamRefId="%AID%_UP-%TT%00091_R-%TT%0009101">
-                  <when test="1">
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00094_R-%TT%0009401" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00092_R-%TT%0009201" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00095_R-%TT%0009501" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00096_R-%TT%0009601" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00097_R-%TT%0009701" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00098_R-%TT%0009801" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00093_R-%TT%0009301" IndentLevel="2" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Datenstruktur" UIHint="Headline" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00099_R-%TT%0009901" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00100_R-%TT%0010001" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00101_R-%TT%0010101" IndentLevel="2" />
-                    <ParameterRefRef RefId="%AID%_UP-%TT%00102_R-%TT%0010201" IndentLevel="2" />
-                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Das Passwort steht im ETS-Projekt und im Gerät im Klartext." UIHint="Information" />
                   </when>
                 </choose>
               </ParameterBlock>

@@ -776,6 +776,7 @@ def build():
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("MqttInterval")}" IndentLevel="1" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("HaDiscovery")}" IndentLevel="1" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Das direkte Schreiben in eine InfluxDB wird auf der Seite Datenexport (InfluxDB) eingestellt." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Discovery meldet alle aktiven Messwerte unter homeassistant/... an (retained); Home Assistant legt sie dann automatisch als Sensoren an." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Störungsmeldungen" UIHint="Headline" />')
     w('                <ComObjectRefRef RefId="%AID%_O-%TT%00001_R-%TT%0000101" />')
@@ -787,6 +788,20 @@ def build():
     w(f'                <choose ParamRefId="{ids.ref("OneWirePresent")}">')
     w('                  <when test="1">')
     w('                    <ComObjectRefRef RefId="%AID%_O-%TT%00003_R-%TT%0000301" />')
+    w('                  </when>')
+    w('                </choose>')
+    w('              </ParameterBlock>')
+    w('              <ParameterBlock Id="%AID%_PB-nnn" Name="Influx" Text="Datenexport (InfluxDB)" Icon="application-cog-outline">')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Schreibt alle gültigen Messwerte direkt per HTTP in eine InfluxDB 1.x (Schnittstelle /write, ohne TLS). Drei Punkte je Intervall: Wetterstation, 1-Wire und SDS011, unterschieden über den Tag sensor. Zahlen werden als Gleitkommawerte geschrieben, den Zeitstempel setzt der Server." UIHint="Information" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("InfluxActive")}" IndentLevel="1" />')
+    w(f'                <choose ParamRefId="{ids.ref("InfluxActive")}">')
+    w('                  <when test="1">')
+    for n in ("InfluxServer", "InfluxPort", "InfluxDatabase", "InfluxRp", "InfluxUser", "InfluxPassword", "InfluxInterval"):
+        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
+    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Datenstruktur" UIHint="Headline" />')
+    for n in ("InfluxMeasurement", "InfluxTagFloor", "InfluxTagRoom", "InfluxTagSensor"):
+        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
+    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Das Passwort steht im ETS-Projekt und im Gerät im Klartext." UIHint="Information" />')
     w('                  </when>')
     w('                </choose>')
     w('              </ParameterBlock>')
@@ -871,20 +886,6 @@ def build():
             ind -= 4
             w(f'{" " * ind}  </when>')
             w(f'{" " * ind}</choose>')
-    w('              <ParameterBlock Id="%AID%_PB-nnn" Name="Influx" Text="InfluxDB" Icon="application-cog-outline">')
-    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Schreibt alle gültigen Messwerte direkt per HTTP in eine InfluxDB 1.x (Schnittstelle /write, ohne TLS). Drei Punkte je Intervall: Wetterstation, 1-Wire und SDS011, unterschieden über den Tag sensor. Zahlen werden als Gleitkommawerte geschrieben, den Zeitstempel setzt der Server." UIHint="Information" />')
-    w(f'                <ParameterRefRef RefId="{ids.ref("InfluxActive")}" IndentLevel="1" />')
-    w(f'                <choose ParamRefId="{ids.ref("InfluxActive")}">')
-    w('                  <when test="1">')
-    for n in ("InfluxServer", "InfluxPort", "InfluxDatabase", "InfluxRp", "InfluxUser", "InfluxPassword", "InfluxInterval"):
-        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
-    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Datenstruktur" UIHint="Headline" />')
-    for n in ("InfluxMeasurement", "InfluxTagFloor", "InfluxTagRoom", "InfluxTagSensor"):
-        w(f'                    <ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="2" />')
-    w('                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Das Passwort steht im ETS-Projekt und im Gerät im Klartext." UIHint="Information" />')
-    w('                  </when>')
-    w('                </choose>')
-    w('              </ParameterBlock>')
     w('            </Channel>')
 
     xml = f'''<?xml version="1.0" encoding="utf-8"?>
