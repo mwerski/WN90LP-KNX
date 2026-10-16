@@ -1334,6 +1334,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx solar", "Strahlung, PV-Schaetzung und Fassaden");
     openknx.console.printHelpLine("wx astro", "Sonnenzeiten, Daemmerung und Mond");
     openknx.console.printHelpLine("wx climate", "Lueftung, Bewaesserung, Gradtage");
+    openknx.console.printHelpLine("wx perf", "Laufzeiten seit dem letzten Aufruf (Diagnose)");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -1389,6 +1390,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showAstro();
     else if (cmd == "wx climate")
         showClimate();
+    else if (cmd == "wx perf")
+        Diag::perf();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)

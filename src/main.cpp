@@ -25,6 +25,7 @@ void setup()
 
 void loop()
 {
+    Diag::loopTick();
     Diag::stage(Diag::Network);
     openknx.loop();
     OtaGuard::loop(openknxNetwork.established());

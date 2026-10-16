@@ -37,6 +37,8 @@ namespace Diag
     void stage(Stage s);
     void setup();          // Vorstart auswerten und protokollieren
     void report();         // fuer "wx sensors"
+    void perf();           // fuer "wx perf": Laufzeiten je Programmteil, Schleifenrate, Speicher
+    void loopTick();       // einmal je Hauptschleife
     // true, wenn das KO in der vom ETS geladenen Gruppenobjekt-Tabelle existiert
     bool koExists(uint16_t ko);
 } // namespace Diag
