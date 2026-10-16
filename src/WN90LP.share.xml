@@ -848,28 +848,28 @@
                 <Parameter Id="%AID%_UP-%TT%00600" Name="IrrigateCycle" ParameterType="%AID%_PT-WxCycle" Offset="1926" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00601" Name="HddMonthActive" ParameterType="%AID%_PT-CheckBox" Offset="1936" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00602" Name="HddMonthDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1936" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00603" Name="HddMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1937" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00603" Name="HddMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1937" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00604" Name="HddLastMonthActive" ParameterType="%AID%_PT-CheckBox" Offset="1947" BitOffset="7" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00605" Name="HddLastMonthDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1947" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00606" Name="HddLastMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1948" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00606" Name="HddLastMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1948" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00607" Name="HddYearActive" ParameterType="%AID%_PT-CheckBox" Offset="1958" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00608" Name="HddYearDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1958" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00609" Name="HddYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="1959" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00609" Name="HddYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="1959" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00610" Name="HddLastYearActive" ParameterType="%AID%_PT-CheckBox" Offset="1969" BitOffset="7" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00611" Name="HddLastYearDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1969" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00612" Name="HddLastYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="1970" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00612" Name="HddLastYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="1970" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00613" Name="CddMonthActive" ParameterType="%AID%_PT-CheckBox" Offset="1980" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00614" Name="CddMonthDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1980" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00615" Name="CddMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1981" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00615" Name="CddMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1981" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00616" Name="CddLastMonthActive" ParameterType="%AID%_PT-CheckBox" Offset="1991" BitOffset="7" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00617" Name="CddLastMonthDpt" ParameterType="%AID%_PT-WxDpt14" Offset="1991" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00618" Name="CddLastMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1992" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00618" Name="CddLastMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="1992" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00619" Name="CddYearActive" ParameterType="%AID%_PT-CheckBox" Offset="2002" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00620" Name="CddYearDpt" ParameterType="%AID%_PT-WxDpt14" Offset="2002" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00621" Name="CddYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2003" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00621" Name="CddYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2003" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00622" Name="CddLastYearActive" ParameterType="%AID%_PT-CheckBox" Offset="2013" BitOffset="7" Text="Aktiv" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00623" Name="CddLastYearDpt" ParameterType="%AID%_PT-WxDpt14" Offset="2013" BitOffset="5" Text="Datenpunkttyp" Value="0" />
-                <Parameter Id="%AID%_UP-%TT%00624" Name="CddLastYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2014" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="86400" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00624" Name="CddLastYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2014" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="0" SuffixText="s" />
               </Union>
             </Parameters>
             <ParameterRefs>
