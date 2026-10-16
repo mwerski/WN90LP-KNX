@@ -657,5 +657,6 @@
  "DwdCountActive": 656,
  "DwdCountCycle": 657,
  "DwdFaultActive": 658,
- "DwdFaultCycle": 659
+ "DwdFaultCycle": 659,
+ "SendSpacing": 660
 }

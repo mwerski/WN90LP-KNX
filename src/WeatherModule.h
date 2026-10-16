@@ -18,7 +18,7 @@
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.14.0"
+#define WX_FIRMWARE_VERSION "0.15.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -210,6 +210,8 @@ class WeatherModule : public OpenKNX::Module
 
     uint8_t _nextSend = 0;
     uint32_t _lastSendTime = 0;
+    // Mindestabstand zwischen zwei Telegrammen (ETS), damit z. B. nach dem Start nicht alle Werte gleichzeitig kommen
+    uint32_t _sendSpacing = 100;
     uint32_t _rainTimer = 0;
     uint32_t _mqttInterval = 0;
     uint32_t _mqttTimer = 0;

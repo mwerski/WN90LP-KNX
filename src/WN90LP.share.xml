@@ -143,6 +143,9 @@
               <ParameterType Id="%AID%_PT-WxDwdInterval" Name="WxDwdInterval">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="2" maxInclusive="60" />
               </ParameterType>
+              <ParameterType Id="%AID%_PT-WxSendSpacing" Name="WxSendSpacing">
+                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="20" maxInclusive="1000" />
+              </ParameterType>
               <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">
                 <TypeRestriction Base="Value" SizeInBit="1">
                   <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />
@@ -390,6 +393,7 @@
                 <Parameter Id="%AID%_UP-%TT%00645" Name="DwdActive" ParameterType="%AID%_PT-OnOffYesNo" Offset="435" BitOffset="7" Text="Amtliche DWD-Warnungen abrufen (benötigt Internet)" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00646" Name="DwdCell" ParameterType="%AID%_PT-WxWarnCell" Offset="436" BitOffset="0" Text="Warnzellen-ID (WarnCellID, 9-stellig)" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00647" Name="DwdInterval" ParameterType="%AID%_PT-WxDwdInterval" Offset="440" BitOffset="0" Text="Abruf alle" Value="5" SuffixText="min" />
+                <Parameter Id="%AID%_UP-%TT%00660" Name="SendSpacing" ParameterType="%AID%_PT-WxSendSpacing" Offset="441" BitOffset="0" Text="Mindestabstand zwischen zwei Telegrammen" Value="100" SuffixText="ms" />
                 <Parameter Id="%AID%_UP-%TT%00109" Name="TempActive" ParameterType="%AID%_PT-CheckBox" Offset="448" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00110" Name="TempDpt" ParameterType="%AID%_PT-WxDpt1" Offset="448" BitOffset="5" Text="Datenpunkttyp" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00111" Name="TempCycle" ParameterType="%AID%_PT-WxCycle" Offset="449" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
@@ -1052,6 +1056,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00645_R-%TT%0064501" RefId="%AID%_UP-%TT%00645" />
               <ParameterRef Id="%AID%_UP-%TT%00646_R-%TT%0064601" RefId="%AID%_UP-%TT%00646" />
               <ParameterRef Id="%AID%_UP-%TT%00647_R-%TT%0064701" RefId="%AID%_UP-%TT%00647" />
+              <ParameterRef Id="%AID%_UP-%TT%00660_R-%TT%0066001" RefId="%AID%_UP-%TT%00660" />
               <ParameterRef Id="%AID%_UP-%TT%00109_R-%TT%0010901" RefId="%AID%_UP-%TT%00109" />
               <ParameterRef Id="%AID%_UP-%TT%00110_R-%TT%0011001" RefId="%AID%_UP-%TT%00110" />
               <ParameterRef Id="%AID%_UP-%TT%00111_R-%TT%0011101" RefId="%AID%_UP-%TT%00111" />
@@ -2023,6 +2028,9 @@
                 <ParameterRefRef RefId="%AID%_UP-%TT%00009_R-%TT%0000901" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00010_R-%TT%0001001" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00007_R-%TT%0000701" IndentLevel="1" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Senden" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Begrenzt die Telegrammrate der Wetterstation (100 ms = höchstens 10 Telegramme pro Sekunde). Wichtig vor allem nach dem Start, wenn alle aktiven Werte einmal gesendet werden, und wenn die Gruppenadressen über einen IP-Router auf eine TP-Linie gelangen." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00660_R-%TT%0066001" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach der ersten Inbetriebnahme enthalten die Regenmengen nur die Zeit seit dem Start (z. B. 72 Stunden erst nach drei Tagen vollständig). Danach bleiben sie über Neustarts erhalten." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />

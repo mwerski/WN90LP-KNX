@@ -5,9 +5,11 @@
   <op:config name="%NET_VerifyVersion%" value="0.8" />
   <op:config name="%UCT_VerifyVersion%" value="0.5" />
   <op:config name="%LOG_VerifyVersion%" value="4.4" />
+  <!-- Wetter-Modul: gleich der Firmware-Version in library.json (Major.Minor) -->
+  <op:config name="%WX_VerifyVersion%" value="0.15" />
 
   <!-- Bei jeder Aenderung der ETS-Parameter/KOs erhoehen -->
-  <op:config name="%WX_ApplicationVersion%" value="0.14" />
+  <op:config name="%WX_ApplicationVersion%" value="0.15" />
   <!-- Vorgaengerversionen (Leerzeichen-getrennt) -->
-  <op:config name="%WX_ReplacesVersions%" value="0.13 0.12 0.11 0.10 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1" />
+  <op:config name="%WX_ReplacesVersions%" value="0.14 0.13 0.12 0.11 0.10 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1" />
 </KNX>

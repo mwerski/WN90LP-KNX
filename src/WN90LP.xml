@@ -57,7 +57,10 @@
   <op:define prefix="WX"
     share="WN90LP.share.xml"
     KoSingleOffset="20"
-    ModuleType="20" />
+    ModuleType="20">
+    <!-- Modulversion fuer den Konfigurationstransfer; muss zu library.json (Major.Minor) passen -->
+    <op:verify File="../library.json" ModuleVersion="%WX_VerifyVersion%" />
+  </op:define>
 
   <generate />
 </KNX>

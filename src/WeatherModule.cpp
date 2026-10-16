@@ -13,8 +13,6 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
     return d.year * 10000UL + d.month * 100UL + d.day;
 }
 
-// Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
-static constexpr uint32_t SEND_SPACING = 25;
 static constexpr uint8_t FLASH_VERSION = 7; // 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
@@ -116,6 +114,7 @@ void WeatherModule::setup(bool configured)
         const float z = max<uint8_t>(ParamWX_StationHeight, 1);
         _windHeightFactor = z <= 2.0f ? 1.0f : 4.87f / logf(67.8f * z - 5.42f);
         _warnings.setup(ParamWX_WarnHold);
+        _sendSpacing = constrain((uint32_t)ParamWX_SendSpacing, 20UL, 1000UL);
         if (ParamWX_DwdActive)
             dwdWarnings.setup(ParamWX_DwdCell, ParamWX_DwdInterval);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
@@ -1016,7 +1015,7 @@ void WeatherModule::updateFault(uint16_t ko, bool &state, bool faulty, const cha
 
 void WeatherModule::sendValues()
 {
-    if (!delayCheck(_lastSendTime, SEND_SPACING))
+    if (!delayCheck(_lastSendTime, _sendSpacing))
         return;
     // Reihum hoechstens ein Telegramm pro Durchlauf
     for (uint8_t n = 0; n < WX_VALUE_COUNT; n++)
