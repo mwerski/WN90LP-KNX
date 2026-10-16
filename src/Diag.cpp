@@ -58,6 +58,12 @@ namespace Diag
     static uint32_t s_perfStart = 0;
     static uint32_t s_loopStart = 0;
     static uint32_t s_maxLoopUs = 0;
+    static uint32_t s_noMemory = 0;
+
+    void noMemory()
+    {
+        s_noMemory++;
+    }
 
     void stage(Stage s)
     {
@@ -93,6 +99,8 @@ namespace Diag
         logInfo("Weather", "Hauptschleife: %.0f Durchlaeufe/s, laengster Durchlauf %.1f ms, freier Speicher %u Byte (min. %u, groesster Block %u)",
                 s_loops / secs, s_maxLoopUs / 1000.0f, ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
         logIndentUp();
+        if (s_noMemory)
+            logInfo("Weather", "Wegen Speichermangel ausgelassene Ausgaben seit Start: %lu", s_noMemory);
         for (uint8_t i = 0; i < Count; i++)
         {
             const Timing &t = s_timing[i];

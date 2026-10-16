@@ -79,7 +79,17 @@ void DwdWarnings::run()
     while (true)
     {
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        fetch(_requestNow);
+        try
+        {
+            fetch(_requestNow);
+        }
+        catch (const std::bad_alloc &)
+        {
+            // Speichermangel (TLS braucht viel): Abruf als Fehler werten, naechstes Intervall erneut
+            std::lock_guard<std::mutex> guard(_lock);
+            _result.lastCode = -200;
+            _result.errors++;
+        }
         _busy = false;
     }
 }

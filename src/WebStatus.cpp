@@ -99,14 +99,10 @@ void WebStatus::setup()
     openknxNetwork.webserver.addRoute(WEB_GET, "/weather.json", [this](WebRequest &, WebResponse &res) {
         _demandUntil = millis() + 15000;
         res.setContentType("application/json");
-        res.send(snapshot().c_str());
+        // Direkt aus dem Schnappschuss senden (send kopiert selbst), keine weitere Kopie im Speicher
+        std::lock_guard<std::mutex> guard(_lock);
+        res.send(_json.c_str());
     });
-}
-
-std::string WebStatus::snapshot()
-{
-    std::lock_guard<std::mutex> guard(_lock);
-    return _json;
 }
 
 bool WebStatus::due()
@@ -122,6 +118,9 @@ bool WebStatus::due()
 
 void WebStatus::update(std::string &&json)
 {
+    // Leer bei Speichermangel: alten Schnappschuss behalten
+    if (json.empty())
+        return;
     std::lock_guard<std::mutex> guard(_lock);
     _json = std::move(json);
 }

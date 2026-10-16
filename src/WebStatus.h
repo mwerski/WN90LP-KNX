@@ -14,8 +14,6 @@ class WebStatus
     void update(std::string &&json);
 
   private:
-    std::string snapshot();
-
     std::mutex _lock;
     std::string _json = "{}";
     volatile uint32_t _demandUntil = 0;

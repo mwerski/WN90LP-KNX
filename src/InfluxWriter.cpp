@@ -95,7 +95,14 @@ void InfluxWriter::run()
                 // Kein Log aus dieser Task (Logger nicht task-sicher); die Hauptschleife meldet den Fehler
                 String detail = code > 0 ? http.getString() : HTTPClient::errorToString(code);
                 std::lock_guard<std::mutex> guard(_lock);
-                _lastError = std::string(detail.c_str()).substr(0, 120);
+                try
+                {
+                    _lastError.assign(detail.c_str(), min<size_t>(detail.length(), 120));
+                }
+                catch (const std::bad_alloc &)
+                {
+                    _lastError.clear();
+                }
             }
             http.end();
         }

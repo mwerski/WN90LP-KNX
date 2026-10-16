@@ -1,6 +1,7 @@
 #include "HaDiscovery.h"
 #include "NetworkModule.h"
 #include "WeatherModule.h"
+#include "JsonUtil.h"
 #include <ArduinoJson.h>
 
 #ifdef OPENKNX_MQTT
@@ -69,7 +70,8 @@ bool HaDiscovery::publish(const MeasuredValue &v)
     dev["sw_version"] = WX_FIRMWARE_VERSION;
 
     std::string payload;
-    serializeJson(doc, payload);
+    if (!serializeJsonSafe(doc, payload))
+        return false;
     const std::string topic = std::string("homeassistant/") + (binary ? "binary_sensor/" : "sensor/") + node + "/" + def->mqttKey + "/config";
     return openknxNetwork.mqtt.publish(topic, payload, 0, true);
 }

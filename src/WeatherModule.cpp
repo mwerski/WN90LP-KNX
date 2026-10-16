@@ -5,6 +5,7 @@
 #include "WeatherCalc.h"
 #include "Forecast.h"
 #include "Solar.h"
+#include "JsonUtil.h"
 #include <ArduinoJson.h>
 
 WeatherModule openknxWeatherModule;
@@ -288,21 +289,30 @@ void WeatherModule::loop(bool configured)
     Diag::stage(Diag::Send);
     if (configured && _sendAllowed)
         sendValues();
-    if (configured)
+    // Die Textausgaben belegen kurzzeitig viel Speicher; bei Speichermangel diese Ausgabe auslassen statt abzustuerzen
+    try
     {
-        Diag::stage(Diag::Mqtt);
-        publishMqtt();
-        Diag::stage(Diag::HaDiscovery);
-        _ha.loop(_values, WX_VALUE_COUNT);
+        if (configured)
+        {
+            Diag::stage(Diag::Mqtt);
+            publishMqtt();
+            Diag::stage(Diag::HaDiscovery);
+            _ha.loop(_values, WX_VALUE_COUNT);
+        }
+        Diag::stage(Diag::WebStatus);
+        if (_web.due())
+            _web.update(buildStatusJson());
+        Diag::stage(Diag::Influx);
+        if (_influx.due())
+            _influx.submit(buildInfluxBody());
     }
-    Diag::stage(Diag::WebStatus);
-    if (_web.due())
-        _web.update(buildStatusJson());
+    catch (const std::bad_alloc &)
+    {
+        Diag::noMemory();
+    }
+    Diag::stage(Diag::Dwd);
     if (dwdWarnings.enabled())
         dwdWarnings.loop(openknx.time.isValid() ? (int64_t)openknx.time.getUtcTime().toTime_t() : 0);
-    Diag::stage(Diag::Influx);
-    if (_influx.due())
-        _influx.submit(buildInfluxBody());
     Diag::stage(Diag::Network);
     if (_influx.errorCount() != _influxErrorsLogged)
     {
@@ -1104,8 +1114,8 @@ void WeatherModule::publishMqtt()
     doc["fault_wn90"] = _faultWn90;
 
     std::string payload;
-    serializeJson(doc, payload);
-    openknxNetwork.mqtt.publishP("state", payload);
+    if (serializeJsonSafe(doc, payload))
+        openknxNetwork.mqtt.publishP("state", payload);
 #endif
 }
 
@@ -1241,7 +1251,8 @@ std::string WeatherModule::buildStatusJson()
     }
 
     std::string json;
-    serializeJson(doc, json);
+    if (!serializeJsonSafe(doc, json))
+        json.clear();
     return json;
 }
 
