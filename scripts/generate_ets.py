@@ -462,7 +462,7 @@ INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 448  # frei: 443-447
+GENERAL_SIZE = 448  # frei: 446-447
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -600,6 +600,9 @@ GENERAL = [
     ("DwdCell", "%AID%_PT-WxWarnCell", 436, 0, "Warnzellen-ID (WarnCellID, 9-stellig)", "0", None),
     ("DwdInterval", "%AID%_PT-WxDwdInterval", 440, 0, "Abruf alle", "5", "min"),
     ("SendSpacing", "%AID%_PT-WxSendSpacing", 441, 0, "Mindestabstand zwischen zwei Telegrammen", "100", "ms"),
+    ("LedMode", "%AID%_PT-WxLedMode", 443, 0, "Statusanzeige", "2", None),
+    ("LedBrightness", "%AID%_PT-WxLedBrightness", 444, 0, "Helligkeit der Statusanzeige", "10", "%"),
+    ("LedHeartbeat", "%AID%_PT-OnOffYesNo", 445, 7, "Lebenszeichen (kurz grün alle 10 s)", "0", None),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -914,6 +917,16 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxSendSpacing" Name="WxSendSpacing">',
         '                <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="20" maxInclusive="1000" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxLedMode" Name="WxLedMode">',
+        '                <TypeRestriction Base="Value" SizeInBit="8">',
+        '                  <Enumeration Text="nur Programmiermodus" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="Programmiermodus und Störungen" Value="1" Id="%ENID%" />',
+        '                  <Enumeration Text="alle Zustände" Value="2" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxLedBrightness" Name="WxLedBrightness">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="100" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -975,6 +988,18 @@ def build():
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Senden" UIHint="Headline" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Begrenzt die Telegrammrate der Wetterstation (100 ms = höchstens 10 Telegramme pro Sekunde). Wichtig vor allem nach dem Start, wenn alle aktiven Werte einmal gesendet werden, und wenn die Gruppenadressen über einen IP-Router auf eine TP-Linie gelangen." UIHint="Information" />')
     w(f'                <ParameterRefRef RefId="{ids.ref("SendSpacing")}" IndentLevel="1" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Status-LED" UIHint="Headline" />')
+    w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die RGB-LED auf der Platine zeigt immer den Programmiermodus (rot). Zusätzlich, nach Vorrang: OTA-Update (violett pulsierend), WLAN getrennt (blau blinkend), Sensorstörung WN90LP/SDS011/1-Wire (gelb blinkend), bei „alle Zustände“ außerdem ausgelöster Windalarm (orange) und das Lebenszeichen. Sonst bleibt die LED aus." UIHint="Information" />')
+    w(f'                <ParameterRefRef RefId="{ids.ref("LedMode")}" IndentLevel="1" />')
+    w(f'                <choose ParamRefId="{ids.ref("LedMode")}">')
+    w('                  <when test="1">')
+    w(f'                    <ParameterRefRef RefId="{ids.ref("LedBrightness")}" IndentLevel="2" />')
+    w('                  </when>')
+    w('                  <when test="2">')
+    w(f'                    <ParameterRefRef RefId="{ids.ref("LedBrightness")}" IndentLevel="2" />')
+    w(f'                    <ParameterRefRef RefId="{ids.ref("LedHeartbeat")}" IndentLevel="2" />')
+    w('                  </when>')
+    w('                </choose>')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach der ersten Inbetriebnahme enthalten die Regenmengen nur die Zeit seit dem Start (z. B. 72 Stunden erst nach drei Tagen vollständig). Danach bleiben sie über Neustarts erhalten." UIHint="Information" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />')
     w('                <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />')

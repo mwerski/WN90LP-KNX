@@ -8,6 +8,7 @@
 #include "JsonUtil.h"
 #include "RgbLed.h"
 #include <esp32-hal-periman.h>
+#include <Update.h>
 #include <ArduinoJson.h>
 
 WeatherModule openknxWeatherModule;
@@ -119,6 +120,9 @@ void WeatherModule::setup(bool configured)
         _windHeightFactor = z <= 2.0f ? 1.0f : 4.87f / logf(67.8f * z - 5.42f);
         _warnings.setup(ParamWX_WarnHold);
         _sendSpacing = constrain((uint32_t)ParamWX_SendSpacing, 20UL, 1000UL);
+        _ledMode = min<uint8_t>(ParamWX_LedMode, 2);
+        _ledBrightness = constrain(ParamWX_LedBrightness, 1, 100);
+        _ledHeartbeat = ParamWX_LedHeartbeat;
         if (ParamWX_DwdActive)
             dwdWarnings.setup(ParamWX_DwdCell, ParamWX_DwdInterval);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
@@ -285,6 +289,7 @@ void WeatherModule::loop(bool configured)
         _alarmTimer = millis();
         updateWindAlarms();
     }
+    updateStatusLed();
     if (_rain.saveRequested())
         openknx.flash.save(true);
 
@@ -459,6 +464,31 @@ void WeatherModule::updateWindAlarms()
         }
         set(id, a.state ? 1.0f : 0.0f);
     }
+}
+
+void WeatherModule::updateStatusLed()
+{
+    RgbLed *led = RgbLed::instance();
+    if (led == nullptr)
+        return;
+    using P = RgbLed::Pattern;
+    const uint8_t br = _ledBrightness;
+    if (_ledMode == 0)
+        led->status(P::Off);
+    // Vorrang: OTA, WLAN, Sensorstoerung, dann (nur "alle Zustaende") Windalarm und Lebenszeichen
+    else if (Update.isRunning())
+        led->status(P::Pulse, 160, 0, 255, br);
+    else if (!openknxNetwork.established())
+        led->status(P::Blink, 0, 0, 255, br);
+    else if (_faultWn90 || _faultSds || _fault1W)
+        led->status(P::Blink, 255, 170, 0, br);
+    else if (_ledMode == 2 && (_alarms[0].state || _alarms[1].state || _alarms[2].state))
+        led->status(P::On, 255, 70, 0, br);
+    else if (_ledMode == 2 && _ledHeartbeat)
+        led->status(P::Flash, 0, 255, 0, br);
+    else
+        led->status(P::Off);
+    led->tick();
 }
 
 void WeatherModule::updateSunAndTwilight()

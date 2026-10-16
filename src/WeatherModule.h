@@ -21,10 +21,10 @@
 // Firmware-Version = ETS-Applikationsversion (Major.Minor) + Revision. Die Revision geht auch an
 // openknx.init() (Versionsanzeige von OpenKNX in Konsole/Web-UI, dort mit Git-Hash) und muss bei
 // einer neuen Applikationsversion wieder bei 0 beginnen (max. 31).
-#define WX_FIRMWARE_REVISION 4
+#define WX_FIRMWARE_REVISION 0
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
-#define WX_FIRMWARE_VERSION "0.15." WX_STR(WX_FIRMWARE_REVISION)
+#define WX_FIRMWARE_VERSION "1.0." WX_STR(WX_FIRMWARE_REVISION)
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -92,6 +92,7 @@ class WeatherModule : public OpenKNX::Module
     void updateRain();
     void updateForecast();
     void updateWindAlarms();
+    void updateStatusLed();
     void updateSunAndTwilight();
     void updateWarnings();
     void updateMinMax(float temp, float gust);
@@ -213,6 +214,12 @@ class WeatherModule : public OpenKNX::Module
     bool _faultWn90 = false;
     bool _faultSds = false;
     bool _fault1W = false;
+
+    // Statusanzeige auf der RGB-LED (ETS): 0 nur Prog-Modus, 1 + Stoerungen, 2 alle Zustaende.
+    // Unkonfiguriert mit Stoerungen, damit z. B. ein fehlendes WLAN bei der Inbetriebnahme sichtbar ist.
+    uint8_t _ledMode = 1;
+    uint8_t _ledBrightness = 10;
+    bool _ledHeartbeat = false;
 
     uint8_t _nextSend = 0;
     uint32_t _lastSendTime = 0;

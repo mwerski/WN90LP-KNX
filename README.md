@@ -10,6 +10,9 @@ und optional per MQTT bereit.
 - optional Feinstaubsensor SDS011 an RXD/TXD der Stiftleiste (RXD des T-RSS3 an TXD des SDS011 und umgekehrt, 5 V)
 - optional Temperatursensor DS18B20 an GPIO 11 (3V3, GND, 4,7 kΩ Pull-up von DATA nach 3V3)
 - Prog-Taster GPIO 5, Prog-LED ist die WS2812 an GPIO 1
+- Statusanzeige auf derselben LED (ETS: Allgemein / Status-LED), nach Vorrang:
+  Programmiermodus rot, OTA-Update violett pulsierend, WLAN getrennt blau blinkend,
+  Sensorstörung gelb blinkend, Windalarm orange, Lebenszeichen kurz grün alle 10 s
 
 ## Funktionen
 

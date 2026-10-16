@@ -658,5 +658,8 @@
  "DwdCountCycle": 657,
  "DwdFaultActive": 658,
  "DwdFaultCycle": 659,
- "SendSpacing": 660
+ "SendSpacing": 660,
+ "LedMode": 661,
+ "LedBrightness": 662,
+ "LedHeartbeat": 663
 }

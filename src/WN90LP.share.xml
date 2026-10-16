@@ -146,6 +146,16 @@
               <ParameterType Id="%AID%_PT-WxSendSpacing" Name="WxSendSpacing">
                 <TypeNumber SizeInBit="16" Type="unsignedInt" minInclusive="20" maxInclusive="1000" />
               </ParameterType>
+              <ParameterType Id="%AID%_PT-WxLedMode" Name="WxLedMode">
+                <TypeRestriction Base="Value" SizeInBit="8">
+                  <Enumeration Text="nur Programmiermodus" Value="0" Id="%ENID%" />
+                  <Enumeration Text="Programmiermodus und Störungen" Value="1" Id="%ENID%" />
+                  <Enumeration Text="alle Zustände" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
+              <ParameterType Id="%AID%_PT-WxLedBrightness" Name="WxLedBrightness">
+                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="100" />
+              </ParameterType>
               <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">
                 <TypeRestriction Base="Value" SizeInBit="1">
                   <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />
@@ -394,6 +404,9 @@
                 <Parameter Id="%AID%_UP-%TT%00646" Name="DwdCell" ParameterType="%AID%_PT-WxWarnCell" Offset="436" BitOffset="0" Text="Warnzellen-ID (WarnCellID, 9-stellig)" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00647" Name="DwdInterval" ParameterType="%AID%_PT-WxDwdInterval" Offset="440" BitOffset="0" Text="Abruf alle" Value="5" SuffixText="min" />
                 <Parameter Id="%AID%_UP-%TT%00660" Name="SendSpacing" ParameterType="%AID%_PT-WxSendSpacing" Offset="441" BitOffset="0" Text="Mindestabstand zwischen zwei Telegrammen" Value="100" SuffixText="ms" />
+                <Parameter Id="%AID%_UP-%TT%00661" Name="LedMode" ParameterType="%AID%_PT-WxLedMode" Offset="443" BitOffset="0" Text="Statusanzeige" Value="2" />
+                <Parameter Id="%AID%_UP-%TT%00662" Name="LedBrightness" ParameterType="%AID%_PT-WxLedBrightness" Offset="444" BitOffset="0" Text="Helligkeit der Statusanzeige" Value="10" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00663" Name="LedHeartbeat" ParameterType="%AID%_PT-OnOffYesNo" Offset="445" BitOffset="7" Text="Lebenszeichen (kurz grün alle 10 s)" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00109" Name="TempActive" ParameterType="%AID%_PT-CheckBox" Offset="448" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00110" Name="TempDpt" ParameterType="%AID%_PT-WxDpt1" Offset="448" BitOffset="5" Text="Datenpunkttyp" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00111" Name="TempCycle" ParameterType="%AID%_PT-WxCycle" Offset="449" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
@@ -1057,6 +1070,9 @@
               <ParameterRef Id="%AID%_UP-%TT%00646_R-%TT%0064601" RefId="%AID%_UP-%TT%00646" />
               <ParameterRef Id="%AID%_UP-%TT%00647_R-%TT%0064701" RefId="%AID%_UP-%TT%00647" />
               <ParameterRef Id="%AID%_UP-%TT%00660_R-%TT%0066001" RefId="%AID%_UP-%TT%00660" />
+              <ParameterRef Id="%AID%_UP-%TT%00661_R-%TT%0066101" RefId="%AID%_UP-%TT%00661" />
+              <ParameterRef Id="%AID%_UP-%TT%00662_R-%TT%0066201" RefId="%AID%_UP-%TT%00662" />
+              <ParameterRef Id="%AID%_UP-%TT%00663_R-%TT%0066301" RefId="%AID%_UP-%TT%00663" />
               <ParameterRef Id="%AID%_UP-%TT%00109_R-%TT%0010901" RefId="%AID%_UP-%TT%00109" />
               <ParameterRef Id="%AID%_UP-%TT%00110_R-%TT%0011001" RefId="%AID%_UP-%TT%00110" />
               <ParameterRef Id="%AID%_UP-%TT%00111_R-%TT%0011101" RefId="%AID%_UP-%TT%00111" />
@@ -2031,6 +2047,18 @@
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Senden" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Begrenzt die Telegrammrate der Wetterstation (100 ms = höchstens 10 Telegramme pro Sekunde). Wichtig vor allem nach dem Start, wenn alle aktiven Werte einmal gesendet werden, und wenn die Gruppenadressen über einen IP-Router auf eine TP-Linie gelangen." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00660_R-%TT%0066001" IndentLevel="1" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Status-LED" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Die RGB-LED auf der Platine zeigt immer den Programmiermodus (rot). Zusätzlich, nach Vorrang: OTA-Update (violett pulsierend), WLAN getrennt (blau blinkend), Sensorstörung WN90LP/SDS011/1-Wire (gelb blinkend), bei „alle Zustände“ außerdem ausgelöster Windalarm (orange) und das Lebenszeichen. Sonst bleibt die LED aus." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00661_R-%TT%0066101" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00661_R-%TT%0066101">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00662_R-%TT%0066201" IndentLevel="2" />
+                  </when>
+                  <when test="2">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00662_R-%TT%0066201" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00663_R-%TT%0066301" IndentLevel="2" />
+                  </when>
+                </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach der ersten Inbetriebnahme enthalten die Regenmengen nur die Zeit seit dem Start (z. B. 72 Stunden erst nach drei Tagen vollständig). Danach bleiben sie über Neustarts erhalten." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="MQTT" UIHint="Headline" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Broker, Zugangsdaten und Themenpräfix werden auf der Seite Netzwerk / MQTT eingestellt. Gesendet wird ein JSON-Objekt an openknx/&lt;Präfix&gt;/state." UIHint="Information" />
