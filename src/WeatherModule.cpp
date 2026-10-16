@@ -420,6 +420,14 @@ void WeatherModule::updateWindAlarms()
     for (uint8_t i = 0; i < 3; i++)
     {
         WindAlarm &a = _alarms[i];
+        const WxId id = (WxId)((uint8_t)WxId::WindAlarm1 + i);
+        // Nicht aktivierte Alarme gar nicht auswerten (ihre Parameter sind in der ETS ausgeblendet)
+        if (!val(id).active())
+        {
+            a.state = false;
+            a.timing = false;
+            continue;
+        }
         const float wind = sources[min<uint8_t>(a.source, 2)];
         if (_faultWn90)
         {
@@ -447,7 +455,7 @@ void WeatherModule::updateWindAlarms()
             else
                 a.timing = false;
         }
-        set((WxId)((uint8_t)WxId::WindAlarm1 + i), a.state ? 1.0f : 0.0f);
+        set(id, a.state ? 1.0f : 0.0f);
     }
 }
 
