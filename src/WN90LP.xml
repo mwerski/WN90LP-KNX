@@ -43,6 +43,16 @@
     <op:verify File="../lib/OFM-ConfigTransfer/library.json" ModuleVersion="%UCT_VerifyVersion%" />
   </op:define>
 
+  <!-- Logikmodul: 30 Kanaele, KOs ab 300 (Platz fuer weitere Wetterwerte, die derzeit KO 21-143 belegen) -->
+  <op:define prefix="LOG"
+    share="../lib/OFM-LogicModule/src/Logikmodul.share.xml"
+    template="../lib/OFM-LogicModule/src/Logikmodul.templ.xml"
+    NumChannels="30"
+    KoOffset="300"
+    ModuleType="10">
+    <op:verify File="../lib/OFM-LogicModule/library.json" ModuleVersion="%LOG_VerifyVersion%" />
+  </op:define>
+
   <!-- Wetterstation; WN90LP.share.xml wird von scripts/generate_ets.py erzeugt -->
   <op:define prefix="WX"
     share="WN90LP.share.xml"

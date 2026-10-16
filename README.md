@@ -95,6 +95,15 @@ pio run -e release_WN90 -t upload
 
 Nach einer Änderung der Applikationsversion immer vollständig programmieren (nicht „partiell“).
 
+## Logikmodul
+
+Das OpenKNX-Logikmodul (OFM-LogicModule) stellt 30 Logikkanäle bereit (KOs 300–389): UND/ODER, Schwellwerte,
+Verzögerungen, Treppenlicht, Zeitschaltuhren mit Sonnenauf-/untergang und Feiertagen, Formeln. Ein Logikeingang kann
+direkt ein KO der Wetterstation nutzen („Bestehendes KO“, Nummern in [doc/KO-Liste.md](doc/KO-Liste.md)).
+Voraussetzungen: Der Wert ist in der ETS aktiv, der DPT im Logikkanal passt, und der Wert wird gesendet
+(zyklisch oder bei Änderung) – nur gesendete Werte erreichen die Logik. Dokumentation:
+`lib/OFM-LogicModule/doc/Applikationsbeschreibung-Logik.md`. Konsolenbefehl: `logic`.
+
 ## InfluxDB
 
 Optional schreibt das Gerät alle gültigen Messwerte selbst per HTTP in eine InfluxDB 1.x (`/write`, ohne TLS);

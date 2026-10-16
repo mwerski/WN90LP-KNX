@@ -1,3 +1,4 @@
+#include "Logic.h"
 #include "NetworkModule.h"
 #include "OpenKNX.h"
 #include "WeatherModule.h"
@@ -13,6 +14,7 @@ void setup()
 
     openknx.init(0); // Firmware-Revision
     openknx.addModule(1, openknxWeatherModule);
+    openknx.addModule(3, openknxLogic);
     openknx.addModule(7, openknxNetwork);
     openknx.setup();
 

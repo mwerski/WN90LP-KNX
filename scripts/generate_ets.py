@@ -21,6 +21,8 @@ from xml.sax.saxutils import escape
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHARE = ROOT / "src" / "WN90LP.share.xml"
 HEADER = ROOT / "src" / "ValueTable.h"
+KOLIST = ROOT / "doc" / "KO-Liste.md"
+KO_OFFSET = 20  # muss zu KoSingleOffset in src/WN90LP.xml passen
 
 VALUE_SIZE = 11  # Byte je Messwert
 
@@ -1023,6 +1025,26 @@ def build():
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")
+    # KO-Liste fuer die Doku und fuer Logikkanaele ("bestehendes KO")
+    gnames = {g[0]: g[1] for g in GROUPS}
+    md = ["# Kommunikationsobjekte der Wetterstation", "",
+          "ERZEUGT durch `scripts/generate_ets.py`. Die Nummern bleiben bei Updates gleich (neue Werte werden hinten angefügt).", "",
+          "Für Logikkanäle („Bestehendes KO“): Das KO muss in der ETS aktiv (sichtbar) sein, der DPT im Logikkanal muss zur",
+          "gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er gesendet wird (zyklisch oder bei Änderung).", "",
+          "| KO | Name | ETS-Seite | DPT (Auswahl, erste = Standard) |", "|---:|---|---|---|"]
+    for n, (name, text, _) in enumerate(FAULTS, start=1):
+        md.append(f"| {KO_OFFSET + n} | {text} | Allgemein | 1.005 |")
+    for v in VALUES:
+        def dptname(d):
+            parts = d[1].replace("DPST-", "").replace("DPT-", "").split("-")
+            return f"{parts[0]}.{int(parts[1]):03d}" if len(parts) > 1 else f"{parts[0]}.x"
+        dpts = ", ".join(dptname(d) for d in v["dpts"])
+        md.append(f"| {KO_OFFSET + v['ko']} | {v['text']} | {gnames[v['group']]} | {dpts} |")
+    md.append("")
+    md.append("Logikmodul: 30 Kanäle, KOs 300–389 (je Kanal Eingang 1, Eingang 2, Ausgang).")
+    KOLIST.parent.mkdir(exist_ok=True)
+    KOLIST.write_text("\n".join(md) + "\n", encoding="utf-8")
+
     print(f"{SHARE.relative_to(ROOT)}: {len(VALUES)} Messwerte, {total} Byte Parameter, KO 1-{kono - 1}")
     print(f"{HEADER.relative_to(ROOT)} geschrieben")
 

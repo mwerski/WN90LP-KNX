@@ -4,3 +4,4 @@
 51dc43e v1 lib/OGM-HardwareConfig https://github.com/OpenKNX/OGM-HardwareConfig
 fb7f4b5 v1 lib/OFM-Network https://github.com/OpenKNX/OFM-Network
 eca6977 v1 lib/OFM-ConfigTransfer https://github.com/OpenKNX/OFM-ConfigTransfer
+cd1b5cc v1 lib/OFM-LogicModule https://github.com/OpenKNX/OFM-LogicModule
