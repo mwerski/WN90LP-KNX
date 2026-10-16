@@ -15,7 +15,7 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
 
 // Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
 static constexpr uint32_t SEND_SPACING = 25;
-static constexpr uint8_t FLASH_VERSION = 5; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein
+static constexpr uint8_t FLASH_VERSION = 6; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
@@ -98,6 +98,20 @@ void WeatherModule::setup(bool configured)
         _sunDnElevRise = (float)ParamWX_SunDnElevRise;
         _sunDnElevSet = (float)ParamWX_SunDnElevSet;
         _sunshineThreshold = ParamWX_SunshineThreshold;
+        const uint16_t roomBase[3] = {WX_Room1Active, WX_Room2Active, WX_Room3Active};
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            // Block je Raum (8 Byte): +0 aktiv, +1 Mindestunterschied (float), +5 min. Feuchte, +6/+7 min. Temperatur innen/aussen
+            Room &r = _rooms[i];
+            const uint16_t b = roomBase[i];
+            r.active = knx.paramByte(b) & 0x01;
+            r.minDiff = (float)knx.paramFloat(b + 1, Float_Enc_IEEE754Single);
+            r.minRh = knx.paramByte(b + 5);
+            r.minIndoorT = (int8_t)knx.paramByte(b + 6);
+            r.minOutdoorT = (int8_t)knx.paramByte(b + 7);
+        }
+        _irrigation.setup(ParamWX_IrrKc / 100.0f, (float)ParamWX_IrrThreshold, (float)ParamWX_IrrStorage, (float)ParamWX_IrrAmount);
+        _degreeDays.setup((float)ParamWX_DdIndoor, (float)ParamWX_DdHeatLimit, (float)ParamWX_DdCoolBase);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -147,6 +161,38 @@ void WeatherModule::processAfterStartupDelay()
         knx.getGroupObject(WX_KO_FAULT_SDS).value(_faultSds, DPT_Alarm);
     if (_oneWireEnabled)
         knx.getGroupObject(WX_KO_FAULT_1W).value(_fault1W, DPT_Alarm);
+    // Raumwerte fuer die Lueftungsempfehlung abfragen
+    const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
+    for (uint8_t i = 0; i < 3; i++)
+        if (_rooms[i].active)
+            for (uint16_t ko : roomKos[i])
+                knx.getGroupObject(ko).requestObjectRead();
+}
+
+void WeatherModule::processInputKo(GroupObject &ko)
+{
+    if (!_configured)
+        return;
+    const uint16_t asap = ko.asap();
+    const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        Room &r = _rooms[i];
+        if (!r.active)
+            continue;
+        if (asap == roomKos[i][0])
+        {
+            r.temp = (float)(double)ko.value(DPT_Value_Temp);
+            r.tempTime = millis();
+        }
+        else if (asap == roomKos[i][1])
+        {
+            r.hum = (float)(double)ko.value(DPT_Value_Humidity);
+            r.humTime = millis();
+        }
+    }
+    if (asap == WX_KoIrrigationDone && (bool)ko.value(DPT_Trigger))
+        _irrigation.credit();
 }
 
 void WeatherModule::processBeforeRestart()
@@ -199,6 +245,8 @@ void WeatherModule::loop(bool configured)
         updateSeason();
         updateSolar();
         updateAstro();
+        updateVentilation();
+        updateIrrigation();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -444,6 +492,7 @@ void WeatherModule::checkMinMaxDay()
         _minMax.radYesterday = wasYesterday ? _minMax.radToday : NAN;
         _minMax.pvYesterday = wasYesterday ? _minMax.pvToday : NAN;
         _minMax.sunshineYesterday = wasYesterday ? _minMax.sunshineToday : NAN;
+        _irrigation.dayRollover(wasYesterday);
         _minMax.sunshineToday = 0;
         _minMax.tempMin = _minMax.tempMax = _minMax.gustMax = NAN;
         _minMax.radToday = 0;
@@ -461,8 +510,18 @@ void WeatherModule::updateSeason()
         const OpenKNX::DateTime now = openknx.time.getLocalTime();
         const MeasuredValue &temp = val(WxId::Temp);
         const float t = calcTemperature(temp.valid() ? temp.value() : NAN);
-        _season.loop(dayKeyOf(now), now.hour, t);
+        _degreeDays.start(dayKeyOf(now));
+        if (_season.loop(dayKeyOf(now), now.hour, t))
+            _degreeDays.addDay(_season.finishedDayKey(), _season.finishedMean());
     }
+    set(WxId::HddMonth, _degreeDays.hddMonth());
+    set(WxId::HddLastMonth, _degreeDays.hddLastMonth());
+    set(WxId::HddYear, _degreeDays.hddYear());
+    set(WxId::HddLastYear, _degreeDays.hddLastYear());
+    set(WxId::CddMonth, _degreeDays.cddMonth());
+    set(WxId::CddLastMonth, _degreeDays.cddLastMonth());
+    set(WxId::CddYear, _degreeDays.cddYear());
+    set(WxId::CddLastYear, _degreeDays.cddLastYear());
     set(WxId::SummerWinter, _season.summer() < 0 ? NAN : (float)_season.summer());
     set(WxId::MeanTemp, _season.average());
     set(WxId::DailyMeanYesterday, _season.yesterday());
@@ -680,6 +739,71 @@ void WeatherModule::updateAstro()
     set(WxId::Moonset, _moonSet);
     set(WxId::NextFullMoon, _nextFullMoon);
     set(WxId::NextNewMoon, _nextNewMoon);
+}
+
+void WeatherModule::updateVentilation()
+{
+    static constexpr uint32_t MAX_AGE = 2 * 3600000UL; // Raumwerte gelten 2 h
+    const MeasuredValue &outAbs = val(WxId::AbsHumidity);
+    const MeasuredValue &outTemp = val(WxId::Temp);
+    const float tOut = calcTemperature(outTemp.valid() ? outTemp.value() : NAN);
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        Room &r = _rooms[i];
+        const WxId base = (WxId)((uint8_t)WxId::Room1Vent + i * 4); // je Raum: Vent, AbsHum, DewPoint, Diff
+        if (!r.active)
+            continue;
+        const bool fresh = !isnan(r.temp) && !isnan(r.hum) && millis() - r.tempTime < MAX_AGE && millis() - r.humTime < MAX_AGE;
+        if (!fresh)
+        {
+            for (uint8_t k = 0; k < 4; k++)
+                val((WxId)((uint8_t)base + k)).invalidate();
+            r.vent = false;
+            continue;
+        }
+        const float absIn = absoluteHumidity(r.temp, r.hum);
+        set((WxId)((uint8_t)base + 1), absIn);
+        set((WxId)((uint8_t)base + 2), dewPoint(r.temp, r.hum));
+        if (!outAbs.valid() || isnan(tOut))
+        {
+            val((WxId)((uint8_t)base + 3)).invalidate();
+            val(base).invalidate();
+            continue;
+        }
+        const float diff = absIn - outAbs.value();
+        set((WxId)((uint8_t)base + 3), diff);
+        // Hysterese 0,5 g/m3; Raumfeuchte und Temperaturen als Freigabe
+        const bool allowed = r.hum >= r.minRh && r.temp >= r.minIndoorT && tOut >= r.minOutdoorT;
+        if (!allowed || diff < max(r.minDiff - 0.5f, 0.0f))
+            r.vent = false;
+        else if (diff >= r.minDiff)
+            r.vent = true;
+        set(base, r.vent);
+    }
+}
+
+void WeatherModule::updateIrrigation()
+{
+    const uint32_t now = millis();
+    const float hours = _irrigationLast ? (now - _irrigationLast) / 3600000.0f : 0;
+    _irrigationLast = now;
+
+    const MeasuredValue &temp = val(WxId::Temp);
+    const MeasuredValue &hum = val(WxId::Humidity);
+    const MeasuredValue &wind = val(WxId::WindAvg10);
+    const MeasuredValue &pressure = val(WxId::Pressure);
+    float rso = 0;
+    if (_configured && openknx.time.isValid())
+        rso = Solar::clearSky(Astro::sunPosition(openknx.time.getUtcTime().toTime_t(), (float)ParamBASE_Latitude, (float)ParamBASE_Longitude).elevation);
+    _irrigation.update(hours, calcTemperature(temp.valid() ? temp.value() : NAN), hum.valid() ? hum.value() : NAN,
+                       wind.valid() ? wind.value() : NAN, _ghi, rso, pressure.valid() ? pressure.value() : NAN,
+                       _rain.hasData() ? _rain.total() : NAN);
+
+    const bool dayValid = _minMax.dayKey != 0;
+    set(WxId::Et0Today, dayValid ? _irrigation.et0Today() : NAN);
+    set(WxId::Et0Yesterday, _irrigation.et0Yesterday());
+    set(WxId::WaterBalance, _irrigation.balance());
+    set(WxId::Irrigate, _irrigation.irrigate());
 }
 
 void WeatherModule::updateMinMax(float temp, float gust)
@@ -1017,7 +1141,8 @@ std::string WeatherModule::buildStatusJson()
 // ---------------------------------------------------------------------------
 uint16_t WeatherModule::flashSize()
 {
-    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE + SUNSHINE_FLASH_SIZE;
+    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE + SUNSHINE_FLASH_SIZE +
+           Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE;
 }
 
 void WeatherModule::writeFlash()
@@ -1038,6 +1163,8 @@ void WeatherModule::writeFlash()
     openknx.flash.writeFloat(_minMax.pvYesterday);
     openknx.flash.writeFloat(_minMax.sunshineToday);
     openknx.flash.writeFloat(_minMax.sunshineYesterday);
+    _irrigation.writeFlash();
+    _degreeDays.writeFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -1070,12 +1197,16 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
         _minMax.radToday = 0;
     if (isnan(_minMax.pvToday))
         _minMax.pvToday = 0;
-    if (version < 5 || size < flashSize())
+    if (version < 5 || size < flashSize() - Irrigation::FLASH_SIZE - DegreeDays::FLASH_SIZE)
         return;
     _minMax.sunshineToday = openknx.flash.readFloat();
     _minMax.sunshineYesterday = openknx.flash.readFloat();
     if (isnan(_minMax.sunshineToday))
         _minMax.sunshineToday = 0;
+    if (version < 6 || size < flashSize())
+        return;
+    _irrigation.readFlash();
+    _degreeDays.readFlash();
 }
 
 // ---------------------------------------------------------------------------
@@ -1093,6 +1224,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx season", "Sommer/Winter, Tagesmittel und Kenntage");
     openknx.console.printHelpLine("wx solar", "Strahlung, PV-Schaetzung und Fassaden");
     openknx.console.printHelpLine("wx astro", "Sonnenzeiten, Daemmerung und Mond");
+    openknx.console.printHelpLine("wx climate", "Lueftung, Bewaesserung, Gradtage");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
 }
 
@@ -1146,6 +1278,8 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showSolar();
     else if (cmd == "wx astro")
         showAstro();
+    else if (cmd == "wx climate")
+        showClimate();
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)
@@ -1323,4 +1457,24 @@ void WeatherModule::showAstro()
     logInfoP("Mond: %s, %.0f %% beleuchtet, Alter %.1f Tage, Aufgang %s, Untergang %s, Vollmond %s, Neumond %s", t(WxId::MoonPhaseText).c_str(),
              val(WxId::MoonIllumination).value(), val(WxId::MoonAge).value(), t(WxId::Moonrise).c_str(), t(WxId::Moonset).c_str(),
              t(WxId::NextFullMoon).c_str(), t(WxId::NextNewMoon).c_str());
+}
+
+void WeatherModule::showClimate()
+{
+    for (uint8_t i = 0; i < 3; i++)
+    {
+        const Room &r = _rooms[i];
+        if (!r.active)
+            continue;
+        const WxId base = (WxId)((uint8_t)WxId::Room1Vent + i * 4);
+        logInfoP("Raum %u: %.1f C / %.0f %% (vor %lu s / %lu s), abs. %.2f g/m3, Unterschied %.2f g/m3 -> %s", i + 1, r.temp, r.hum,
+                 (millis() - r.tempTime) / 1000, (millis() - r.humTime) / 1000, val((WxId)((uint8_t)base + 1)).value(),
+                 val((WxId)((uint8_t)base + 3)).value(), r.vent ? "LUEFTEN" : "nicht lueften");
+    }
+    logInfoP("Bewaesserung: ET0 heute %.2f mm (aktuell %.2f mm/h), gestern %.2f mm, Bilanz %.1f mm -> %s", _irrigation.et0Today(),
+             _irrigation.rate(), _irrigation.et0Yesterday(), _irrigation.balance(), _irrigation.irrigate() ? "BEWAESSERN" : "kein Bedarf");
+    logInfoP("Heizgradtage: Monat %.1f, Vormonat %.1f, Jahr %.1f, Vorjahr %.1f", _degreeDays.hddMonth(), _degreeDays.hddLastMonth(),
+             _degreeDays.hddYear(), _degreeDays.hddLastYear());
+    logInfoP("Kuehlgradtage: Monat %.1f, Vormonat %.1f, Jahr %.1f, Vorjahr %.1f", _degreeDays.cddMonth(), _degreeDays.cddLastMonth(),
+             _degreeDays.cddYear(), _degreeDays.cddLastYear());
 }

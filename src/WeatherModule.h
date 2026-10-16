@@ -9,12 +9,14 @@
 #include "ValueTable.h"
 #include "WebStatus.h"
 #include "Astro.h"
+#include "DegreeDays.h"
 #include "HaDiscovery.h"
+#include "Irrigation.h"
 #include "InfluxWriter.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.10.0"
+#define WX_FIRMWARE_VERSION "0.12.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -25,6 +27,7 @@ class WeatherModule : public OpenKNX::Module
     void loop(bool configured) override;
     void processAfterStartupDelay() override;
     void processBeforeRestart() override;
+    void processInputKo(GroupObject &ko) override;
 
     uint16_t flashSize() override;
     void readFlash(const uint8_t *data, const uint16_t size) override;
@@ -88,6 +91,8 @@ class WeatherModule : public OpenKNX::Module
     void updateSeason();
     void updateSolar();
     void updateAstro();
+    void updateVentilation();
+    void updateIrrigation();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -105,6 +110,7 @@ class WeatherModule : public OpenKNX::Module
     void showSeason();
     void showSolar();
     void showAstro();
+    void showClimate();
     void formatValue(char *buf, size_t len, const MeasuredValue &v);
 
     Wn90Sensor _wn90;
@@ -169,6 +175,20 @@ class WeatherModule : public OpenKNX::Module
     float _moonRise = NAN, _moonSet = NAN;
     float _nextFullMoon = NAN, _nextNewMoon = NAN; // Tage seit 2000
     bool _dayNightSun = false;
+
+    // Lueftungsempfehlung je Raum (Eingaenge vom Bus)
+    struct Room
+    {
+        bool active = false;
+        float minDiff = 1, minRh = 50, minIndoorT = 10, minOutdoorT = -5;
+        float temp = NAN, hum = NAN;
+        uint32_t tempTime = 0, humTime = 0;
+        bool vent = false;
+    };
+    Room _rooms[3];
+    Irrigation _irrigation;
+    DegreeDays _degreeDays;
+    uint32_t _irrigationLast = 0;
     Season _season;
     HaDiscovery _ha;
     WebStatus _web;

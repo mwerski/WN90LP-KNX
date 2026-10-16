@@ -125,6 +125,30 @@ enum class WxId : uint8_t
     Moonset,
     NextFullMoon,
     NextNewMoon,
+    Room1Vent,
+    Room1AbsHum,
+    Room1DewPoint,
+    Room1Diff,
+    Room2Vent,
+    Room2AbsHum,
+    Room2DewPoint,
+    Room2Diff,
+    Room3Vent,
+    Room3AbsHum,
+    Room3DewPoint,
+    Room3Diff,
+    Et0Today,
+    Et0Yesterday,
+    WaterBalance,
+    Irrigate,
+    HddMonth,
+    HddLastMonth,
+    HddYear,
+    HddLastYear,
+    CddMonth,
+    CddLastMonth,
+    CddYear,
+    CddLastYear,
     Count
 };
 
@@ -175,7 +199,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 120
+#define WX_VALUE_COUNT 144
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -301,5 +325,29 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Monduntergang", "Monduntergang", "Mond", "", "moonset", nullptr, "", WX_MoonsetActive, WX_KoMoonset, WxSensor::None, 0xFFFF, false, 0, WxFmt::Time, nullptr, nullptr, 3, {{10, 1, 1.0f}, {19, 1, 1.0f}, {12, 1, 1.0f}}},
     {"Naechster Vollmond", "N\u00e4chster Vollmond", "Mond", "", "next_full_moon", nullptr, "", WX_NextFullMoonActive, WX_KoNextFullMoon, WxSensor::None, 0xFFFF, false, 0, WxFmt::Date, nullptr, nullptr, 3, {{11, 1, 1.0f}, {19, 1, 1.0f}, {12, 1, 1.0f}}},
     {"Naechster Neumond", "N\u00e4chster Neumond", "Mond", "", "next_new_moon", nullptr, "", WX_NextNewMoonActive, WX_KoNextNewMoon, WxSensor::None, 0xFFFF, false, 0, WxFmt::Date, nullptr, nullptr, 3, {{11, 1, 1.0f}, {19, 1, 1.0f}, {12, 1, 1.0f}}},
+    {"Lueften sinnvoll Raum 1", "L\u00fcften sinnvoll Raum 1", "L\u00fcftungsempfehlung", "", "room1_ventilate", "room1_ventilate", "", WX_Room1VentActive, WX_KoRoom1Vent, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Absolute Feuchte Raum 1", "Absolute Feuchte Raum 1", "L\u00fcftungsempfehlung", "g/m\u00b3", "room1_humidity_abs", "room1_humidity_abs", "g/m3", WX_Room1AbsHumActive, WX_KoRoom1AbsHum, WxSensor::None, WX_Room1Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Taupunkt Raum 1", "Taupunkt Raum 1", "L\u00fcftungsempfehlung", "\u00b0C", "room1_dewpoint", "room1_dewpoint", "C", WX_Room1DewPointActive, WX_KoRoom1DewPoint, WxSensor::None, WX_Room1Active, true, 2, WxFmt::Number, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Feuchteunterschied innen − aussen Raum 1", "Feuchteunterschied innen \u2212 au\u00dfen Raum 1", "L\u00fcftungsempfehlung", "g/m\u00b3", "room1_humidity_diff", "room1_humidity_diff", "g/m3", WX_Room1DiffActive, WX_KoRoom1Diff, WxSensor::None, WX_Room1Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Lueften sinnvoll Raum 2", "L\u00fcften sinnvoll Raum 2", "L\u00fcftungsempfehlung", "", "room2_ventilate", "room2_ventilate", "", WX_Room2VentActive, WX_KoRoom2Vent, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Absolute Feuchte Raum 2", "Absolute Feuchte Raum 2", "L\u00fcftungsempfehlung", "g/m\u00b3", "room2_humidity_abs", "room2_humidity_abs", "g/m3", WX_Room2AbsHumActive, WX_KoRoom2AbsHum, WxSensor::None, WX_Room2Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Taupunkt Raum 2", "Taupunkt Raum 2", "L\u00fcftungsempfehlung", "\u00b0C", "room2_dewpoint", "room2_dewpoint", "C", WX_Room2DewPointActive, WX_KoRoom2DewPoint, WxSensor::None, WX_Room2Active, true, 2, WxFmt::Number, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Feuchteunterschied innen − aussen Raum 2", "Feuchteunterschied innen \u2212 au\u00dfen Raum 2", "L\u00fcftungsempfehlung", "g/m\u00b3", "room2_humidity_diff", "room2_humidity_diff", "g/m3", WX_Room2DiffActive, WX_KoRoom2Diff, WxSensor::None, WX_Room2Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Lueften sinnvoll Raum 3", "L\u00fcften sinnvoll Raum 3", "L\u00fcftungsempfehlung", "", "room3_ventilate", "room3_ventilate", "", WX_Room3VentActive, WX_KoRoom3Vent, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Absolute Feuchte Raum 3", "Absolute Feuchte Raum 3", "L\u00fcftungsempfehlung", "g/m\u00b3", "room3_humidity_abs", "room3_humidity_abs", "g/m3", WX_Room3AbsHumActive, WX_KoRoom3AbsHum, WxSensor::None, WX_Room3Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Taupunkt Raum 3", "Taupunkt Raum 3", "L\u00fcftungsempfehlung", "\u00b0C", "room3_dewpoint", "room3_dewpoint", "C", WX_Room3DewPointActive, WX_KoRoom3DewPoint, WxSensor::None, WX_Room3Active, true, 2, WxFmt::Number, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Feuchteunterschied innen − aussen Raum 3", "Feuchteunterschied innen \u2212 au\u00dfen Raum 3", "L\u00fcftungsempfehlung", "g/m\u00b3", "room3_humidity_diff", "room3_humidity_diff", "g/m3", WX_Room3DiffActive, WX_KoRoom3Diff, WxSensor::None, WX_Room3Active, true, 2, WxFmt::Number, "absolute_humidity", "g/m\u00b3", 1, {{9, 1, 1.0f}}},
+    {"Verdunstung heute (ET0)", "Verdunstung heute (ET0)", "Bew\u00e4sserung", "mm", "et0_today", "et0_today", "mm", WX_Et0TodayActive, WX_KoEt0Today, WxSensor::None, 0xFFFF, true, 2, WxFmt::Number, nullptr, "mm", 1, {{9, 1, 1.0f}}},
+    {"Verdunstung gestern (ET0)", "Verdunstung gestern (ET0)", "Bew\u00e4sserung", "mm", "et0_yesterday", "et0_yesterday", "mm", WX_Et0YesterdayActive, WX_KoEt0Yesterday, WxSensor::None, 0xFFFF, false, 2, WxFmt::Number, nullptr, "mm", 1, {{9, 1, 1.0f}}},
+    {"Wasserbilanz", "Wasserbilanz", "Bew\u00e4sserung", "mm", "water_balance", "water_balance", "mm", WX_WaterBalanceActive, WX_KoWaterBalance, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, nullptr, "mm", 1, {{9, 1, 1.0f}}},
+    {"Bewaessern", "Bew\u00e4ssern", "Bew\u00e4sserung", "", "irrigate", "irrigate", "", WX_IrrigateActive, WX_KoIrrigate, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Heizgradtage laufender Monat", "Heizgradtage laufender Monat", "Gradtage", "Kd", "hdd_month", "hdd_month", "Kd", WX_HddMonthActive, WX_KoHddMonth, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Heizgradtage Vormonat", "Heizgradtage Vormonat", "Gradtage", "Kd", "hdd_last_month", "hdd_last_month", "Kd", WX_HddLastMonthActive, WX_KoHddLastMonth, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Heizgradtage laufendes Jahr", "Heizgradtage laufendes Jahr", "Gradtage", "Kd", "hdd_year", "hdd_year", "Kd", WX_HddYearActive, WX_KoHddYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Heizgradtage Vorjahr", "Heizgradtage Vorjahr", "Gradtage", "Kd", "hdd_last_year", "hdd_last_year", "Kd", WX_HddLastYearActive, WX_KoHddLastYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Kuehlgradtage laufender Monat", "K\u00fchlgradtage laufender Monat", "Gradtage", "Kd", "cdd_month", "cdd_month", "Kd", WX_CddMonthActive, WX_KoCddMonth, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Kuehlgradtage Vormonat", "K\u00fchlgradtage Vormonat", "Gradtage", "Kd", "cdd_last_month", "cdd_last_month", "Kd", WX_CddLastMonthActive, WX_KoCddLastMonth, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Kuehlgradtage laufendes Jahr", "K\u00fchlgradtage laufendes Jahr", "Gradtage", "Kd", "cdd_year", "cdd_year", "Kd", WX_CddYearActive, WX_KoCddYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Kuehlgradtage Vorjahr", "K\u00fchlgradtage Vorjahr", "Gradtage", "Kd", "cdd_last_year", "cdd_last_year", "Kd", WX_CddLastYearActive, WX_KoCddLastYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
 };
 

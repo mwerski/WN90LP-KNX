@@ -93,7 +93,16 @@ GROUPS = [
     ("Facades", "Fassaden", "white-balance-sunny", None),
     ("SunTimes", "Sonnenzeiten", "white-balance-sunny", None),
     ("Moon", "Mond", "weather-partly-snowy-rainy", None),
+    ("Ventilation", "Lüftungsempfehlung", "water-percent", None),
+    ("Irrigation", "Bewässerung", "weather-pouring", None),
+    ("DegreeDays", "Gradtage", "thermometer", None),
 ]
+ROOMS = 3
+# Seiten mit Abschnitten, die einzeln aktiviert werden: Seite -> (Anzahl, Praefix, Titel, Parameter je Abschnitt)
+SECTIONS = {
+    "Facades": (6, "Facade", "Fassade", ["Azimuth", "Range", "MinElev", "MaxElev", "Threshold", "OnDelay", "OffDelay"]),
+    "Ventilation": (ROOMS, "Room", "Raum", ["MinDiff", "MinRh", "MinIndoorT", "MinOutdoorT"]),
+}
 FACADES = 6
 FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
@@ -351,6 +360,59 @@ VALUES = [
       influx="", fmt="date"),
     V("NextNewMoon", "Moon", "Nächster Neumond", "", DATE, 0, 0, 0, thresholds=False, decimals=0, mqtt="next_new_moon", influx="",
       fmt="date"),
+    # Ab ETS 0.12: Lueftungsempfehlung, Bewaesserung, Gradtage
+    V("Room1Vent", "Ventilation", "Lüften sinnvoll Raum 1", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="room1_ventilate", cond="Room1Active"),
+    V("Room1AbsHum", "Ventilation", "Absolute Feuchte Raum 1", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
+      decimals=2, mqtt="room1_humidity_abs", cond="Room1Active"),
+    V("Room1DewPoint", "Ventilation", "Taupunkt Raum 1", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room1_dewpoint",
+      cond="Room1Active"),
+    V("Room1Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 1", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
+      0.5, 0, decimals=2, mqtt="room1_humidity_diff", cond="Room1Active",
+      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
+    V("Room2Vent", "Ventilation", "Lüften sinnvoll Raum 2", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="room2_ventilate", cond="Room2Active"),
+    V("Room2AbsHum", "Ventilation", "Absolute Feuchte Raum 2", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
+      decimals=2, mqtt="room2_humidity_abs", cond="Room2Active"),
+    V("Room2DewPoint", "Ventilation", "Taupunkt Raum 2", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room2_dewpoint",
+      cond="Room2Active"),
+    V("Room2Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 2", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
+      0.5, 0, decimals=2, mqtt="room2_humidity_diff", cond="Room2Active",
+      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
+    V("Room3Vent", "Ventilation", "Lüften sinnvoll Raum 3", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="room3_ventilate", cond="Room3Active"),
+    V("Room3AbsHum", "Ventilation", "Absolute Feuchte Raum 3", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
+      decimals=2, mqtt="room3_humidity_abs", cond="Room3Active"),
+    V("Room3DewPoint", "Ventilation", "Taupunkt Raum 3", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room3_dewpoint",
+      cond="Room3Active"),
+    V("Room3Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 3", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
+      0.5, 0, decimals=2, mqtt="room3_humidity_diff", cond="Room3Active",
+      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
+    V("Et0Today", "Irrigation", "Verdunstung heute (ET0)", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="et0_today",
+      info="Referenzverdunstung nach FAO-56 Penman-Monteith, laufend aus Temperatur, Feuchte, Wind, Strahlung und Luftdruck."),
+    V("Et0Yesterday", "Irrigation", "Verdunstung gestern (ET0)", "mm", RAIN9, 3600, 0, 0, thresholds=False, decimals=2,
+      mqtt="et0_yesterday"),
+    V("WaterBalance", "Irrigation", "Wasserbilanz", "mm", [("DPT 9 (2 Byte, mm)", "DPT-9", "2 Bytes", 9, 1, 1.0)], 3600, 1, 0, True,
+      decimals=1, mqtt="water_balance",
+      info="Regen minus Verdunstung (mit Pflanzenfaktor) plus Bewässerung; negativ = Defizit. Nach oben durch den Bodenspeicher begrenzt."),
+    V("Irrigate", "Irrigation", "Bewässern", "", BOOL, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="irrigate",
+      info="1, sobald das Defizit die Schwelle erreicht; 0, wenn es wieder unter der halben Schwelle liegt."),
+    V("HddMonth", "DegreeDays", "Heizgradtage laufender Monat", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, True, thresholds=False, decimals=1, mqtt="hdd_month"),
+    V("HddLastMonth", "DegreeDays", "Heizgradtage Vormonat", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, False, thresholds=False, decimals=1, mqtt="hdd_last_month"),
+    V("HddYear", "DegreeDays", "Heizgradtage laufendes Jahr", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, True, thresholds=False, decimals=1, mqtt="hdd_year"),
+    V("HddLastYear", "DegreeDays", "Heizgradtage Vorjahr", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, False, thresholds=False, decimals=1, mqtt="hdd_last_year"),
+    V("CddMonth", "DegreeDays", "Kühlgradtage laufender Monat", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, True, thresholds=False, decimals=1, mqtt="cdd_month"),
+    V("CddLastMonth", "DegreeDays", "Kühlgradtage Vormonat", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, False, thresholds=False, decimals=1, mqtt="cdd_last_month"),
+    V("CddYear", "DegreeDays", "Kühlgradtage laufendes Jahr", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, True, thresholds=False, decimals=1, mqtt="cdd_year"),
+    V("CddLastYear", "DegreeDays", "Kühlgradtage Vorjahr", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
+      86400, 0, 0, False, thresholds=False, decimals=1, mqtt="cdd_last_year"),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -360,10 +422,20 @@ FAULTS = [
     ("Fault1W", "Störung 1-Wire-Sensor", "onewire"),
 ]
 
+
+# Eingangs-KOs (vom Bus geschrieben): Raumwerte fuer die Lueftungsempfehlung, Bewaesserung erfolgt
+INPUTS = []
+for _n in range(1, ROOMS + 1):
+    INPUTS.append(dict(key=f"Room{_n}TempIn", text=f"Raumtemperatur Raum {_n}", dpt="DPST-9-1", size="2 Bytes", group="Ventilation",
+                       cond=f"Room{_n}Active"))
+    INPUTS.append(dict(key=f"Room{_n}HumIn", text=f"Raumfeuchte Raum {_n}", dpt="DPST-9-7", size="2 Bytes", group="Ventilation",
+                       cond=f"Room{_n}Active"))
+INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-1-17", size="1 Bit", group="Irrigation", cond=None))
+
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 384
+GENERAL_SIZE = 440
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -473,6 +545,28 @@ GENERAL = [
     ("SunDnElevRise", "%AID%_PT-WxElevSigned", 373, 0, "Morgens Tag ab Elevation", "0", "°"),
     ("SunDnElevSet", "%AID%_PT-WxElevSigned", 377, 0, "Abends Nacht unter Elevation", "0", "°"),
     ("SunshineThreshold", "%AID%_PT-WxIrr", 381, 0, "Sonnenschein ab Globalstrahlung", "120", "W/m²"),
+    ("Room1Active", "%AID%_PT-OnOffYesNo", 384, 7, "Raum 1 auswerten", "0", None),
+    ("Room1MinDiff", "%AID%_PT-WxHumDiff", 385, 0, "Lüften ab einem Feuchteunterschied von", "1", "g/m³"),
+    ("Room1MinRh", "%AID%_PT-WxPercent0", 389, 0, "nur wenn die Raumfeuchte mindestens beträgt", "50", "%"),
+    ("Room1MinIndoorT", "%AID%_PT-WxTempLimit", 390, 0, "nur wenn die Raumtemperatur mindestens beträgt", "10", "°C"),
+    ("Room1MinOutdoorT", "%AID%_PT-WxTempLimit", 391, 0, "nur wenn die Außentemperatur mindestens beträgt", "-5", "°C"),
+    ("Room2Active", "%AID%_PT-OnOffYesNo", 392, 7, "Raum 2 auswerten", "0", None),
+    ("Room2MinDiff", "%AID%_PT-WxHumDiff", 393, 0, "Lüften ab einem Feuchteunterschied von", "1", "g/m³"),
+    ("Room2MinRh", "%AID%_PT-WxPercent0", 397, 0, "nur wenn die Raumfeuchte mindestens beträgt", "50", "%"),
+    ("Room2MinIndoorT", "%AID%_PT-WxTempLimit", 398, 0, "nur wenn die Raumtemperatur mindestens beträgt", "10", "°C"),
+    ("Room2MinOutdoorT", "%AID%_PT-WxTempLimit", 399, 0, "nur wenn die Außentemperatur mindestens beträgt", "-5", "°C"),
+    ("Room3Active", "%AID%_PT-OnOffYesNo", 400, 7, "Raum 3 auswerten", "0", None),
+    ("Room3MinDiff", "%AID%_PT-WxHumDiff", 401, 0, "Lüften ab einem Feuchteunterschied von", "1", "g/m³"),
+    ("Room3MinRh", "%AID%_PT-WxPercent0", 405, 0, "nur wenn die Raumfeuchte mindestens beträgt", "50", "%"),
+    ("Room3MinIndoorT", "%AID%_PT-WxTempLimit", 406, 0, "nur wenn die Raumtemperatur mindestens beträgt", "10", "°C"),
+    ("Room3MinOutdoorT", "%AID%_PT-WxTempLimit", 407, 0, "nur wenn die Außentemperatur mindestens beträgt", "-5", "°C"),
+    ("IrrKc", "%AID%_PT-WxPercent", 408, 0, "Pflanzenfaktor (Kc, Rasen ca. 80 %)", "80", "%"),
+    ("IrrThreshold", "%AID%_PT-WxMm", 409, 0, "Bewässern ab einem Defizit von", "5", "mm"),
+    ("IrrStorage", "%AID%_PT-WxMm", 413, 0, "Bodenspeicher (Überschuss darüber versickert)", "20", "mm"),
+    ("IrrAmount", "%AID%_PT-WxMm", 417, 0, "Gutschrift je Meldung „Bewässerung erfolgt“", "10", "mm"),
+    ("DdIndoor", "%AID%_PT-WxSwThreshold", 421, 0, "Heizgradtage: Innentemperatur", "20", "°C"),
+    ("DdHeatLimit", "%AID%_PT-WxSwThreshold", 425, 0, "Heizgradtage: Heizgrenze (Tagesmittel unter)", "15", "°C"),
+    ("DdCoolBase", "%AID%_PT-WxSwThreshold", 429, 0, "Kühlgradtage: Basistemperatur (Tagesmittel über)", "18", "°C"),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -483,6 +577,8 @@ HA_BY_UNIT = {
     "kWh/m²": (None, "kWh/m²"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
 }
 HA_BY_KEY = {
+    "Room1Vent": (None, None), "Room2Vent": (None, None), "Room3Vent": (None, None), "Irrigate": (None, None),
+    "WaterBalance": (None, "mm"), "Et0Today": (None, "mm"), "Et0Yesterday": (None, "mm"),
     "DayLength": ("duration", "s"), "SunshineToday": ("duration", "h"), "SunshineYesterday": ("duration", "h"),
     "MoonAge": (None, "d"), "MoonIllumination": (None, "%"), "DayProgress": (None, "%"),
     "CloudCover": (None, "%"),
@@ -531,6 +627,27 @@ def cfloat(num):
 
 
 IDS_FILE = ROOT / "scripts" / "param_ids.json"
+KO_FILE = ROOT / "scripts" / "ko_numbers.json"
+
+
+class KoNumbers:
+    """KO-Nummern (relativ zu KO_OFFSET), dauerhaft in scripts/ko_numbers.json.
+    Gruppenadressen und Logik-Verknuepfungen haengen an den Nummern; sie duerfen sich nie aendern."""
+
+    def __init__(self):
+        import json
+        self.bykey = json.loads(KO_FILE.read_text()) if KO_FILE.exists() else {}
+        self.next = max(self.bykey.values(), default=0) + 1
+
+    def get(self, key):
+        if key not in self.bykey:
+            self.bykey[key] = self.next
+            self.next += 1
+        return self.bykey[key]
+
+    def save(self):
+        import json
+        KO_FILE.write_text(json.dumps(self.bykey, indent=1) + "\n", encoding="utf-8")
 
 
 class Ids:
@@ -593,14 +710,15 @@ def build():
 
     # KOs: Stoerungen, dann Messwerte (je DPT ein ComObjectRef)
     kos, korefs = [], []
-    kono = 1
+    knum = KoNumbers()
     for name, text, _ in FAULTS:
+        kono = knum.get(name)
         kos.append(f'              <ComObject Id="%AID%_O-%TT%{kono:05d}" Name="{name}" Text="{escape(text)}" Number="{kono}" '
                    'FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" '
                    'TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />')
         korefs.append(f'              <ComObjectRef Id="%AID%_O-%TT%{kono:05d}_R-%TT%{kono:05d}01" RefId="%AID%_O-%TT%{kono:05d}" />')
-        kono += 1
     for v in VALUES:
+        kono = knum.get(v["key"])
         v["ko"] = kono
         d0 = v["dpts"][0]
         kos.append(f'              <ComObject Id="%AID%_O-%TT%{kono:05d}" Name="{v["key"]}" Text="{escape(v["text"])}" '
@@ -610,7 +728,17 @@ def build():
         for i, d in enumerate(v["dpts"]):
             korefs.append(f'              <ComObjectRef Id="%AID%_O-%TT%{kono:05d}_R-%TT%{kono:05d}{i + 1:02d}" '
                           f'RefId="%AID%_O-%TT%{kono:05d}" ObjectSize="{d[2]}" DatapointType="{d[1]}" />')
-        kono += 1
+    # Eingangs-KOs (vom Bus geschrieben)
+    for inp in INPUTS:
+        kono = knum.get(inp["key"])
+        inp["ko"] = kono
+        kos.append(f'              <ComObject Id="%AID%_O-%TT%{kono:05d}" Name="{inp["key"]}" Text="{escape(inp["text"])}" '
+                   f'Number="{kono}" FunctionText="Eingang" ObjectSize="{inp["size"]}" ReadFlag="Disabled" WriteFlag="Enabled" '
+                   'CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" '
+                   f'DatapointType="{inp["dpt"]}" />')
+        korefs.append(f'              <ComObjectRef Id="%AID%_O-%TT%{kono:05d}_R-%TT%{kono:05d}01" RefId="%AID%_O-%TT%{kono:05d}" />')
+    kono = knum.next
+    knum.save()
 
     # Parametertypen
     ptypes = [
@@ -728,6 +856,18 @@ def build():
         '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxElevSigned" Name="WxElevSigned">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="-18" maxInclusive="30" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxHumDiff" Name="WxHumDiff">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.1" maxInclusive="10" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxPercent0" Name="WxPercent0">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="0" maxInclusive="100" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxTempLimit" Name="WxTempLimit">',
+        '                <TypeNumber SizeInBit="8" Type="signedInt" minInclusive="-30" maxInclusive="40" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxMm" Name="WxMm">',
+        '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.5" maxInclusive="100" />',
         '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
@@ -871,18 +1011,36 @@ def build():
             w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Schutz für Markisen und Jalousien: Der Alarm wird ausgelöst, wenn der Wind die Schwelle für die eingestellte Zeit überschreitet, und erst zurückgenommen, wenn er die eingestellte Zeit darunter bleibt. Beaufort 6 ≈ 10,8 m/s, 7 ≈ 13,9 m/s, 8 ≈ 17,2 m/s. Bei einer Störung der Wetterstation wird der Alarm ausgelöst." UIHint="Information" />')
         if gkey == "MinMax":
             w(f'{" " * (ind + 2)}<ParameterSeparator Id="%AID%_PS-nnn" Text="Werte seit Mitternacht bzw. des Vortags (benötigt gültige Uhrzeit), bleiben über Neustarts erhalten. Temperatur = Temperatur für Berechnungen." UIHint="Information" />')
+        q = " " * (ind + 2)
         if gkey == "Facades":
-            q = " " * (ind + 2)
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Berechnet aus Globalstrahlung und Sonnenstand (benötigt Uhrzeit und Gerätestandort): direkte Sonne auf die Fassade plus diffuser und reflektierter Anteil. Die WN90LP misst nur waagerecht; Verschattung durch Nachbargebäude oder Bäume wird nicht erkannt." UIHint="Information" />')
-            for n in range(1, FACADES + 1):
-                w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Fassade {n}" UIHint="Headline" />')
-                w(f'{q}<ParameterRefRef RefId="{ids.ref(f"Facade{n}Active")}" IndentLevel="1" />')
-                w(f'{q}<choose ParamRefId="{ids.ref(f"Facade{n}Active")}">')
+        if gkey == "Ventilation":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunktlüftung: Lüften ist sinnvoll, wenn die Außenluft weniger Wasser enthält als die Raumluft (absolute Feuchte). Raumtemperatur und Raumfeuchte kommen über die Eingangsobjekte vom Bus; ohne Werte seit 2 Stunden wird keine Empfehlung gegeben." UIHint="Information" />')
+        if gkey == "Irrigation":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Tägliche Wasserbilanz für Garten/Rasen. Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />')
+            for n in ("IrrKc", "IrrThreshold", "IrrStorage", "IrrAmount"):
+                w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
+        if gkey == "DegreeDays":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Gradtagzahl nach VDI 3807 (G20/15) und Kühlgradtage aus der Tagesmitteltemperatur (Verfahren wie bei Sommer/Winter), für den witterungsbereinigten Vergleich des Energieverbrauchs. Wird um Mitternacht fortgeschrieben und bleibt über Neustarts erhalten." UIHint="Information" />')
+            for n in ("DdIndoor", "DdHeatLimit", "DdCoolBase"):
+                w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
+        for inp in INPUTS:
+            if inp["group"] == gkey and not inp["cond"]:
+                w(f'{q}<ComObjectRefRef RefId="%AID%_O-%TT%{inp["ko"]:05d}_R-%TT%{inp["ko"]:05d}01" />')
+        if gkey in SECTIONS:
+            count, prefix, title, pnames = SECTIONS[gkey]
+            for n in range(1, count + 1):
+                w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="{title} {n}" UIHint="Headline" />')
+                w(f'{q}<ParameterRefRef RefId="{ids.ref(f"{prefix}{n}Active")}" IndentLevel="1" />')
+                w(f'{q}<choose ParamRefId="{ids.ref(f"{prefix}{n}Active")}">')
                 w(f'{q}  <when test="1">')
-                for pn in ("Azimuth", "Range", "MinElev", "MaxElev", "Threshold", "OnDelay", "OffDelay"):
-                    w(f'{q}    <ParameterRefRef RefId="{ids.ref(f"Facade{n}{pn}")}" IndentLevel="2" />')
+                for pn in pnames:
+                    w(f'{q}    <ParameterRefRef RefId="{ids.ref(f"{prefix}{n}{pn}")}" IndentLevel="2" />')
+                for inp in INPUTS:
+                    if inp["cond"] == f"{prefix}{n}Active":
+                        w(f'{q}    <ComObjectRefRef RefId="%AID%_O-%TT%{inp["ko"]:05d}_R-%TT%{inp["ko"]:05d}01" />')
                 for v in VALUES:
-                    if v["cond"] == f"Facade{n}Active":
+                    if v["cond"] == f"{prefix}{n}Active":
                         value_ui(v, ind + 6)
                 w(f'{q}  </when>')
                 w(f'{q}</choose>')
@@ -1040,6 +1198,9 @@ def build():
             return f"{parts[0]}.{int(parts[1]):03d}" if len(parts) > 1 else f"{parts[0]}.x"
         dpts = ", ".join(dptname(d) for d in v["dpts"])
         md.append(f"| {KO_OFFSET + v['ko']} | {v['text']} | {gnames[v['group']]} | {dpts} |")
+    for inp in INPUTS:
+        md.append(f"| {KO_OFFSET + inp['ko']} | {inp['text']} (Eingang) | {gnames[inp['group']]} | "
+                  f"{inp['dpt'].replace('DPST-', '').split('-')[0]}.{int(inp['dpt'].split('-')[2]):03d} |")
     md.append("")
     md.append("Logikmodul: 30 Kanäle, KOs 300–389 (je Kanal Eingang 1, Eingang 2, Ausgang).")
     KOLIST.parent.mkdir(exist_ok=True)

@@ -130,5 +130,36 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 141 | Monduntergang | Mond | 10.001, 19.001, 12.001 |
 | 142 | Nächster Vollmond | Mond | 11.001, 19.001, 12.001 |
 | 143 | Nächster Neumond | Mond | 11.001, 19.001, 12.001 |
+| 144 | Lüften sinnvoll Raum 1 | Lüftungsempfehlung | 1.002 |
+| 145 | Absolute Feuchte Raum 1 | Lüftungsempfehlung | 9.029 |
+| 146 | Taupunkt Raum 1 | Lüftungsempfehlung | 9.001, 14.068 |
+| 147 | Feuchteunterschied innen − außen Raum 1 | Lüftungsempfehlung | 9.029 |
+| 148 | Lüften sinnvoll Raum 2 | Lüftungsempfehlung | 1.002 |
+| 149 | Absolute Feuchte Raum 2 | Lüftungsempfehlung | 9.029 |
+| 150 | Taupunkt Raum 2 | Lüftungsempfehlung | 9.001, 14.068 |
+| 151 | Feuchteunterschied innen − außen Raum 2 | Lüftungsempfehlung | 9.029 |
+| 152 | Lüften sinnvoll Raum 3 | Lüftungsempfehlung | 1.002 |
+| 153 | Absolute Feuchte Raum 3 | Lüftungsempfehlung | 9.029 |
+| 154 | Taupunkt Raum 3 | Lüftungsempfehlung | 9.001, 14.068 |
+| 155 | Feuchteunterschied innen − außen Raum 3 | Lüftungsempfehlung | 9.029 |
+| 156 | Verdunstung heute (ET0) | Bewässerung | 9.026 |
+| 157 | Verdunstung gestern (ET0) | Bewässerung | 9.026 |
+| 158 | Wasserbilanz | Bewässerung | 9.x |
+| 159 | Bewässern | Bewässerung | 1.002 |
+| 160 | Heizgradtage laufender Monat | Gradtage | 9.x, 14.x |
+| 161 | Heizgradtage Vormonat | Gradtage | 9.x, 14.x |
+| 162 | Heizgradtage laufendes Jahr | Gradtage | 9.x, 14.x |
+| 163 | Heizgradtage Vorjahr | Gradtage | 9.x, 14.x |
+| 164 | Kühlgradtage laufender Monat | Gradtage | 9.x, 14.x |
+| 165 | Kühlgradtage Vormonat | Gradtage | 9.x, 14.x |
+| 166 | Kühlgradtage laufendes Jahr | Gradtage | 9.x, 14.x |
+| 167 | Kühlgradtage Vorjahr | Gradtage | 9.x, 14.x |
+| 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 171 | Raumfeuchte Raum 2 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 172 | Raumtemperatur Raum 3 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 173 | Raumfeuchte Raum 3 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 174 | Bewässerung erfolgt (Eingang) | Bewässerung | 1.017 |
 
 Logikmodul: 30 Kanäle, KOs 300–389 (je Kanal Eingang 1, Eingang 2, Ausgang).

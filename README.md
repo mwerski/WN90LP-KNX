@@ -46,6 +46,11 @@ und optional per MQTT bereit.
 - Mond: Phase (Nummer und Text), Beleuchtung, Alter, Azimut/Elevation, Auf-/Untergang, nächster Voll- und Neumond (DPT 11.001)
 - Zeitpunkte wahlweise als DPT 10.001 bzw. 11.001, DPT 19.001 (Datum und Uhrzeit) oder Unix-Zeit (DPT 12.001);
   in MQTT und InfluxDB zusätzlich immer als `<feld>_unix`
+- Lüftungsempfehlung (Taupunktlüftung) für bis zu 3 Räume: Raumtemperatur/-feuchte als Eingangsobjekte, „Lüften sinnvoll“
+  mit Mindestunterschied, Hysterese und Freigaben (Raumfeuchte, Raum- und Außentemperatur), absolute Feuchte und Taupunkt innen
+- Bewässerung: Referenzverdunstung ET0 (FAO-56 Penman-Monteith), Wasserbilanz mit Pflanzenfaktor und Bodenspeicher,
+  „Bewässern“ ab einstellbarem Defizit, Eingang „Bewässerung erfolgt“
+- Heiz- und Kühlgradtage (VDI 3807, G20/15) für Monat, Vormonat, Jahr und Vorjahr
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX
@@ -134,6 +139,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx season` | Sommer/Winter, Messtermine und Tagesmittel, Kenntage |
 | `wx solar` | Globalstrahlung, Sonnenstand, PV-Schätzung, Fassaden |
 | `wx astro` | Sonnenzeiten, Dämmerung und Mond |
+| `wx climate` | Lüftungsempfehlung, Bewässerung, Gradtage |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.

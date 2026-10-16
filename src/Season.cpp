@@ -32,6 +32,8 @@ bool Season::loop(uint32_t dayKey, uint8_t hour, float temp)
     {
         if (_dayKey != 0)
         {
+            _finishedKey = _dayKey;
+            _finishedMean = todayMean();
             finishDay();
             newDay = true;
         }

@@ -22,6 +22,9 @@ class Season
     uint8_t days() const { return _count; }
     float reading(uint8_t i) const { return _readings[i]; }
     float todayMean() const;
+    // Zuletzt abgeschlossener Tag (JJJJMMTT) und sein Tagesmittel (NAN = keine Werte)
+    uint32_t finishedDayKey() const { return _finishedKey; }
+    float finishedMean() const { return _finishedMean; }
 
     void writeFlash();
     void readFlash();
@@ -45,4 +48,6 @@ class Season
     uint8_t _head = 0;
     int8_t _summer = -1;
     float _lastMean = NAN;
+    uint32_t _finishedKey = 0;
+    float _finishedMean = NAN;
 };

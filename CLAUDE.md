@@ -58,15 +58,15 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Astronomie** (`Astro.*`): Sonne nach NOAA (Zeiten ±1 min), Mond nach gekürzten Meeus-Reihen (Phasen ±10 min, gegen 2026 geprüft). Uhrzeiten als Sekunden seit Mitternacht (WxFmt::Time, DPT 10.001 mit Index 1!), Datum als Tage seit 2000 (WxFmt::Date, DPT 11.001: Jahr vierstellig, Monat 1–12). DPT 7.006 wird über die 7.001-Kodierung gesendet.
 - **Statusseite** (`WebStatus.*`): HTTP-Handler laufen auf dem ESP32 in der httpd-Task und lesen nur einen per Mutex geschützten JSON-Schnappschuss, den `WeatherModule::buildStatusJson()` in der Hauptschleife alle 2 s erstellt (nur während Abfragen). Seite als ASCII-Rohstring, Sonderzeichen als HTML-/JS-Escapes, Daten nur per `textContent`.
 - **Neue Werte immer hinten in VALUES anfügen**, damit KO-Nummern bestehender Installationen gleich bleiben.
-- **KO-Bereiche:** Wetterstation KO 21–143 (KoSingleOffset 20), Logikmodul KO 300–389 (`LOG`, KoOffset 300). Wetter-KOs dürfen 299 nicht überschreiten. `doc/KO-Liste.md` wird vom Generator erzeugt.
+- **KO-Bereiche:** Wetterstation KO 21–194 (inkl. Eingängen) (KoSingleOffset 20), Logikmodul KO 300–389 (`LOG`, KoOffset 300). Wetter-KOs dürfen 299 nicht überschreiten. `doc/KO-Liste.md` wird vom Generator erzeugt.
 - **Logikmodul** (OFM-LogicModule 4.4.1, Modul-Id 3): Eingänge „bestehendes KO“ erhalten nur gesendete Werte (`value()`), nicht `valueNoSend()`.
-- **Parameter-Ids** stehen dauerhaft in `scripts/param_ids.json` (die ETS ordnet beim Applikations-Update darüber zu). Nie von Hand ändern oder löschen; neue Parameter bekommen automatisch die nächste freie Id. Datei immer mit committen.
+- **KO-Nummern** stehen dauerhaft in `scripts/ko_numbers.json` (relativ zu KoSingleOffset 20), **Parameter-Ids** dauerhaft in `scripts/param_ids.json` (die ETS ordnet beim Applikations-Update darüber zu). Nie von Hand ändern oder löschen; neue Parameter bekommen automatisch die nächste freie Id. Datei immer mit committen.
 - **ETS-Update ohne Neuparametrierung:** Applikationsversion erhöhen (`%WX_ApplicationVersion%`), alte Version in `%WX_ReplacesVersions%`, Firmware mit dem neuen `knxprod.h` bauen und flashen, in der ETS „Applikation aktualisieren“ und vollständig programmieren.
 - **Allgemeine Parameter** (GENERAL, 160 Byte): 0–36 allgemein, 37–63 Windalarme (3×9), 64–73 Sommer/Winter, 74–75 Strahlung, 80–87 PV, 88–159 Fassaden (6×12).
 - **Bedingte Werte:** `cond` in generate_ets.py (z. B. Fassade n aktiv, Bit 0 am Blockanfang) blendet KOs aus; die Firmware prüft `condParam` vor jedem KO-Zugriff.
 - **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
-- **Flash-Version 5** im Modul: [Version][Regen][Min/Max 28 Byte][Season][Strahlung/PV 16 Byte][Sonnenschein 8 Byte]; ältere Versionen werden noch gelesen.
+- **Flash-Version 6** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38]; ältere Versionen werden noch gelesen.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.
