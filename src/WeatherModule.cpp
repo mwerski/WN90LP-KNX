@@ -307,7 +307,11 @@ void WeatherModule::loop(bool configured)
     if (_influx.errorCount() != _influxErrorsLogged)
     {
         _influxErrorsLogged = _influx.errorCount();
-        logErrorP("InfluxDB: Schreiben fehlgeschlagen (HTTP %d) %s", _influx.lastCode(), _influx.lastError().c_str());
+        // Nur bis die Wartezeit ihr Maximum erreicht hat melden, danach jeden 12. Fehler (ca. stuendlich)
+        const uint8_t streak = _influx.failStreak();
+        if (streak <= 6 || streak % 12 == 0)
+            logErrorP("InfluxDB: Schreiben fehlgeschlagen (HTTP %d) %s, naechster Versuch in %lu s", _influx.lastCode(),
+                      _influx.lastError().c_str(), _influx.waitSeconds());
     }
 }
 

@@ -21,6 +21,8 @@ class InfluxWriter
     uint32_t lastOkAge() const { return _lastOk ? (millis() - _lastOk) / 1000 : 0; }
     const std::string &url() const { return _url; }
     std::string lastError();
+    uint8_t failStreak() const { return _failStreak; }
+    uint32_t waitSeconds() const { return _waitMs / 1000; }
 
   private:
     static void taskEntry(void *arg);
@@ -32,6 +34,8 @@ class InfluxWriter
     std::string _password;
     uint32_t _intervalMs = 60000;
     uint32_t _timer = 0;
+    uint32_t _waitMs = 60000;          // aktuelle Wartezeit (Intervall, bei Fehlern verlaengert)
+    volatile uint8_t _failStreak = 0;  // Fehler in Folge
 
     std::mutex _lock;
     std::string _body;

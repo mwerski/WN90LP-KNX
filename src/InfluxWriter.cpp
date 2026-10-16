@@ -36,6 +36,7 @@ void InfluxWriter::setup(const std::string &host, uint16_t port, const std::stri
     _user = user;
     _password = password;
     _intervalMs = max<uint32_t>(intervalMs, 10000);
+    _waitMs = _intervalMs;
     _timer = millis();
     _enabled = xTaskCreate(taskEntry, "InfluxWriter", 6144, this, 1, &_task) == pdPASS;
     logInfo("Weather", "InfluxDB: %s alle %lu s%s", _url.c_str(), _intervalMs / 1000, _enabled ? "" : " (Task-Fehler)");
@@ -43,7 +44,7 @@ void InfluxWriter::setup(const std::string &host, uint16_t port, const std::stri
 
 bool InfluxWriter::due()
 {
-    if (!_enabled || _busy || !WiFi.isConnected() || !delayCheck(_timer, _intervalMs))
+    if (!_enabled || _busy || !WiFi.isConnected() || !delayCheck(_timer, _waitMs))
         return false;
     _timer = millis();
     return true;
@@ -102,9 +103,17 @@ void InfluxWriter::run()
         {
             _ok = _ok + 1;
             _lastOk = millis();
+            _failStreak = 0;
+            _waitMs = _intervalMs;
         }
         else
+        {
             _errors = _errors + 1;
+            // Bei Fehlern seltener versuchen: Intervall verdoppeln bis max. 5 min (schont Netz und Log)
+            if (_failStreak < 255)
+                _failStreak = _failStreak + 1;
+            _waitMs = min<uint32_t>(_waitMs * 2, 300000UL);
+        }
         _busy = false;
     }
 }
