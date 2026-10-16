@@ -6,6 +6,7 @@
 #include "Forecast.h"
 #include "Solar.h"
 #include "JsonUtil.h"
+#include "RgbLed.h"
 #include <esp32-hal-periman.h>
 #include <ArduinoJson.h>
 
@@ -1433,6 +1434,7 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         else
         {
             logInfoP("GPIO %d belegt durch: %s", pin, perimanGetTypeName(perimanGetPinBusType(pin)));
+            RgbLed::releasePin(pin);
             rgbLedWrite(pin, r, g, b);
             logInfoP("GPIO %d gesendet: R %d G %d B %d, jetzt belegt durch: %s", pin, r, g, b,
                      perimanGetTypeName(perimanGetPinBusType(pin)));

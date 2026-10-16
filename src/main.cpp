@@ -15,12 +15,15 @@ void setup()
     WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
 
     // Prog-LED vor openknx.init() anmelden, dort werden die LEDs initialisiert
-    openknx.leds.addLed(new RgbLed(WX_LED_PIN, WX_LED_COLOR), OpenKNX::Led::LED_TYPE_PROG);
+    RgbLed *progLed = new RgbLed(WX_LED_PIN, WX_LED_COLOR);
+    openknx.leds.addLed(progLed, OpenKNX::Led::LED_TYPE_PROG);
     openknx.init(WX_FIRMWARE_REVISION);
     openknx.addModule(1, openknxWeatherModule);
     openknx.addModule(3, openknxLogic);
     openknx.addModule(7, openknxNetwork);
     openknx.setup();
+    // Das Logikmodul hat in setup() GPIO 1 (A0) analog gelesen, die LED braucht den Pin zurueck
+    progLed->reattach();
 
     OtaGuard::setup();
     Diag::setup();

@@ -1,6 +1,8 @@
 #pragma once
 #include "OpenKNX.h"
 #include "OpenKNX/Led/RGB.h"
+#include <driver/rtc_io.h>
+#include <esp32-hal-periman.h>
 #include <mutex>
 
 // Einzelne WS2812 ueber rgbLedWrite() des Arduino-Kerns. Ersetzt den SerialLED-Treiber von
@@ -14,6 +16,25 @@ class RgbLed : public OpenKNX::Led::RGB
     void init() override
     {
         _initialized = true;
+        show(true);
+    }
+
+    // Pin zurueckholen, wenn ein anderer Programmteil ihn als Analogeingang genutzt hat. Das Logikmodul
+    // ruft in setup() randomSeed(analogRead(A0)) auf, und A0 ist beim ESP32-S3 GPIO 1: Der ADC legt den
+    // Pin in die RTC-Domaene, die RMT-Initialisierung holt ihn nicht zurueck, die LED bekommt kein Signal.
+    static void releasePin(uint8_t pin)
+    {
+        perimanClearPinBus(pin);
+        if (rtc_gpio_is_valid_gpio((gpio_num_t)pin))
+            rtc_gpio_deinit((gpio_num_t)pin);
+    }
+
+    void reattach()
+    {
+        {
+            std::lock_guard<std::mutex> guard(_lock);
+            releasePin(_pin);
+        }
         show(true);
     }
 
