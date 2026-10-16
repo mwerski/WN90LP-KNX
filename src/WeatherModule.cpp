@@ -6,6 +6,7 @@
 #include "Forecast.h"
 #include "Solar.h"
 #include "JsonUtil.h"
+#include <esp32-hal-periman.h>
 #include <ArduinoJson.h>
 
 WeatherModule openknxWeatherModule;
@@ -1359,6 +1360,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx climate", "Lueftung, Bewaesserung, Gradtage");
     openknx.console.printHelpLine("wx perf", "Laufzeiten seit dem letzten Aufruf (Diagnose)");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
+    openknx.console.printHelpLine("wx led <pin> <r> <g> <b>", "WS2812 an GPIO direkt ansteuern (Diagnose)");
 }
 
 bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
@@ -1421,6 +1423,20 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
             _oneWire.scan();
         else
             logInfoP("1-Wire ist in der ETS nicht aktiviert");
+    }
+    else if (cmd.compare(0, 7, "wx led ") == 0)
+    {
+        // Diagnose: wx led <pin> <r> <g> <b> - Pin-Belegung anzeigen und WS2812 direkt ansteuern
+        int pin = -1, r = 0, g = 0, b = 0;
+        if (sscanf(cmd.c_str() + 7, "%d %d %d %d", &pin, &r, &g, &b) < 1 || pin < 0 || pin >= SOC_GPIO_PIN_COUNT)
+            logInfoP("Aufruf: wx led <pin> <r> <g> <b>");
+        else
+        {
+            logInfoP("GPIO %d belegt durch: %s", pin, perimanGetTypeName(perimanGetPinBusType(pin)));
+            rgbLedWrite(pin, r, g, b);
+            logInfoP("GPIO %d gesendet: R %d G %d B %d, jetzt belegt durch: %s", pin, r, g, b,
+                     perimanGetTypeName(perimanGetPinBusType(pin)));
+        }
     }
     else
         return false;
