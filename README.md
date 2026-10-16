@@ -103,6 +103,10 @@ pio run -e release_WN90 -t upload
 
 Nach einer Änderung der Applikationsversion immer vollständig programmieren (nicht „partiell“).
 
+**Applikation aktualisieren:** neue `.knxprod` importieren, ein Gerät mit der neuen Version irgendwo ins Projekt
+einfügen, dann in den Eigenschaften des bestehenden Geräts den **Update-Button** verwenden (das Hilfsgerät danach löschen).
+Nicht die Version über die Auswahlliste wechseln – das setzt alle Parameter und Gruppenadressen zurück.
+
 ## Amtliche DWD-Warnungen (benötigt Internet)
 
 **Einzige Funktion, die Internetzugang braucht.** Auf Wunsch ruft die Station die amtlichen Warnungen des Deutschen
