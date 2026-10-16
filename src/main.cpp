@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include "Diag.h"
 #include "OtaGuard.h"
+#include "RgbLed.h"
 
 void setup()
 {
@@ -13,6 +14,8 @@ void setup()
     WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
     WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
 
+    // Prog-LED vor openknx.init() anmelden, dort werden die LEDs initialisiert
+    openknx.leds.addLed(new RgbLed(WX_LED_PIN, WX_LED_COLOR), OpenKNX::Led::LED_TYPE_PROG);
     openknx.init(0); // Firmware-Revision
     openknx.addModule(1, openknxWeatherModule);
     openknx.addModule(3, openknxLogic);

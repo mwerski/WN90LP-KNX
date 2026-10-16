@@ -18,7 +18,7 @@
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.15.1"
+#define WX_FIRMWARE_VERSION "0.15.2"
 
 class WeatherModule : public OpenKNX::Module
 {

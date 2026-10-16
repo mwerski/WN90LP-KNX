@@ -13,11 +13,10 @@
     // Prog-Taster (aktiv LOW) und Prog-LED als einzelne WS2812 an GPIO 1
     #define PROG_BUTTON_PIN 5
     #define PROG_BUTTON_PIN_INTERRUPT_ON FALLING
-    #define OPENKNX_SERIALLED_ENABLE
-    #define OPENKNX_SERIALLED_PIN 1
-    #define OPENKNX_SERIALLED_NUM 1
-    #define PROG_LED_PIN 0
-    #define PROG_LED_COLOR 20, 0, 0
+    // Eigene LED-Klasse (src/RgbLed.h, in main.cpp angemeldet) statt OPENKNX_SERIALLED
+    #define OPENKNX_LED_NO_AUTOCONF
+    #define WX_LED_PIN 1
+    #define WX_LED_COLOR 20, 0, 0
 
     // RS485 zur WN90LP (Modbus RTU, 9600 8N1)
     #define WX_RS485_SERIAL Serial1
