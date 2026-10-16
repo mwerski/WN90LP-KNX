@@ -80,8 +80,9 @@ void InfluxWriter::run()
 
         WiFiClient client;
         HTTPClient http;
-        http.setConnectTimeout(3000);
-        http.setTimeout(5000);
+        // Grosszuegig wegen schwachem WLAN (Messdaten 3-4 KB je Anfrage)
+        http.setConnectTimeout(5000);
+        http.setTimeout(15000);
         int code = -1;
         if (http.begin(client, _url.c_str()))
         {
