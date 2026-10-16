@@ -154,6 +154,15 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 165 | Kühlgradtage Vormonat | Gradtage | 9.x, 14.x |
 | 166 | Kühlgradtage laufendes Jahr | Gradtage | 9.x, 14.x |
 | 167 | Kühlgradtage Vorjahr | Gradtage | 9.x, 14.x |
+| 175 | Warnstufe gesamt (0-4) | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 176 | Warnung (Text) | Wetterwarnungen (DWD-Kriterien) | 16.001 |
+| 177 | Unwetter (Stufe 3 oder 4) | Wetterwarnungen (DWD-Kriterien) | 1.005 |
+| 178 | Warnstufe Wind | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 179 | Warnstufe Starkregen | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 180 | Warnstufe Dauerregen | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 181 | Warnstufe Frost/Glätte | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 182 | Warnstufe Hitze | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 183 | Warnstufe UV | Wetterwarnungen (DWD-Kriterien) | 5.010 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |

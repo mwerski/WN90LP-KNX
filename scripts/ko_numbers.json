@@ -152,5 +152,14 @@
  "Room2HumIn": 151,
  "Room3TempIn": 152,
  "Room3HumIn": 153,
- "IrrigationDone": 154
+ "IrrigationDone": 154,
+ "WarnLevel": 155,
+ "WarnText": 156,
+ "WarnSevere": 157,
+ "WarnWind": 158,
+ "WarnHeavyRain": 159,
+ "WarnLongRain": 160,
+ "WarnFrost": 161,
+ "WarnHeat": 162,
+ "WarnUv": 163
 }

@@ -51,6 +51,9 @@ und optional per MQTT bereit.
 - Bewässerung: Referenzverdunstung ET0 (FAO-56 Penman-Monteith), Wasserbilanz mit Pflanzenfaktor und Bodenspeicher,
   „Bewässern“ ab einstellbarem Defizit, Eingang „Bewässerung erfolgt“
 - Heiz- und Kühlgradtage (VDI 3807, G20/15) für Monat, Vormonat, Jahr und Vorjahr
+- Wetterwarnungen nach DWD-Kriterien aus den eigenen Messwerten (keine amtliche Warnung, keine Vorhersage): Stufe 0–4
+  gesamt und je Kategorie (Wind, Starkregen, Dauerregen, Frost/Glätte/Glatteis, Hitze, UV), Warntext, „Unwetter“
+- Luftdruckverlauf und alle Statistiken überstehen Neustarts und OTA-Updates (Prognose sofort wieder verfügbar)
 - Home Assistant MQTT Discovery (alle aktiven Messwerte als Sensoren)
 - Je Messwert in der ETS: aktiv, Datenpunkttyp, zyklisch senden, senden bei absoluter/relativer Änderung
 - Störungsobjekte je Sensor, Heartbeat, Uhrzeit/Datum (KNX oder NTP) aus OpenKNX

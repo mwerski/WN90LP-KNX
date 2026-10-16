@@ -96,6 +96,7 @@ GROUPS = [
     ("Ventilation", "Lüftungsempfehlung", "water-percent", None),
     ("Irrigation", "Bewässerung", "weather-pouring", None),
     ("DegreeDays", "Gradtage", "thermometer", None),
+    ("Warnings2", "Wetterwarnungen (DWD-Kriterien)", "alert-outline", None),
 ]
 ROOMS = 3
 # Seiten mit Abschnitten, die einzeln aktiviert werden: Seite -> (Anzahl, Praefix, Titel, Parameter je Abschnitt)
@@ -413,6 +414,19 @@ VALUES = [
       0, 0, 0, True, thresholds=False, decimals=1, mqtt="cdd_year"),
     V("CddLastYear", "DegreeDays", "Kühlgradtage Vorjahr", "Kd", [("DPT 9 (2 Byte, Kd)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, Kd)")],
       0, 0, 0, False, thresholds=False, decimals=1, mqtt="cdd_last_year"),
+    # Ab ETS 0.13: Wetterwarnungen nach DWD-Kriterien aus eigenen Messwerten
+    V("WarnLevel", "Warnings2", "Warnstufe gesamt (0-4)", "", BFT, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="warn_level",
+      info="0 keine Warnung, 1 Wetterwarnung, 2 markantes Wetter, 3 Unwetter, 4 extremes Unwetter (höchste Stufe aller Kategorien)."),
+    V("WarnText", "Warnings2", "Warnung (Text)", "", TEXT, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="warn_text", influx="",
+      fmt="warntext", info="Bezeichnung der höchsten Warnung, z. B. „Sturmböen“ oder „Starkregen“."),
+    V("WarnSevere", "Warnings2", "Unwetter (Stufe 3 oder 4)", "", ALARM, 3600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="warn_severe"),
+    V("WarnWind", "Warnings2", "Warnstufe Wind", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_wind"),
+    V("WarnHeavyRain", "Warnings2", "Warnstufe Starkregen", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_heavy_rain"),
+    V("WarnLongRain", "Warnings2", "Warnstufe Dauerregen", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_long_rain"),
+    V("WarnFrost", "Warnings2", "Warnstufe Frost/Glätte", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_frost"),
+    V("WarnHeat", "Warnings2", "Warnstufe Hitze", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_heat"),
+    V("WarnUv", "Warnings2", "Warnstufe UV", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_uv"),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -435,7 +449,7 @@ INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 440
+GENERAL_SIZE = 440  # frei: 435-439
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -567,6 +581,8 @@ GENERAL = [
     ("DdIndoor", "%AID%_PT-WxSwThreshold", 421, 0, "Heizgradtage: Innentemperatur", "20", "°C"),
     ("DdHeatLimit", "%AID%_PT-WxSwThreshold", 425, 0, "Heizgradtage: Heizgrenze (Tagesmittel unter)", "15", "°C"),
     ("DdCoolBase", "%AID%_PT-WxSwThreshold", 429, 0, "Kühlgradtage: Basistemperatur (Tagesmittel über)", "18", "°C"),
+    ("StationHeight", "%AID%_PT-WxHeight", 433, 0, "Montagehöhe der Wetterstation über Grund", "2", "m"),
+    ("WarnHold", "%AID%_PT-WxDelayMinAlarm", 434, 0, "Warnung bleibt nach Ende der Bedingung bestehen für", "30", "min"),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -869,6 +885,9 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxMm" Name="WxMm">',
         '                <TypeFloat Encoding="IEEE-754 Single" minInclusive="0.5" maxInclusive="100" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxHeight" Name="WxHeight">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="50" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -1018,8 +1037,11 @@ def build():
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunktlüftung: Lüften ist sinnvoll, wenn die Außenluft weniger Wasser enthält als die Raumluft (absolute Feuchte). Raumtemperatur und Raumfeuchte kommen über die Eingangsobjekte vom Bus; ohne Werte seit 2 Stunden wird keine Empfehlung gegeben." UIHint="Information" />')
         if gkey == "Irrigation":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Tägliche Wasserbilanz für Garten/Rasen. Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />')
-            for n in ("IrrKc", "IrrThreshold", "IrrStorage", "IrrAmount"):
+            for n in ("IrrKc", "IrrThreshold", "IrrStorage", "IrrAmount", "StationHeight"):
                 w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
+        if gkey == "Warnings2":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Die Station wendet die Warnkriterien des Deutschen Wetterdienstes auf ihre eigenen Messwerte an und meldet, wenn die Bedingungen tatsächlich eintreten. Das ist keine amtliche Warnung und keine Vorhersage; Gewitter und Schnee werden nicht erkannt. Wind: Böen (10-min-Maximum), Starkregen: 1 h / 6 h, Dauerregen: 24 / 48 / 72 h, Frost/Glätte, Hitze: gefühlte Temperatur, UV-Index." UIHint="Information" />')
+            w(f'{q}<ParameterRefRef RefId="{ids.ref("WarnHold")}" IndentLevel="1" />')
         if gkey == "DegreeDays":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Gradtagzahl nach VDI 3807 (G20/15) und Kühlgradtage aus der Tagesmitteltemperatur (Verfahren wie bei Sommer/Winter), für den witterungsbereinigten Vergleich des Energieverbrauchs. Wird um Mitternacht fortgeschrieben und bleibt über Neustarts erhalten." UIHint="Information" />')
             for n in ("DdIndoor", "DdHeatLimit", "DdCoolBase"):
@@ -1130,7 +1152,8 @@ def build():
     h.append("    Duration,  // Sekunden")
     h.append("    Forecast,  // Zambretti-Nummer, Text")
     h.append("    MoonPhase, // 0..7")
-    h.append("    MoonText   // 0..7, Text")
+    h.append("    MoonText,  // 0..7, Text")
+    h.append("    WarnText   // Kategorie * 10 + Stufe, Text")
     h.append("};")
     h.append("")
     h.append("struct WxDptOption")
@@ -1179,7 +1202,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")

@@ -15,7 +15,7 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
 
 // Mindestabstand zwischen zwei Telegrammen, damit nach dem Start nicht alle Werte gleichzeitig kommen
 static constexpr uint32_t SEND_SPACING = 25;
-static constexpr uint8_t FLASH_VERSION = 6; // 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
+static constexpr uint8_t FLASH_VERSION = 7; // 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
@@ -112,6 +112,10 @@ void WeatherModule::setup(bool configured)
         }
         _irrigation.setup(ParamWX_IrrKc / 100.0f, (float)ParamWX_IrrThreshold, (float)ParamWX_IrrStorage, (float)ParamWX_IrrAmount);
         _degreeDays.setup((float)ParamWX_DdIndoor, (float)ParamWX_DdHeatLimit, (float)ParamWX_DdCoolBase);
+        // FAO-56 Gl. 47: Wind in Messhoehe z auf 2 m umrechnen
+        const float z = max<uint8_t>(ParamWX_StationHeight, 1);
+        _windHeightFactor = z <= 2.0f ? 1.0f : 4.87f / logf(67.8f * z - 5.42f);
+        _warnings.setup(ParamWX_WarnHold);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -197,8 +201,10 @@ void WeatherModule::processInputKo(GroupObject &ko)
 
 void WeatherModule::processBeforeRestart()
 {
-    // Gewollter Neustart (ETS-Programmierung, Konsole): neue Firmware laeuft, kein Rollback ausloesen
+    // Gewollter Neustart (ETS-Programmierung, Konsole, OTA): neue Firmware laeuft, kein Rollback ausloesen
     OtaGuard::confirm("gewollter Neustart");
+    // Statistiken und Luftdruckverlauf sichern; OpenKNX speichert sonst nicht, wenn die letzte Sicherung < 3 min her ist
+    openknx.flash.save(true);
 }
 
 void WeatherModule::loop(bool configured)
@@ -247,6 +253,7 @@ void WeatherModule::loop(bool configured)
         updateAstro();
         updateVentilation();
         updateIrrigation();
+        updateWarnings2();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -796,7 +803,7 @@ void WeatherModule::updateIrrigation()
     if (_configured && openknx.time.isValid())
         rso = Solar::clearSky(Astro::sunPosition(openknx.time.getUtcTime().toTime_t(), (float)ParamBASE_Latitude, (float)ParamBASE_Longitude).elevation);
     _irrigation.update(hours, calcTemperature(temp.valid() ? temp.value() : NAN), hum.valid() ? hum.value() : NAN,
-                       wind.valid() ? wind.value() : NAN, _ghi, rso, pressure.valid() ? pressure.value() : NAN,
+                       wind.valid() ? wind.value() * _windHeightFactor : NAN, _ghi, rso, pressure.valid() ? pressure.value() : NAN,
                        _rain.hasData() ? _rain.total() : NAN);
 
     const bool dayValid = _minMax.dayKey != 0;
@@ -804,6 +811,35 @@ void WeatherModule::updateIrrigation()
     set(WxId::Et0Yesterday, _irrigation.et0Yesterday());
     set(WxId::WaterBalance, _irrigation.balance());
     set(WxId::Irrigate, _irrigation.irrigate());
+}
+
+void WeatherModule::updateWarnings2()
+{
+    auto v = [this](WxId id) { return val(id).valid() ? val(id).value() : NAN; };
+    const MeasuredValue &temp = val(WxId::Temp);
+    Warnings::Input in;
+    in.gustKmh = v(WxId::GustMax10) * 3.6f;
+    in.rain1h = _rain.hasData() ? _rain.amountMinutes(60) : NAN;
+    in.rain6h = _rain.hasData() ? _rain.amountHours(6) : NAN;
+    in.rain24h = _rain.hasData() ? _rain.amountHours(24) : NAN;
+    in.rain48h = _rain.hasData() ? _rain.amountHours(48) : NAN;
+    in.rain72h = _rain.hasData() ? _rain.amountHours(72) : NAN;
+    in.temp = calcTemperature(temp.valid() ? temp.value() : NAN);
+    in.heatIndex = v(WxId::HeatIndex);
+    in.uv = v(WxId::UvIndex);
+    in.raining = _rain.raining();
+    in.iceWarning = _ice;
+    _warnings.update(in);
+
+    set(WxId::WarnLevel, _warnings.overall());
+    set(WxId::WarnText, _warnings.code());
+    set(WxId::WarnSevere, _warnings.overall() >= 3);
+    set(WxId::WarnWind, _warnings.level(Warnings::Wind));
+    set(WxId::WarnHeavyRain, _warnings.level(Warnings::HeavyRain));
+    set(WxId::WarnLongRain, _warnings.level(Warnings::LongRain));
+    set(WxId::WarnFrost, _warnings.level(Warnings::Frost));
+    set(WxId::WarnHeat, _warnings.level(Warnings::Heat));
+    set(WxId::WarnUv, _warnings.level(Warnings::Uv));
 }
 
 void WeatherModule::updateMinMax(float temp, float gust)
@@ -986,7 +1022,7 @@ void WeatherModule::publishMqtt()
         if (!v.valid())
             continue;
         const WxFmt fmt = WX_VALUES[i].fmt;
-        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::Time || fmt == WxFmt::Date)
+        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::Time || fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
             int64_t unix;
@@ -1142,7 +1178,7 @@ std::string WeatherModule::buildStatusJson()
 uint16_t WeatherModule::flashSize()
 {
     return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE + SUNSHINE_FLASH_SIZE +
-           Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE;
+           Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE + PressureTrend::FLASH_SIZE;
 }
 
 void WeatherModule::writeFlash()
@@ -1165,6 +1201,7 @@ void WeatherModule::writeFlash()
     openknx.flash.writeFloat(_minMax.sunshineYesterday);
     _irrigation.writeFlash();
     _degreeDays.writeFlash();
+    _pressure.writeFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -1203,10 +1240,13 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     _minMax.sunshineYesterday = openknx.flash.readFloat();
     if (isnan(_minMax.sunshineToday))
         _minMax.sunshineToday = 0;
-    if (version < 6 || size < flashSize())
+    if (version < 6 || size < flashSize() - PressureTrend::FLASH_SIZE)
         return;
     _irrigation.readFlash();
     _degreeDays.readFlash();
+    if (version < 7 || size < flashSize())
+        return;
+    _pressure.readFlash();
 }
 
 // ---------------------------------------------------------------------------
@@ -1475,6 +1515,9 @@ void WeatherModule::showClimate()
              _irrigation.rate(), _irrigation.et0Yesterday(), _irrigation.balance(), _irrigation.irrigate() ? "BEWAESSERN" : "kein Bedarf");
     logInfoP("Heizgradtage: Monat %.1f, Vormonat %.1f, Jahr %.1f, Vorjahr %.1f", _degreeDays.hddMonth(), _degreeDays.hddLastMonth(),
              _degreeDays.hddYear(), _degreeDays.hddLastYear());
+    logInfoP("Warnung: Stufe %u (%s); Wind %u, Starkregen %u, Dauerregen %u, Frost/Glaette %u, Hitze %u, UV %u", _warnings.overall(),
+             Warnings::text(_warnings.code(), true), _warnings.level(Warnings::Wind), _warnings.level(Warnings::HeavyRain),
+             _warnings.level(Warnings::LongRain), _warnings.level(Warnings::Frost), _warnings.level(Warnings::Heat), _warnings.level(Warnings::Uv));
     logInfoP("Kuehlgradtage: Monat %.1f, Vormonat %.1f, Jahr %.1f, Vorjahr %.1f", _degreeDays.cddMonth(), _degreeDays.cddLastMonth(),
              _degreeDays.cddYear(), _degreeDays.cddLastYear());
 }

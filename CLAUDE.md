@@ -66,7 +66,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Bedingte Werte:** `cond` in generate_ets.py (z. B. Fassade n aktiv, Bit 0 am Blockanfang) blendet KOs aus; die Firmware prüft `condParam` vor jedem KO-Zugriff.
 - **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
-- **Flash-Version 6** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38]; ältere Versionen werden noch gelesen.
+- **Flash-Version 7** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38][Luftdruck 58]; ältere Versionen werden noch gelesen. Vor jedem gewollten Neustart (ETS, OTA, Konsole) erzwingt `processBeforeRestart()` das Speichern.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.

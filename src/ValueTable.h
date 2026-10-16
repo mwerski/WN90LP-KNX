@@ -149,6 +149,15 @@ enum class WxId : uint8_t
     CddLastMonth,
     CddYear,
     CddLastYear,
+    WarnLevel,
+    WarnText,
+    WarnSevere,
+    WarnWind,
+    WarnHeavyRain,
+    WarnLongRain,
+    WarnFrost,
+    WarnHeat,
+    WarnUv,
     Count
 };
 
@@ -167,7 +176,8 @@ enum class WxFmt : uint8_t
     Duration,  // Sekunden
     Forecast,  // Zambretti-Nummer, Text
     MoonPhase, // 0..7
-    MoonText   // 0..7, Text
+    MoonText,  // 0..7, Text
+    WarnText   // Kategorie * 10 + Stufe, Text
 };
 
 struct WxDptOption
@@ -199,7 +209,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 144
+#define WX_VALUE_COUNT 153
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -349,5 +359,14 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Kuehlgradtage Vormonat", "K\u00fchlgradtage Vormonat", "Gradtage", "Kd", "cdd_last_month", "cdd_last_month", "Kd", WX_CddLastMonthActive, WX_KoCddLastMonth, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
     {"Kuehlgradtage laufendes Jahr", "K\u00fchlgradtage laufendes Jahr", "Gradtage", "Kd", "cdd_year", "cdd_year", "Kd", WX_CddYearActive, WX_KoCddYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
     {"Kuehlgradtage Vorjahr", "K\u00fchlgradtage Vorjahr", "Gradtage", "Kd", "cdd_last_year", "cdd_last_year", "Kd", WX_CddLastYearActive, WX_KoCddLastYear, WxSensor::None, 0xFFFF, false, 1, WxFmt::Number, nullptr, nullptr, 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Warnstufe gesamt (0-4)", "Warnstufe gesamt (0-4)", "Wetterwarnungen (DWD-Kriterien)", "", "warn_level", "warn_level", "", WX_WarnLevelActive, WX_KoWarnLevel, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnung (Text)", "Warnung (Text)", "Wetterwarnungen (DWD-Kriterien)", "", "warn_text", nullptr, "", WX_WarnTextActive, WX_KoWarnText, WxSensor::None, 0xFFFF, false, 0, WxFmt::WarnText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"Unwetter (Stufe 3 oder 4)", "Unwetter (Stufe 3 oder 4)", "Wetterwarnungen (DWD-Kriterien)", "", "warn_severe", "warn_severe", "", WX_WarnSevereActive, WX_KoWarnSevere, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
+    {"Warnstufe Wind", "Warnstufe Wind", "Wetterwarnungen (DWD-Kriterien)", "", "warn_wind", "warn_wind", "", WX_WarnWindActive, WX_KoWarnWind, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnstufe Starkregen", "Warnstufe Starkregen", "Wetterwarnungen (DWD-Kriterien)", "", "warn_heavy_rain", "warn_heavy_rain", "", WX_WarnHeavyRainActive, WX_KoWarnHeavyRain, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnstufe Dauerregen", "Warnstufe Dauerregen", "Wetterwarnungen (DWD-Kriterien)", "", "warn_long_rain", "warn_long_rain", "", WX_WarnLongRainActive, WX_KoWarnLongRain, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnstufe Frost/Glaette", "Warnstufe Frost/Gl\u00e4tte", "Wetterwarnungen (DWD-Kriterien)", "", "warn_frost", "warn_frost", "", WX_WarnFrostActive, WX_KoWarnFrost, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnstufe Hitze", "Warnstufe Hitze", "Wetterwarnungen (DWD-Kriterien)", "", "warn_heat", "warn_heat", "", WX_WarnHeatActive, WX_KoWarnHeat, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Warnstufe UV", "Warnstufe UV", "Wetterwarnungen (DWD-Kriterien)", "", "warn_uv", "warn_uv", "", WX_WarnUvActive, WX_KoWarnUv, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
 };
 
