@@ -1,5 +1,6 @@
 #include "WeatherModule.h"
 #include "NetworkModule.h"
+#include "Diag.h"
 #include "OtaGuard.h"
 #include "WeatherCalc.h"
 #include "Forecast.h"
@@ -161,23 +162,26 @@ void WeatherModule::processAfterStartupDelay()
         return;
     _sendAllowed = true;
     // Stoerungszustand einmal senden
-    knx.getGroupObject(WX_KO_FAULT_WN90).value(_faultWn90, DPT_Alarm);
-    if (_sdsEnabled)
+    if (Diag::koExists(WX_KO_FAULT_WN90))
+        knx.getGroupObject(WX_KO_FAULT_WN90).value(_faultWn90, DPT_Alarm);
+    if (_sdsEnabled && Diag::koExists(WX_KO_FAULT_SDS))
         knx.getGroupObject(WX_KO_FAULT_SDS).value(_faultSds, DPT_Alarm);
-    if (_oneWireEnabled)
+    if (_oneWireEnabled && Diag::koExists(WX_KO_FAULT_1W))
         knx.getGroupObject(WX_KO_FAULT_1W).value(_fault1W, DPT_Alarm);
     // Raumwerte fuer die Lueftungsempfehlung abfragen
     const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
     for (uint8_t i = 0; i < 3; i++)
         if (_rooms[i].active)
             for (uint16_t ko : roomKos[i])
-                knx.getGroupObject(ko).requestObjectRead();
+                if (Diag::koExists(ko))
+                    knx.getGroupObject(ko).requestObjectRead();
 }
 
 void WeatherModule::processInputKo(GroupObject &ko)
 {
     if (!_configured)
         return;
+    Diag::stage(Diag::InputKo);
     const uint16_t asap = ko.asap();
     const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
     for (uint8_t i = 0; i < 3; i++)
@@ -210,12 +214,14 @@ void WeatherModule::processBeforeRestart()
 
 void WeatherModule::loop(bool configured)
 {
+    Diag::stage(Diag::Wn90);
     if (_wn90.loop())
         processWn90();
     updateFault(WX_KO_FAULT_WN90, _faultWn90, _wn90.faulty(), "Wetterstation");
     if (_faultWn90)
         invalidateWn90();
 
+    Diag::stage(Diag::Sds);
     if (_sdsEnabled)
     {
         if (_sds.loop())
@@ -228,12 +234,14 @@ void WeatherModule::loop(bool configured)
         }
     }
 
+    Diag::stage(Diag::OneWire);
     if (_oneWireEnabled && _oneWire.loop())
     {
         set(WxId::Temp1W, _oneWire.temperature());
         updateFault(WX_KO_FAULT_1W, _fault1W, _oneWire.faulty(), "1-Wire-Sensor");
     }
 
+    Diag::stage(Diag::Rain);
     _rain.loop();
     _pressure.loop();
     if (delayCheck(_rainTimer, 1000))
@@ -246,16 +254,27 @@ void WeatherModule::loop(bool configured)
     if (delayCheck(_forecastTimer, 10000))
     {
         _forecastTimer = millis();
+        Diag::stage(Diag::Forecast);
         updateForecast();
+        Diag::stage(Diag::Sun);
         updateSunAndTwilight();
+        Diag::stage(Diag::Warnings);
         updateWarnings();
+        Diag::stage(Diag::Season);
         updateSeason();
+        Diag::stage(Diag::Solar);
         updateSolar();
+        Diag::stage(Diag::Astro);
         updateAstro();
+        Diag::stage(Diag::Ventilation);
         updateVentilation();
+        Diag::stage(Diag::Irrigation);
         updateIrrigation();
+        Diag::stage(Diag::Warnings2);
         updateWarnings2();
+        Diag::stage(Diag::Dwd);
         updateDwd();
+        Diag::stage(Diag::MinMax);
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -266,19 +285,25 @@ void WeatherModule::loop(bool configured)
     if (_rain.saveRequested())
         openknx.flash.save(true);
 
+    Diag::stage(Diag::Send);
     if (configured && _sendAllowed)
         sendValues();
     if (configured)
     {
+        Diag::stage(Diag::Mqtt);
         publishMqtt();
+        Diag::stage(Diag::HaDiscovery);
         _ha.loop(_values, WX_VALUE_COUNT);
     }
+    Diag::stage(Diag::WebStatus);
     if (_web.due())
         _web.update(buildStatusJson());
     if (dwdWarnings.enabled())
         dwdWarnings.loop(openknx.time.isValid() ? (int64_t)openknx.time.getUtcTime().toTime_t() : 0);
+    Diag::stage(Diag::Influx);
     if (_influx.due())
         _influx.submit(buildInfluxBody());
+    Diag::stage(Diag::Network);
     if (_influx.errorCount() != _influxErrorsLogged)
     {
         _influxErrorsLogged = _influx.errorCount();
@@ -1005,7 +1030,7 @@ void WeatherModule::updateFault(uint16_t ko, bool &state, bool faulty, const cha
         logErrorP("Stoerung: %s antwortet nicht", name);
     else
         logInfoP("%s wieder verfuegbar", name);
-    if (!_configured)
+    if (!_configured || !Diag::koExists(ko))
         return;
     if (_sendAllowed)
         knx.getGroupObject(ko).value(faulty, DPT_Alarm);
@@ -1417,6 +1442,7 @@ void WeatherModule::showSensors()
     const MeasuredValue &temp = val(WxId::Temp);
     const float t = calcTemperature(temp.valid() ? temp.value() : NAN, &source);
     logInfoP("Temperatur fuer Berechnungen: %.2f C aus %s", t, source);
+    Diag::report();
     logInfoP("Uhrzeit: %s, Firmware %s%s", openknx.time.isValid() ? "gueltig" : "unbekannt", WX_FIRMWARE_VERSION,
              OtaGuard::pending() ? " (noch nicht bestaetigt, Rollback aktiv)" : "");
     if (dwdWarnings.enabled())

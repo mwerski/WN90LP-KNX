@@ -1,4 +1,5 @@
 #include "MeasuredValue.h"
+#include "Diag.h"
 #include "Astro.h"
 #include "DwdWarnings.h"
 #include "Forecast.h"
@@ -50,6 +51,12 @@ void MeasuredValue::init(const WxValueDef *def, bool configured)
     if (_dptIndex >= def->dptCount)
         _dptIndex = 0;
     _cycleMs = (uint32_t)knx.paramWord(base + 1) * 1000;
+    // Ausgeblendete KOs fehlen in der Gruppenobjekt-Tabelle; ein Zugriff wuerde abstuerzen
+    if (_active && !Diag::koExists(def->koNumber))
+    {
+        logError("Weather", "KO %u (%s) fehlt in der ETS-Tabelle, Wert deaktiviert", def->koNumber, def->name);
+        _active = false;
+    }
     if (def->thresholds)
     {
         _absChange = (float)knx.paramFloat(base + 3, Float_Enc_IEEE754Single);

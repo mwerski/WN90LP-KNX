@@ -3,6 +3,7 @@
 #include "OpenKNX.h"
 #include "WeatherModule.h"
 #include <WiFi.h>
+#include "Diag.h"
 #include "OtaGuard.h"
 
 void setup()
@@ -19,10 +20,12 @@ void setup()
     openknx.setup();
 
     OtaGuard::setup();
+    Diag::setup();
 }
 
 void loop()
 {
+    Diag::stage(Diag::Network);
     openknx.loop();
     OtaGuard::loop(openknxNetwork.established());
 
