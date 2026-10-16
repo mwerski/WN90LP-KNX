@@ -16,7 +16,7 @@ void setup()
 
     // Prog-LED vor openknx.init() anmelden, dort werden die LEDs initialisiert
     openknx.leds.addLed(new RgbLed(WX_LED_PIN, WX_LED_COLOR), OpenKNX::Led::LED_TYPE_PROG);
-    openknx.init(0); // Firmware-Revision
+    openknx.init(WX_FIRMWARE_REVISION);
     openknx.addModule(1, openknxWeatherModule);
     openknx.addModule(3, openknxLogic);
     openknx.addModule(7, openknxNetwork);
