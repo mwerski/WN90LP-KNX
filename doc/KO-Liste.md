@@ -163,6 +163,12 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 181 | Warnstufe Frost/Glätte | Wetterwarnungen (DWD-Kriterien) | 5.010 |
 | 182 | Warnstufe Hitze | Wetterwarnungen (DWD-Kriterien) | 5.010 |
 | 183 | Warnstufe UV | Wetterwarnungen (DWD-Kriterien) | 5.010 |
+| 184 | DWD-Warnstufe aktuell (0-4) | DWD-Warnungen (Internet) | 5.010 |
+| 185 | DWD-Warnstufe inkl. angekündigter Warnungen | DWD-Warnungen (Internet) | 5.010 |
+| 186 | DWD-Warnung (Ereignis) | DWD-Warnungen (Internet) | 16.001 |
+| 187 | DWD-Unwetterwarnung (Stufe 3 oder 4) | DWD-Warnungen (Internet) | 1.005 |
+| 188 | Anzahl gültiger DWD-Warnungen | DWD-Warnungen (Internet) | 5.010 |
+| 189 | Störung DWD-Abruf | DWD-Warnungen (Internet) | 1.005 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |

@@ -642,5 +642,20 @@
  "WarnHeatActive": 641,
  "WarnHeatCycle": 642,
  "WarnUvActive": 643,
- "WarnUvCycle": 644
+ "WarnUvCycle": 644,
+ "DwdActive": 645,
+ "DwdCell": 646,
+ "DwdInterval": 647,
+ "DwdLevelActive": 648,
+ "DwdLevelCycle": 649,
+ "DwdLevelUpcomingActive": 650,
+ "DwdLevelUpcomingCycle": 651,
+ "DwdEventActive": 652,
+ "DwdEventCycle": 653,
+ "DwdSevereActive": 654,
+ "DwdSevereCycle": 655,
+ "DwdCountActive": 656,
+ "DwdCountCycle": 657,
+ "DwdFaultActive": 658,
+ "DwdFaultCycle": 659
 }

@@ -116,6 +116,8 @@ void WeatherModule::setup(bool configured)
         const float z = max<uint8_t>(ParamWX_StationHeight, 1);
         _windHeightFactor = z <= 2.0f ? 1.0f : 4.87f / logf(67.8f * z - 5.42f);
         _warnings.setup(ParamWX_WarnHold);
+        if (ParamWX_DwdActive)
+            dwdWarnings.setup(ParamWX_DwdCell, ParamWX_DwdInterval);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
                       (float)ParamWX_SwHysteresis);
         const uint8_t sources[3] = {(uint8_t)ParamWX_Alarm1Source, (uint8_t)ParamWX_Alarm2Source, (uint8_t)ParamWX_Alarm3Source};
@@ -254,6 +256,7 @@ void WeatherModule::loop(bool configured)
         updateVentilation();
         updateIrrigation();
         updateWarnings2();
+        updateDwd();
         checkMinMaxDay();
     }
     if (delayCheck(_alarmTimer, 500))
@@ -273,6 +276,8 @@ void WeatherModule::loop(bool configured)
     }
     if (_web.due())
         _web.update(buildStatusJson());
+    if (dwdWarnings.enabled())
+        dwdWarnings.loop(openknx.time.isValid() ? (int64_t)openknx.time.getUtcTime().toTime_t() : 0);
     if (_influx.due())
         _influx.submit(buildInfluxBody());
     if (_influx.errorCount() != _influxErrorsLogged)
@@ -842,6 +847,28 @@ void WeatherModule::updateWarnings2()
     set(WxId::WarnUv, _warnings.level(Warnings::Uv));
 }
 
+void WeatherModule::updateDwd()
+{
+    if (!dwdWarnings.enabled())
+        return;
+    const DwdWarnings::Result r = dwdWarnings.result();
+    set(WxId::DwdFault, dwdWarnings.faulty());
+    if (!r.valid)
+        return;
+    set(WxId::DwdLevel, r.levelNow);
+    set(WxId::DwdLevelUpcoming, r.levelAll);
+    set(WxId::DwdSevere, r.levelNow >= 3);
+    set(WxId::DwdCount, r.countNow);
+    // Text-KO: neuer Wert (und damit Senden) nur, wenn sich das Ereignis aendert
+    if (r.event != _dwdEvent || !val(WxId::DwdEvent).valid())
+    {
+        _dwdEvent = r.event;
+        _dwdEventSeq += 1;
+        set(WxId::DwdEvent, _dwdEventSeq);
+        logInfoP("DWD: %s", r.headline.empty() ? "keine Warnung" : r.headline.c_str());
+    }
+}
+
 void WeatherModule::updateMinMax(float temp, float gust)
 {
     if (!isnan(temp))
@@ -1022,7 +1049,8 @@ void WeatherModule::publishMqtt()
         if (!v.valid())
             continue;
         const WxFmt fmt = WX_VALUES[i].fmt;
-        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::Time || fmt == WxFmt::Date)
+        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::DwdText || fmt == WxFmt::Time ||
+            fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
             int64_t unix;
@@ -1035,6 +1063,16 @@ void WeatherModule::publishMqtt()
     }
     if (_sdsEnabled)
         doc["fault_sds"] = _faultSds;
+    if (dwdWarnings.enabled())
+    {
+        const DwdWarnings::Result r = dwdWarnings.result();
+        if (r.valid)
+        {
+            doc["dwd_headline"] = r.headline;
+            doc["dwd_onset"] = r.onset;
+            doc["dwd_expires"] = r.expires;
+        }
+    }
     doc["fault_wn90"] = _faultWn90;
 
     std::string payload;
@@ -1124,6 +1162,13 @@ std::string WeatherModule::buildStatusJson()
         doc["sds"] = _sds.faulty() ? "Stoerung" : "ok";
     if (_oneWireEnabled)
         doc["ow"] = _oneWire.faulty() ? "Stoerung" : "ok";
+    if (dwdWarnings.enabled())
+    {
+        const DwdWarnings::Result r = dwdWarnings.result();
+        doc["dwd"] = dwdWarnings.faulty() ? "Fehler" : (r.valid ? "ok" : "wartet");
+        if (r.valid && !r.headline.empty())
+            doc["dwd_headline"] = r.headline;
+    }
     if (_influx.enabled())
         doc["influx"] = _influx.lastCode() == 204 ? "ok" : (_influx.okCount() + _influx.errorCount() == 0 ? "wartet" : "Fehler");
 
@@ -1375,6 +1420,14 @@ void WeatherModule::showSensors()
     logInfoP("Temperatur fuer Berechnungen: %.2f C aus %s", t, source);
     logInfoP("Uhrzeit: %s, Firmware %s%s", openknx.time.isValid() ? "gueltig" : "unbekannt", WX_FIRMWARE_VERSION,
              OtaGuard::pending() ? " (noch nicht bestaetigt, Rollback aktiv)" : "");
+    if (dwdWarnings.enabled())
+    {
+        const DwdWarnings::Result r = dwdWarnings.result();
+        logInfoP("DWD: %lu ok, %lu Fehler, letzter Code %d, Stufe %u (inkl. angekuendigt %u), %s", r.ok, r.errors, r.lastCode, r.levelNow,
+                 r.levelAll, r.headline.empty() ? "keine Warnung" : r.headline.c_str());
+    }
+    else
+        logInfoP("DWD-Warnungen: nicht aktiviert");
     if (_influx.enabled())
         logInfoP("InfluxDB: %lu ok, %lu Fehler, letzter Code %d, letzter Erfolg vor %lu s (%s)", _influx.okCount(), _influx.errorCount(),
                  _influx.lastCode(), _influx.lastOkAge(), _influx.url().c_str());

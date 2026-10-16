@@ -47,7 +47,7 @@ function render(j){
   var st=document.getElementById('wx-state');
   if(!j.values){st.textContent='Warte auf Daten\u2026';return false;}
   st.textContent='';
-  var parts=[['WN90LP',j.wn90],['SDS011',j.sds],['1-Wire',j.ow],['InfluxDB',j.influx]];
+  var parts=[['WN90LP',j.wn90],['SDS011',j.sds],['1-Wire',j.ow],['InfluxDB',j.influx],['DWD',j.dwd]];
   parts.forEach(function(p){
     if(p[1]===undefined)return;
     var s=el('span',(p[1]==='ok'||p[1]==='wartet')?'':'wx-bad',p[0]+': '+p[1]);st.appendChild(s);st.appendChild(document.createTextNode(' \u00b7 '));
@@ -56,6 +56,7 @@ function render(j){
     ' \u00b7 WLAN '+j.rssi+' dBm \u00b7 Laufzeit '+Math.floor(j.up/3600)+' h \u00b7 Firmware '+j.fw));
   // Neuen Inhalt vollstaendig aufbauen und in einem Schritt austauschen (kein Flackern)
   var old=document.getElementById('wx-groups'),box=el('div');box.id='wx-groups';
+  if(j.dwd_headline){box.appendChild(el('p','wx-bad',j.dwd_headline));}
   var groups={},order=[];
   j.values.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
   order.forEach(function(g){

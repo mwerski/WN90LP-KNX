@@ -103,6 +103,18 @@ pio run -e release_WN90 -t upload
 
 Nach einer Änderung der Applikationsversion immer vollständig programmieren (nicht „partiell“).
 
+## Amtliche DWD-Warnungen (benötigt Internet)
+
+**Einzige Funktion, die Internetzugang braucht.** Auf Wunsch ruft die Station die amtlichen Warnungen des Deutschen
+Wetterdienstes für eine Warnzelle (WarnCellID) per HTTPS von `maps.dwd.de` ab (GeoServer, offene Daten; Datenbasis:
+Deutscher Wetterdienst). Das Zertifikat wird geprüft (Wurzelzertifikate in `src/DwdRootCa.h`).
+
+- ETS: Wetterstation → DWD-Warnungen (Internet): WarnCellID (9-stellig, Gemeinde 8…, Landkreis 1…; Liste beim DWD unter
+  „cap_warncellids_csv“), Abrufintervall (Standard 5 min)
+- KOs: Warnstufe aktuell und inkl. angekündigter Warnungen (0–4), Ereignis (DPT 16), Unwetter, Anzahl, Störung des Abrufs
+- MQTT zusätzlich `dwd_headline`, `dwd_onset`, `dwd_expires`; Statusseite zeigt die Überschrift der Warnung
+- Ohne Internet meldet nur das KO „Störung DWD-Abruf“; alle anderen Funktionen arbeiten unverändert
+
 ## Logikmodul
 
 Das OpenKNX-Logikmodul (OFM-LogicModule) stellt 30 Logikkanäle bereit (KOs 300–389): UND/ODER, Schwellwerte,

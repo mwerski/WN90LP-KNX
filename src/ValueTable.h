@@ -158,6 +158,12 @@ enum class WxId : uint8_t
     WarnFrost,
     WarnHeat,
     WarnUv,
+    DwdLevel,
+    DwdLevelUpcoming,
+    DwdEvent,
+    DwdSevere,
+    DwdCount,
+    DwdFault,
     Count
 };
 
@@ -177,7 +183,8 @@ enum class WxFmt : uint8_t
     Forecast,  // Zambretti-Nummer, Text
     MoonPhase, // 0..7
     MoonText,  // 0..7, Text
-    WarnText   // Kategorie * 10 + Stufe, Text
+    WarnText,  // Kategorie * 10 + Stufe, Text
+    DwdText    // Aenderungszaehler, Text aus dem DWD-Abruf
 };
 
 struct WxDptOption
@@ -209,7 +216,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 153
+#define WX_VALUE_COUNT 159
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -368,5 +375,11 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Warnstufe Frost/Glaette", "Warnstufe Frost/Gl\u00e4tte", "Wetterwarnungen (DWD-Kriterien)", "", "warn_frost", "warn_frost", "", WX_WarnFrostActive, WX_KoWarnFrost, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
     {"Warnstufe Hitze", "Warnstufe Hitze", "Wetterwarnungen (DWD-Kriterien)", "", "warn_heat", "warn_heat", "", WX_WarnHeatActive, WX_KoWarnHeat, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
     {"Warnstufe UV", "Warnstufe UV", "Wetterwarnungen (DWD-Kriterien)", "", "warn_uv", "warn_uv", "", WX_WarnUvActive, WX_KoWarnUv, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"DWD-Warnstufe aktuell (0-4)", "DWD-Warnstufe aktuell (0-4)", "DWD-Warnungen (Internet)", "", "dwd_level", "dwd_level", "", WX_DwdLevelActive, WX_KoDwdLevel, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"DWD-Warnstufe inkl. angekuendigter Warnungen", "DWD-Warnstufe inkl. angek\u00fcndigter Warnungen", "DWD-Warnungen (Internet)", "", "dwd_level_upcoming", "dwd_level_upcoming", "", WX_DwdLevelUpcomingActive, WX_KoDwdLevelUpcoming, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"DWD-Warnung (Ereignis)", "DWD-Warnung (Ereignis)", "DWD-Warnungen (Internet)", "", "dwd_event", nullptr, "", WX_DwdEventActive, WX_KoDwdEvent, WxSensor::None, 0xFFFF, false, 0, WxFmt::DwdText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"DWD-Unwetterwarnung (Stufe 3 oder 4)", "DWD-Unwetterwarnung (Stufe 3 oder 4)", "DWD-Warnungen (Internet)", "", "dwd_severe", "dwd_severe", "", WX_DwdSevereActive, WX_KoDwdSevere, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
+    {"Anzahl gueltiger DWD-Warnungen", "Anzahl g\u00fcltiger DWD-Warnungen", "DWD-Warnungen (Internet)", "", "dwd_count", "dwd_count", "", WX_DwdCountActive, WX_KoDwdCount, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Stoerung DWD-Abruf", "St\u00f6rung DWD-Abruf", "DWD-Warnungen (Internet)", "", "dwd_fault", "dwd_fault", "", WX_DwdFaultActive, WX_KoDwdFault, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
 };
 

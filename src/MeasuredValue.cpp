@@ -1,5 +1,6 @@
 #include "MeasuredValue.h"
 #include "Astro.h"
+#include "DwdWarnings.h"
 #include "Forecast.h"
 #include "Warnings.h"
 
@@ -136,6 +137,8 @@ KNXValue MeasuredValue::busValue() const
             // Text: der Messwert ist der Index (Zambretti-Nummer bzw. Mondphase)
             if (_def->fmt == WxFmt::MoonText)
                 return KNXValue(Astro::moonPhaseText((uint8_t)lroundf(bus), false));
+            if (_def->fmt == WxFmt::DwdText)
+                return KNXValue(DwdWarnings::eventText(false));
             if (_def->fmt == WxFmt::WarnText)
                 return KNXValue(Warnings::text((uint8_t)lroundf(bus), false));
             return KNXValue(Forecast::text((uint8_t)lroundf(bus), false));
@@ -258,6 +261,8 @@ std::string MeasuredValue::format(float value, const WxValueDef *def, bool withU
             return Forecast::text((uint8_t)lroundf(value), true);
         case WxFmt::WarnText:
             return Warnings::text((uint8_t)lroundf(value), true);
+        case WxFmt::DwdText:
+            return DwdWarnings::eventText(true);
         case WxFmt::MoonText:
         case WxFmt::MoonPhase:
             return Astro::moonPhaseText((uint8_t)lroundf(value), true);

@@ -97,6 +97,7 @@ GROUPS = [
     ("Irrigation", "Bewässerung", "weather-pouring", None),
     ("DegreeDays", "Gradtage", "thermometer", None),
     ("Warnings2", "Wetterwarnungen (DWD-Kriterien)", "alert-outline", None),
+    ("DwdOfficial", "DWD-Warnungen (Internet)", "alert-outline", None),
 ]
 ROOMS = 3
 # Seiten mit Abschnitten, die einzeln aktiviert werden: Seite -> (Anzahl, Praefix, Titel, Parameter je Abschnitt)
@@ -427,6 +428,18 @@ VALUES = [
     V("WarnFrost", "Warnings2", "Warnstufe Frost/Glätte", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_frost"),
     V("WarnHeat", "Warnings2", "Warnstufe Hitze", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_heat"),
     V("WarnUv", "Warnings2", "Warnstufe UV", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="warn_uv"),
+    # Ab ETS 0.14: amtliche DWD-Warnungen fuer eine Warnzelle (Internet)
+    V("DwdLevel", "DwdOfficial", "DWD-Warnstufe aktuell (0-4)", "", BFT, 3600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="dwd_level", info="Höchste derzeit gültige amtliche Warnung: 1 Wetterwarnung, 2 markant, 3 Unwetter, 4 extremes Unwetter."),
+    V("DwdLevelUpcoming", "DwdOfficial", "DWD-Warnstufe inkl. angekündigter Warnungen", "", BFT, 3600, 0, 0, thresholds=False,
+      decimals=0, mqtt="dwd_level_upcoming", info="Höchste Stufe aller vorliegenden Warnungen, auch solcher, die erst später beginnen."),
+    V("DwdEvent", "DwdOfficial", "DWD-Warnung (Ereignis)", "", TEXT, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="dwd_event",
+      influx="", fmt="dwdtext", info="Ereignis der höchsten gültigen Warnung, z. B. „STURMBÖEN“ (max. 14 Zeichen)."),
+    V("DwdSevere", "DwdOfficial", "DWD-Unwetterwarnung (Stufe 3 oder 4)", "", ALARM, 3600, 0, 0, True, thresholds=False, decimals=0,
+      mqtt="dwd_severe"),
+    V("DwdCount", "DwdOfficial", "Anzahl gültiger DWD-Warnungen", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="dwd_count"),
+    V("DwdFault", "DwdOfficial", "Störung DWD-Abruf", "", ALARM, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="dwd_fault",
+      info="1, wenn seit drei Abrufintervallen keine Daten vom DWD kamen (Internet, DNS oder Server)."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -449,7 +462,7 @@ INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 440  # frei: 435-439
+GENERAL_SIZE = 448  # frei: 441-447
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -583,6 +596,9 @@ GENERAL = [
     ("DdCoolBase", "%AID%_PT-WxSwThreshold", 429, 0, "Kühlgradtage: Basistemperatur (Tagesmittel über)", "18", "°C"),
     ("StationHeight", "%AID%_PT-WxHeight", 433, 0, "Montagehöhe der Wetterstation über Grund", "2", "m"),
     ("WarnHold", "%AID%_PT-WxDelayMinAlarm", 434, 0, "Warnung bleibt nach Ende der Bedingung bestehen für", "30", "min"),
+    ("DwdActive", "%AID%_PT-OnOffYesNo", 435, 7, "Amtliche DWD-Warnungen abrufen (benötigt Internet)", "0", None),
+    ("DwdCell", "%AID%_PT-WxWarnCell", 436, 0, "Warnzellen-ID (WarnCellID, 9-stellig)", "0", None),
+    ("DwdInterval", "%AID%_PT-WxDwdInterval", 440, 0, "Abruf alle", "5", "min"),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -888,6 +904,12 @@ def build():
         '              <ParameterType Id="%AID%_PT-WxHeight" Name="WxHeight">',
         '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="50" />',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxWarnCell" Name="WxWarnCell">',
+        '                <TypeNumber SizeInBit="32" Type="unsignedInt" minInclusive="0" maxInclusive="999999999" />',
+        '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxDwdInterval" Name="WxDwdInterval">',
+        '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="2" maxInclusive="60" />',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxTempSource" Name="WxTempSource">',
         '                <TypeRestriction Base="Value" SizeInBit="1">',
         '                  <Enumeration Text="Wetterstation" Value="0" Id="%ENID%" />',
@@ -1042,6 +1064,16 @@ def build():
         if gkey == "Warnings2":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Die Station wendet die Warnkriterien des Deutschen Wetterdienstes auf ihre eigenen Messwerte an und meldet, wenn die Bedingungen tatsächlich eintreten. Das ist keine amtliche Warnung und keine Vorhersage; Gewitter und Schnee werden nicht erkannt. Wind: Böen (10-min-Maximum), Starkregen: 1 h / 6 h, Dauerregen: 24 / 48 / 72 h, Frost/Glätte, Hitze: gefühlte Temperatur, UV-Index." UIHint="Information" />')
             w(f'{q}<ParameterRefRef RefId="{ids.ref("WarnHold")}" IndentLevel="1" />')
+        if gkey == "DwdOfficial":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Diese Funktion benötigt Internetzugang: Die Station ruft die amtlichen Warnungen für die eingestellte Warnzelle per HTTPS von maps.dwd.de ab (offene Daten des Deutschen Wetterdienstes, Datenbasis: DWD). Alle anderen Funktionen arbeiten ohne Internet." UIHint="Information" />')
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="WarnCellID: 9-stellige Nummer der Gemeinde (beginnt mit 8) oder des Landkreises (beginnt mit 1), Liste beim DWD unter „cap_warncellids_csv“ (z. B. 811000000 = Berlin)." UIHint="Information" />')
+            w(f'{q}<ParameterRefRef RefId="{ids.ref("DwdActive")}" IndentLevel="1" />')
+            w(f'{q}<choose ParamRefId="{ids.ref("DwdActive")}">')
+            w(f'{q}  <when test="1">')
+            w(f'{q}    <ParameterRefRef RefId="{ids.ref("DwdCell")}" IndentLevel="2" />')
+            w(f'{q}    <ParameterRefRef RefId="{ids.ref("DwdInterval")}" IndentLevel="2" />')
+            w(f'{q}  </when>')
+            w(f'{q}</choose>')
         if gkey == "DegreeDays":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Gradtagzahl nach VDI 3807 (G20/15) und Kühlgradtage aus der Tagesmitteltemperatur (Verfahren wie bei Sommer/Winter), für den witterungsbereinigten Vergleich des Energieverbrauchs. Wird um Mitternacht fortgeschrieben und bleibt über Neustarts erhalten." UIHint="Information" />')
             for n in ("DdIndoor", "DdHeatLimit", "DdCoolBase"):
@@ -1153,7 +1185,8 @@ def build():
     h.append("    Forecast,  // Zambretti-Nummer, Text")
     h.append("    MoonPhase, // 0..7")
     h.append("    MoonText,  // 0..7, Text")
-    h.append("    WarnText   // Kategorie * 10 + Stufe, Text")
+    h.append("    WarnText,  // Kategorie * 10 + Stufe, Text")
+    h.append("    DwdText    // Aenderungszaehler, Text aus dem DWD-Abruf")
     h.append("};")
     h.append("")
     h.append("struct WxDptOption")
@@ -1202,7 +1235,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")

@@ -161,5 +161,11 @@
  "WarnLongRain": 160,
  "WarnFrost": 161,
  "WarnHeat": 162,
- "WarnUv": 163
+ "WarnUv": 163,
+ "DwdLevel": 164,
+ "DwdLevelUpcoming": 165,
+ "DwdEvent": 166,
+ "DwdSevere": 167,
+ "DwdCount": 168,
+ "DwdFault": 169
 }

@@ -11,13 +11,14 @@
 #include "WebStatus.h"
 #include "Astro.h"
 #include "DegreeDays.h"
+#include "DwdWarnings.h"
 #include "HaDiscovery.h"
 #include "Irrigation.h"
 #include "InfluxWriter.h"
 #include "WindStats.h"
 #include "Wn90Sensor.h"
 
-#define WX_FIRMWARE_VERSION "0.13.0"
+#define WX_FIRMWARE_VERSION "0.14.0"
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -95,6 +96,7 @@ class WeatherModule : public OpenKNX::Module
     void updateVentilation();
     void updateIrrigation();
     void updateWarnings2();
+    void updateDwd();
     bool sunny(uint8_t zambretti);
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
@@ -193,6 +195,8 @@ class WeatherModule : public OpenKNX::Module
     uint32_t _irrigationLast = 0;
     float _windHeightFactor = 1.0f; // Umrechnung Wind auf 2 m (FAO-56)
     Warnings _warnings;
+    std::string _dwdEvent;
+    float _dwdEventSeq = 0; // Aenderungszaehler fuer das Text-KO
     Season _season;
     HaDiscovery _ha;
     WebStatus _web;
