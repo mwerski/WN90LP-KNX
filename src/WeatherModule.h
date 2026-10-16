@@ -24,6 +24,7 @@ class WeatherModule : public OpenKNX::Module
     void setup(bool configured) override;
     void loop(bool configured) override;
     void processAfterStartupDelay() override;
+    void processBeforeRestart() override;
 
     uint16_t flashSize() override;
     void readFlash(const uint8_t *data, const uint16_t size) override;

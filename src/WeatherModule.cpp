@@ -1,5 +1,6 @@
 #include "WeatherModule.h"
 #include "NetworkModule.h"
+#include "OtaGuard.h"
 #include "WeatherCalc.h"
 #include "Forecast.h"
 #include "Solar.h"
@@ -146,6 +147,12 @@ void WeatherModule::processAfterStartupDelay()
         knx.getGroupObject(WX_KO_FAULT_SDS).value(_faultSds, DPT_Alarm);
     if (_oneWireEnabled)
         knx.getGroupObject(WX_KO_FAULT_1W).value(_fault1W, DPT_Alarm);
+}
+
+void WeatherModule::processBeforeRestart()
+{
+    // Gewollter Neustart (ETS-Programmierung, Konsole): neue Firmware laeuft, kein Rollback ausloesen
+    OtaGuard::confirm("gewollter Neustart");
 }
 
 void WeatherModule::loop(bool configured)
@@ -1192,7 +1199,8 @@ void WeatherModule::showSensors()
     const MeasuredValue &temp = val(WxId::Temp);
     const float t = calcTemperature(temp.valid() ? temp.value() : NAN, &source);
     logInfoP("Temperatur fuer Berechnungen: %.2f C aus %s", t, source);
-    logInfoP("Uhrzeit: %s", openknx.time.isValid() ? "gueltig" : "unbekannt");
+    logInfoP("Uhrzeit: %s, Firmware %s%s", openknx.time.isValid() ? "gueltig" : "unbekannt", WX_FIRMWARE_VERSION,
+             OtaGuard::pending() ? " (noch nicht bestaetigt, Rollback aktiv)" : "");
     if (_influx.enabled())
         logInfoP("InfluxDB: %lu ok, %lu Fehler, letzter Code %d, letzter Erfolg vor %lu s (%s)", _influx.okCount(), _influx.errorCount(),
                  _influx.lastCode(), _influx.lastOkAge(), _influx.url().c_str());
