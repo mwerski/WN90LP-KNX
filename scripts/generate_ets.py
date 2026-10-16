@@ -528,17 +528,31 @@ def cfloat(num):
     return s + "f"
 
 
+IDS_FILE = ROOT / "scripts" / "param_ids.json"
+
+
 class Ids:
-    """Fortlaufende Parameter-Ids (5-stellig wie in OpenKNX ueblich)."""
+    """Parameter-Ids (5-stellig wie in OpenKNX ueblich), dauerhaft in scripts/param_ids.json.
+
+    Die ETS ordnet beim Aktualisieren der Applikation Parameterwerte ueber diese Ids zu.
+    Bestehende Ids duerfen sich daher nie aendern; neue Parameter erhalten die naechste freie Id."""
 
     def __init__(self):
-        self.next = 1
-        self.byname = {}
+        import json
+        self.byname = json.loads(IDS_FILE.read_text()) if IDS_FILE.exists() else {}
+        self.next = max(self.byname.values(), default=0) + 1
+        self.used = set()
 
     def add(self, name):
-        self.byname[name] = self.next
-        self.next += 1
+        if name not in self.byname:
+            self.byname[name] = self.next
+            self.next += 1
+        self.used.add(name)
         return self.byname[name]
+
+    def save(self):
+        import json
+        IDS_FILE.write_text(json.dumps(self.byname, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 
     def ref(self, name):
         n = self.byname[name]
@@ -925,6 +939,7 @@ def build():
 </KNX>
 '''
     SHARE.write_text(xml, encoding="utf-8")
+    ids.save()
 
     # Firmware-Tabelle
     h = []
