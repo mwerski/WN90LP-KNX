@@ -23,7 +23,10 @@ namespace WeatherCalc
         const float kmh = windMs * 3.6f;
         if (t > 10.0f || kmh < 5.0f)
             return t;
-        return WindChill_C_kmph(t, kmh, false);
+        // Eigene Formel statt WindChill_C_kmph(): Dort potenziert erst convert=true die Geschwindigkeit
+        // (v^0,16); mit false ging v linear ein und lieferte z. B. bei 10 C und 10 km/h -55 C.
+        const float v016 = powf(kmh, 0.16f);
+        return min(t, 13.12f + 0.6215f * t + (0.3965f * t - 11.37f) * v016);
     }
 
     // Hitzeindex ist nur fuer hohe Temperaturen definiert, darunter die Lufttemperatur
