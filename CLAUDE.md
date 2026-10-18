@@ -16,6 +16,7 @@ Stand vor der Umstellung: Tag `milestone-2026-10-15`.
 ```
 platformio.ini / platformio.custom.ini   Umgebungen develop/release/ota, Build-Flags, lib_deps
 dependencies.txt, restore/restore.py     Gepinnte OpenKNX-Bibliotheken nach lib/ (nicht versioniert)
+restore/patches/<lib>/                    Lokale Patches, von restore.py angewendet (knx: leere UDP-Pakete)
 include/hardware.h                        Pins des T-RSS3 (DEVICE_WN90_TRSS3)
 include/knxprod.h                         GENERIERT (OpenKNXproducer), nicht versioniert
 scripts/generate_ets.py                   QUELLE der Messwerttabelle: erzeugt WN90LP.share.xml + ValueTable.h
@@ -74,6 +75,12 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.
+- **Leere UDP-Pakete an `224.0.23.12:3671`** (z. B. Tasmota mit aktivem KNX) machten das Gerät dauerhaft
+  taub: Senden geht, Empfang und ETS-Programmierung nicht, auch nicht nach Neustart. Ursache:
+  `NetworkUDP::parsePacket()` (Arduino-Core 3.x) liest nur bei `FIONREAD > 0`; leere Datagramme bleiben
+  liegen und füllen die lwIP-Warteschlange (6 Plätze). Gelöst durch
+  `restore/patches/knx/esp32-leere-udp-pakete.patch` (eigener Socket mit `recvfrom()`), den `restore.py`
+  automatisch anwendet. Bei Update von `lib/knx` prüfen, ob der Patch noch passt.
 
 ## Regeln
 

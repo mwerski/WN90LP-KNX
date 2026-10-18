@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Klont die OpenKNX-Abhaengigkeiten aus dependencies.txt nach lib/ und
-checkt den dort festgehaltenen Stand aus. Mehrfach ausfuehrbar.
+checkt den dort festgehaltenen Stand aus. Danach werden die Patches aus
+restore/patches/<Ordnername>/*.patch angewendet. Mehrfach ausfuehrbar.
 Aufruf im Projektverzeichnis: python3 restore/restore.py"""
 import pathlib
 import subprocess
@@ -20,17 +21,30 @@ def git(*args, cwd=None):
     subprocess.run(["git", *args], cwd=cwd, check=True)
 
 
+def angewendet(patch, cwd):
+    """True, wenn der Patch bereits im Arbeitsverzeichnis steckt."""
+    return subprocess.run(["git", "apply", "--reverse", "--check", str(patch)], cwd=cwd,
+                          capture_output=True).returncode == 0
+
+
 for line in (root / "dependencies.txt").read_text(encoding="utf-8").splitlines():
     if not line.strip() or line.startswith("-") or line.startswith("#"):
         continue
     commit, branch, folder, url = line.split(maxsplit=3)
     target = root / folder
+    patches = sorted((skript / "patches" / target.name).glob("*.patch"))
     print(f"{folder} ({branch} @ {commit})")
     if (target / ".git").exists():
+        # Eigene Patches vor dem Checkout zuruecknehmen, damit er nicht an ihnen scheitert
+        for patch in reversed(patches):
+            if angewendet(patch, target):
+                git("apply", "--reverse", str(patch), cwd=target)
         git("fetch", "origin", branch, cwd=target)
     else:
         target.parent.mkdir(parents=True, exist_ok=True)
         git("clone", "--branch", branch, url, str(target))
     git("checkout", "--quiet", commit, cwd=target)
+    for patch in patches:
+        git("apply", str(patch), cwd=target)
 
 print("Fertig.")

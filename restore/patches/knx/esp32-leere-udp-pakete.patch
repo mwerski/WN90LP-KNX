@@ -1,0 +1,164 @@
+diff --git a/src/esp32_platform.cpp b/src/esp32_platform.cpp
+index b036422..d36f33c 100644
+--- a/src/esp32_platform.cpp
++++ b/src/esp32_platform.cpp
+@@ -5,6 +5,9 @@
+ #include <EEPROM.h>
+ 
+ #include "knx/bits.h"
++#include <lwip/sockets.h>
++#include <fcntl.h>
++#include <unistd.h>
+ 
+ // #ifndef KNX_SERIAL
+ //     #define KNX_SERIAL Serial1
+@@ -80,47 +83,80 @@ void Esp32Platform::setupMultiCast(uint32_t addr, uint16_t port)
+     print(mcastaddr.toString().c_str());
+     print(":");
+     println(port);
+-    uint8_t result = _udp.beginMulticast(mcastaddr, port);
+-    (void)result; // Suppress unused variable warning
+-    // KNX_DEBUG_SERIAL.printf("result %d\n", result);
++    closeMultiCast();
++    _mcastAddr = addr;
++    _mcastPort = port;
++
++    _sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
++    if (_sock < 0)
++    {
++        println("socket fail");
++        return;
++    }
++    int yes = 1;
++    setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
++
++    struct sockaddr_in local = {};
++    local.sin_family = AF_INET;
++    local.sin_port = htons(port);
++    local.sin_addr.s_addr = htonl(INADDR_ANY);
++    if (bind(_sock, (struct sockaddr*)&local, sizeof(local)) < 0)
++        println("bind fail");
++
++    struct ip_mreq mreq = {};
++    mreq.imr_multiaddr.s_addr = htonl(addr);
++    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
++    if (setsockopt(_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0)
++        println("could not join igmp");
++
++    fcntl(_sock, F_SETFL, fcntl(_sock, F_GETFL, 0) | O_NONBLOCK);
+ }
+ 
+ void Esp32Platform::closeMultiCast()
+ {
+-    _udp.stop();
++    if (_sock >= 0)
++    {
++        close(_sock);
++        _sock = -1;
++    }
+ }
+ 
+ bool Esp32Platform::sendBytesMultiCast(uint8_t * buffer, uint16_t len)
+ {
+     //printHex("<- ",buffer, len);
+-    _udp.beginMulticastPacket();
+-    _udp.write(buffer, len);
+-    _udp.endPacket();
++    if (_sock < 0)
++        return true;
++    struct sockaddr_in dest = {};
++    dest.sin_family = AF_INET;
++    dest.sin_port = htons(_mcastPort);
++    dest.sin_addr.s_addr = htonl(_mcastAddr);
++    sendto(_sock, buffer, len, 0, (struct sockaddr*)&dest, sizeof(dest));
+     return true;
+ }
+ 
+ int Esp32Platform::readBytesMultiCast(uint8_t * buffer, uint16_t maxLen, uint32_t& src_addr, uint16_t& src_port)
+ {
+-    int len = _udp.parsePacket();
+-    if (len == 0)
++    if (_sock < 0)
+         return 0;
+ 
+-    if (len > maxLen)
++    // recvfrom() entnimmt jedes Datagramm, auch leere (len == 0)
++    struct sockaddr_in from = {};
++    socklen_t fromLen = sizeof(from);
++    int len = recvfrom(_sock, buffer, maxLen, MSG_DONTWAIT, (struct sockaddr*)&from, &fromLen);
++    if (len <= 0)
++        return 0;
++
++    if (len >= maxLen)
+     {
+         println("Unexpected UDP data packet length - drop packet");
+-        for (size_t i = 0; i < len; i++)
+-            _udp.read();
+         return 0;
+     }
+ 
+-    _udp.read(buffer, len);
+-    _remoteIP = _udp.remoteIP();
+-    _remotePort = _udp.remotePort();
+-    src_addr = htonl(_remoteIP);
++    _remoteIP = IPAddress(from.sin_addr.s_addr);
++    _remotePort = ntohs(from.sin_port);
++    src_addr = ntohl(from.sin_addr.s_addr);
+     src_port = _remotePort;
+ 
+-    // print("Remote IP: ");
+-    // print(_udp.remoteIP().toString().c_str());
+     // printHex("-> ", buffer, len);
+ 
+     return len;
+@@ -128,21 +164,19 @@ int Esp32Platform::readBytesMultiCast(uint8_t * buffer, uint16_t maxLen, uint32_
+ 
+ bool Esp32Platform::sendBytesUniCast(uint32_t addr, uint16_t port, uint8_t* buffer, uint16_t len)
+ {
+-    IPAddress ucastaddr(htonl(addr));
+-
+-    if(!addr)
+-        ucastaddr = _remoteIP;
+-    
+-    if(!port)
+-        port = _remotePort;
+-
+-    if(_udp.beginPacket(ucastaddr, port) == 1)
++    if (_sock < 0)
+     {
+-        _udp.write(buffer, len);
+-        if(_udp.endPacket() == 0) println("sendBytesUniCast endPacket fail");
++        println("sendBytesUniCast no socket");
++        return true;
+     }
+-    else
+-        println("sendBytesUniCast beginPacket fail");
++
++    struct sockaddr_in dest = {};
++    dest.sin_family = AF_INET;
++    dest.sin_addr.s_addr = addr ? htonl(addr) : (uint32_t)_remoteIP;
++    dest.sin_port = htons(port ? port : _remotePort);
++
++    if (sendto(_sock, buffer, len, 0, (struct sockaddr*)&dest, sizeof(dest)) < 0)
++        println("sendBytesUniCast sendto fail");
+     return true;
+ }
+ 
+diff --git a/src/esp32_platform.h b/src/esp32_platform.h
+index 4e41ec6..be37322 100644
+--- a/src/esp32_platform.h
++++ b/src/esp32_platform.h
+@@ -40,7 +40,12 @@ public:
+     protected: uint16_t _remotePort;
+ 
+ private:
+-    WiFiUDP _udp;
++    // Eigener lwIP-Socket statt WiFiUDP: NetworkUDP::parsePacket() (Arduino-Core 3.x) liest nur,
++    // wenn FIONREAD > 0 meldet. Leere Datagramme (0 Byte) bleiben dadurch liegen, fuellen die
++    // Empfangswarteschlange (6 Plaetze) und blockieren danach jeden weiteren Empfang.
++    int _sock = -1;
++    uint32_t _mcastAddr = 0;
++    uint16_t _mcastPort = 0;
+     // int8_t _rxPin = -1; 
+     // int8_t _txPin = -1;
+ };
