@@ -171,6 +171,8 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 Bei aktivem MQTT (ETS, Netzwerkseite) sendet das Gerät im eingestellten Intervall ein JSON-Objekt an
 `openknx/<Präfix>/state` mit den gültigen Messwerten (Feldnamen wie `temperature`, `humidity`,
 `windspeed`, `pressure`, `raincounter`, `rain_today`, `pm25` …) sowie `wifi_rssi` und `uptime`.
+Die Zambretti-Prognose steht als Nummer (`forecast`), Kurztext (`forecast_text`, max. 14 Zeichen)
+und Volltext (`forecast_long`, z. B. „Unbeständig, wahrscheinlich Besserung“) im JSON.
 
 Mit „Home Assistant MQTT Discovery“ (ETS, Wetterstation → Allgemein) meldet das Gerät nach jedem Verbinden
 alle aktiven Messwerte unter `homeassistant/sensor|binary_sensor/<Knoten>/<Feld>/config` an (retained).

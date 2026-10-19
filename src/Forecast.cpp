@@ -83,6 +83,41 @@ namespace Forecast
         return index + 1;
     }
 
+    // Volltexte A..Z, UTF-8
+    static const char *const LONG_TEXTS[26] = {
+        "Beständig schönes Wetter",            // A Settled fine
+        "Schönes Wetter",                           // B Fine weather
+        "Wetter wird schön",                        // C Becoming fine
+        "Schön, wird unbeständiger",           // D Fine, becoming less settled
+        "Schön, eventuell Schauer",                 // E Fine, possible showers
+        "Recht schön, Besserung",                   // F Fairly fine, improving
+        "Recht schön, anfangs eventuell Schauer",   // G Fairly fine, possible showers early
+        "Recht schön, später Schauer",         // H Fairly fine, showery later
+        "Anfangs Schauer, dann Besserung",               // I Showery early, improving
+        "Wechselhaft, Besserung",                        // J Changeable, mending
+        "Recht schön, Schauer wahrscheinlich",      // K Fairly fine, showers likely
+        "Ziemlich unbeständig, später aufklarend", // L Rather unsettled clearing later
+        "Unbeständig, wahrscheinlich Besserung",    // M Unsettled, probably improving
+        "Schauer mit Aufheiterungen",                    // N Showery, bright intervals
+        "Schauer, wird unbeständiger",              // O Showery, becoming less settled
+        "Wechselhaft, etwas Regen",                      // P Changeable, some rain
+        "Unbeständig, kurze schöne Abschnitte", // Q Unsettled, short fine intervals
+        "Unbeständig, später Regen",           // R Unsettled, rain later
+        "Unbeständig, etwas Regen",                 // S Unsettled, some rain
+        "Überwiegend sehr unbeständig",        // T Mostly very unsettled
+        "Gelegentlich Regen, Verschlechterung",          // U Occasional rain, worsening
+        "Zeitweise Regen, sehr unbeständig",        // V Rain at times, very unsettled
+        "Häufig Regen",                             // W Rain at frequent intervals
+        "Regen, sehr unbeständig",                  // X Rain, very unsettled
+        "Stürmisch, eventuell Besserung",           // Y Stormy, may improve
+        "Stürmisch, viel Regen",                    // Z Stormy, much rain
+    };
+
+    const char *longText(uint8_t zambretti)
+    {
+        return (zambretti >= 1 && zambretti <= 26) ? LONG_TEXTS[zambretti - 1] : "";
+    }
+
     const char *text(uint8_t zambretti, bool utf8)
     {
         if (zambretti < 1 || zambretti > 26)

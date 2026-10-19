@@ -13,4 +13,7 @@ namespace Forecast
 
     // Kurztext (max. 14 Zeichen); utf8 = true fuer MQTT/Konsole, sonst ISO 8859-1 fuer DPT 16
     const char *text(uint8_t zambretti, bool utf8);
+
+    // Volltext (UTF-8, ohne Laengenbegrenzung) fuer MQTT; "" bei ungueltiger Nummer
+    const char *longText(uint8_t zambretti);
 } // namespace Forecast

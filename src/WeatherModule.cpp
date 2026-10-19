@@ -1139,6 +1139,9 @@ void WeatherModule::publishMqtt()
         const float f = powf(10.0f, WX_VALUES[i].decimals);
         doc[WX_VALUES[i].mqttKey] = roundf(v.value() * f) / f;
     }
+    // Zambretti-Prognose zusaetzlich als Volltext (KO/Statusseite nur Kurztext mit 14 Zeichen)
+    if (val(WxId::Forecast).valid())
+        doc["forecast_long"] = Forecast::longText((uint8_t)val(WxId::Forecast).value());
     if (_sdsEnabled)
         doc["fault_sds"] = _faultSds;
     if (dwdWarnings.enabled())
