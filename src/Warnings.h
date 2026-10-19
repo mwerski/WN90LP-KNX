@@ -37,6 +37,8 @@ class Warnings
     // Kategorie * 10 + Stufe der hoechsten Warnung (0 = keine), fuer den Text
     uint8_t code() const;
     static const char *text(uint8_t code, bool utf8);
+    // Volltext (UTF-8, Bezeichnungen wie beim DWD) fuer Statusseite, MQTT und Konsole
+    static const char *longText(uint8_t code);
 
   private:
     struct Held

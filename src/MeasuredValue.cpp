@@ -238,7 +238,7 @@ long MeasuredValue::daysFromCivil(int y, int m, int d)
     return era * 146097 + (long)doe - 719468;
 }
 
-std::string MeasuredValue::format(float value, const WxValueDef *def, bool withUnit)
+std::string MeasuredValue::format(float value, const WxValueDef *def, bool withUnit, bool full)
 {
     char buf[32];
     if (isnan(value))
@@ -265,14 +265,15 @@ std::string MeasuredValue::format(float value, const WxValueDef *def, bool withU
             return buf;
         }
         case WxFmt::Forecast:
-            return Forecast::text((uint8_t)lroundf(value), true);
+            return full ? Forecast::longText((uint8_t)lroundf(value)) : Forecast::text((uint8_t)lroundf(value), true);
         case WxFmt::WarnText:
-            return Warnings::text((uint8_t)lroundf(value), true);
+            return full ? Warnings::longText((uint8_t)lroundf(value)) : Warnings::text((uint8_t)lroundf(value), true);
         case WxFmt::DwdText:
+            // Ereignistext des DWD ist ungekuerzt; nur das KO kuerzt auf 14 Zeichen
             return DwdWarnings::eventText(true);
         case WxFmt::MoonText:
         case WxFmt::MoonPhase:
-            return Astro::moonPhaseText((uint8_t)lroundf(value), true);
+            return full ? Astro::moonPhaseLongText((uint8_t)lroundf(value)) : Astro::moonPhaseText((uint8_t)lroundf(value), true);
         default:
             snprintf(buf, sizeof(buf), withUnit && def->unit[0] ? "%.*f %s" : "%.*f", def->decimals, value, def->unit);
             return buf;

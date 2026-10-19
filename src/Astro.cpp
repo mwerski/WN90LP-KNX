@@ -227,4 +227,11 @@ namespace Astro
         (void)utf8;
         return phase < 8 ? TEXT[phase] : "";
     }
+
+    const char *moonPhaseLongText(uint8_t phase)
+    {
+        static const char *const TEXT[8] = {"Neumond", "Zunehmende Sichel", "Erstes Viertel", "Zunehmender Mond",
+                                            "Vollmond", "Abnehmender Mond", "Letztes Viertel", "Abnehmende Sichel"};
+        return phase < 8 ? TEXT[phase] : "";
+    }
 } // namespace Astro

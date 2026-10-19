@@ -24,6 +24,7 @@ static const char PAGE[] = R"HTML(<div class='container'>
 #wx-groups td{padding:.25em .3em;border-bottom:1px solid #8882}
 #wx-groups td.v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 #wx-groups td.s{text-align:right;white-space:nowrap;opacity:.6}
+#wx-groups td.txt{white-space:normal;overflow:visible;text-overflow:clip}
 #wx-groups tr.off{opacity:.45}
 #wx-groups tr.inv td.v{opacity:.5}
 .wx-bad{color:#c33;font-weight:bold}
@@ -69,8 +70,9 @@ function render(j){
     groups[g].forEach(function(x){
       var r=el('tr',(x.a?'':'off')+(x.v===null?' inv':''));
       var n=el('td','',x.n+(x.a?'':' (nicht aktiv)'));n.title=n.textContent;r.appendChild(n);
-      r.appendChild(el('td','v',fmt(x,x.v,x.t)));
-      r.appendChild(el('td','s',x.a&&x.s!==null?fmt(x,x.s,x.ts):''));
+      var tx=(x.t!==undefined||x.ts!==undefined)?' txt':'';
+      r.appendChild(el('td','v'+tx,fmt(x,x.v,x.t)));
+      r.appendChild(el('td','s'+tx,x.a&&x.s!==null?fmt(x,x.s,x.ts):''));
       t.appendChild(r);
     });
     box.appendChild(t);

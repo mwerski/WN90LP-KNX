@@ -41,4 +41,6 @@ namespace Astro
     time_t nextMoonPhase(time_t fromUtc, float targetDeg);
 
     const char *moonPhaseText(uint8_t phase, bool utf8);
+    // Volltext (UTF-8) fuer Statusseite, MQTT und Konsole
+    const char *moonPhaseLongText(uint8_t phase);
 } // namespace Astro

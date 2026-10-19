@@ -1131,6 +1131,9 @@ void WeatherModule::publishMqtt()
             fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
+            // Texte zusaetzlich ungekuerzt als <feld>_long (das Feld selbst bleibt der 14-Zeichen-Text wie am KO)
+            if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText)
+                doc[std::string(WX_VALUES[i].mqttKey) + "_long"] = MeasuredValue::format(v.value(), &WX_VALUES[i], false, true);
             int64_t unix;
             if (MeasuredValue::toUnix(v.value(), &WX_VALUES[i], unix))
                 doc[std::string(WX_VALUES[i].mqttKey) + "_unix"] = unix;
@@ -1139,9 +1142,6 @@ void WeatherModule::publishMqtt()
         const float f = powf(10.0f, WX_VALUES[i].decimals);
         doc[WX_VALUES[i].mqttKey] = roundf(v.value() * f) / f;
     }
-    // Zambretti-Prognose zusaetzlich als Volltext (KO/Statusseite nur Kurztext mit 14 Zeichen)
-    if (val(WxId::Forecast).valid())
-        doc["forecast_long"] = Forecast::longText((uint8_t)val(WxId::Forecast).value());
     if (_sdsEnabled)
         doc["fault_sds"] = _faultSds;
     if (dwdWarnings.enabled())
@@ -1287,9 +1287,9 @@ std::string WeatherModule::buildStatusJson()
         if (def.fmt != WxFmt::Number && def.fmt != WxFmt::Duration)
         {
             if (v.valid())
-                o["t"] = MeasuredValue::format(v.value(), &def, false);
+                o["t"] = MeasuredValue::format(v.value(), &def, false, true);
             if (v.sent())
-                o["ts"] = MeasuredValue::format(v.lastSent(), &def, false);
+                o["ts"] = MeasuredValue::format(v.lastSent(), &def, false, true);
         }
     }
 

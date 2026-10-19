@@ -105,6 +105,51 @@ uint8_t Warnings::code() const
     return cat * 10 + best + 10;
 }
 
+const char *Warnings::longText(uint8_t code)
+{
+    switch (code)
+    {
+        case 0:
+            return "Keine Warnung";
+        case 11:
+            return "Windböen";
+        case 12:
+            return "Sturmböen";
+        case 13:
+            return "Orkanartige Böen";
+        case 14:
+            return "Orkanböen";
+        case 22:
+            return "Starkregen";
+        case 23:
+            return "Heftiger Starkregen";
+        case 24:
+            return "Extrem heftiger Starkregen";
+        case 32:
+            return "Dauerregen";
+        case 33:
+            return "Ergiebiger Dauerregen";
+        case 34:
+            return "Extrem ergiebiger Dauerregen";
+        case 41:
+            return "Frost";
+        case 39:
+            return "Glätte";
+        case 42:
+            return "Strenger Frost";
+        case 43:
+            return "Glatteis";
+        case 52:
+            return "Hitze";
+        case 53:
+            return "Extreme Hitze";
+        case 61:
+            return "Hohe UV-Intensität";
+        default:
+            return "";
+    }
+}
+
 const char *Warnings::text(uint8_t code, bool utf8)
 {
     // max. 14 Zeichen (DPT 16); Umlaute je nach Kodierung

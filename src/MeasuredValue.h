@@ -22,7 +22,8 @@ class MeasuredValue
     const WxValueDef *def() const { return _def; }
 
     // Darstellung fuer Konsole/MQTT: Uhrzeit HH:MM:SS, Datum JJJJ-MM-TT, Dauer, Texte, sonst Zahl
-    static std::string format(float value, const WxValueDef *def, bool withUnit);
+    // full = Volltext statt Kurztext (14 Zeichen, DPT 16) fuer Prognose, Mond und Warnungen
+    static std::string format(float value, const WxValueDef *def, bool withUnit, bool full = false);
     static void civilFromDays(long daysSince1970, int &y, int &m, int &d);
     static long daysFromCivil(int y, int m, int d);
 
