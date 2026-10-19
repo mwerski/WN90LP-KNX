@@ -169,6 +169,10 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 187 | DWD-Unwetterwarnung (Stufe 3 oder 4) | DWD-Warnungen (Internet) | 1.005 |
 | 188 | Anzahl gültiger DWD-Warnungen | DWD-Warnungen (Internet) | 5.010 |
 | 189 | Störung DWD-Abruf | DWD-Warnungen (Internet) | 1.005 |
+| 190 | Regenmenge gestern | Regen | 9.026 |
+| 191 | Regenmenge diese Woche | Regen | 9.026, 14.x |
+| 192 | Regenmenge dieser Monat | Regen | 9.026, 14.x |
+| 193 | Regenmenge dieses Jahr | Regen | 9.026, 14.x |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |

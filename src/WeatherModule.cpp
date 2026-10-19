@@ -18,7 +18,7 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
     return d.year * 10000UL + d.month * 100UL + d.day;
 }
 
-static constexpr uint8_t FLASH_VERSION = 7; // 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
+static constexpr uint8_t FLASH_VERSION = 8; // 8: + Regen gestern/Woche/Monat/Jahr; 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
@@ -996,6 +996,10 @@ void WeatherModule::updateRain()
     set(WxId::Rain48h, _rain.amountHours(48));
     set(WxId::Rain72h, _rain.amountHours(72));
     set(WxId::RainToday, _rain.today());
+    set(WxId::RainYesterday, _rain.yesterday());
+    set(WxId::RainWeek, _rain.week());
+    set(WxId::RainMonth, _rain.month());
+    set(WxId::RainYear, _rain.year());
     set(WxId::Raining, _rain.raining() ? 1.0f : 0.0f);
 }
 
@@ -1302,10 +1306,19 @@ std::string WeatherModule::buildStatusJson()
 // ---------------------------------------------------------------------------
 // Remanenz: Regenstatistik
 // ---------------------------------------------------------------------------
+// Ende der Daten je Flash-Version (kumuliert); neue Bloecke nur hinten anfuegen
+static constexpr uint16_t FLASH_END_V1 = 1 + RainStatistics::FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V2 = FLASH_END_V1 + MINMAX_FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V3 = FLASH_END_V2 + Season::FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V4 = FLASH_END_V3 + SOLAR_FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V5 = FLASH_END_V4 + SUNSHINE_FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V6 = FLASH_END_V5 + Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V7 = FLASH_END_V6 + PressureTrend::FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V8 = FLASH_END_V7 + RainStatistics::PERIOD_FLASH_SIZE;
+
 uint16_t WeatherModule::flashSize()
 {
-    return 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE + SOLAR_FLASH_SIZE + SUNSHINE_FLASH_SIZE +
-           Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE + PressureTrend::FLASH_SIZE;
+    return FLASH_END_V8;
 }
 
 void WeatherModule::writeFlash()
@@ -1329,6 +1342,7 @@ void WeatherModule::writeFlash()
     _irrigation.writeFlash();
     _degreeDays.writeFlash();
     _pressure.writeFlash();
+    _rain.writePeriodFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -1339,7 +1353,7 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     if (version < 1 || version > FLASH_VERSION)
         return;
     _rain.readFlash(data, RainStatistics::FLASH_SIZE);
-    if (version < 2 || size < 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE)
+    if (version < 2 || size < FLASH_END_V2)
         return;
     _minMax.dayKey = openknx.flash.readInt();
     _minMax.tempMin = openknx.flash.readFloat();
@@ -1348,10 +1362,10 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     _minMax.tempMinYesterday = openknx.flash.readFloat();
     _minMax.tempMaxYesterday = openknx.flash.readFloat();
     _minMax.gustMaxYesterday = openknx.flash.readFloat();
-    if (version < 3 || size < 1 + RainStatistics::FLASH_SIZE + MINMAX_FLASH_SIZE + Season::FLASH_SIZE)
+    if (version < 3 || size < FLASH_END_V3)
         return;
     _season.readFlash();
-    if (version < 4 || size < flashSize() - SUNSHINE_FLASH_SIZE)
+    if (version < 4 || size < FLASH_END_V4)
         return;
     _minMax.radToday = openknx.flash.readFloat();
     _minMax.radYesterday = openknx.flash.readFloat();
@@ -1361,19 +1375,22 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
         _minMax.radToday = 0;
     if (isnan(_minMax.pvToday))
         _minMax.pvToday = 0;
-    if (version < 5 || size < flashSize() - Irrigation::FLASH_SIZE - DegreeDays::FLASH_SIZE)
+    if (version < 5 || size < FLASH_END_V5)
         return;
     _minMax.sunshineToday = openknx.flash.readFloat();
     _minMax.sunshineYesterday = openknx.flash.readFloat();
     if (isnan(_minMax.sunshineToday))
         _minMax.sunshineToday = 0;
-    if (version < 6 || size < flashSize() - PressureTrend::FLASH_SIZE)
+    if (version < 6 || size < FLASH_END_V6)
         return;
     _irrigation.readFlash();
     _degreeDays.readFlash();
-    if (version < 7 || size < flashSize())
+    if (version < 7 || size < FLASH_END_V7)
         return;
     _pressure.readFlash();
+    if (version < 8 || size < FLASH_END_V8)
+        return;
+    _rain.readPeriodFlash();
 }
 
 // ---------------------------------------------------------------------------
@@ -1558,6 +1575,7 @@ void WeatherModule::showRain()
              _rain.raining() ? "ja" : "nein");
     logInfoP("5 min %.2f | 1 h %.2f | 6 h %.2f | 24 h %.2f | 48 h %.2f | 72 h %.2f mm", _rain.amountMinutes(5), _rain.amountMinutes(60),
              _rain.amountHours(6), _rain.amountHours(24), _rain.amountHours(48), _rain.amountHours(72));
+    logInfoP("gestern %.2f | Woche %.1f | Monat %.1f | Jahr %.1f mm", _rain.yesterday(), _rain.week(), _rain.month(), _rain.year());
     logInfoP("Werte im Puffer: %u Minuten, %u Stunden", _rain.minuteSamples(), _rain.hourSamples());
 }
 

@@ -164,6 +164,10 @@ enum class WxId : uint8_t
     DwdSevere,
     DwdCount,
     DwdFault,
+    RainYesterday,
+    RainWeek,
+    RainMonth,
+    RainYear,
     Count
 };
 
@@ -216,7 +220,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 159
+#define WX_VALUE_COUNT 163
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -381,5 +385,9 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"DWD-Unwetterwarnung (Stufe 3 oder 4)", "DWD-Unwetterwarnung (Stufe 3 oder 4)", "DWD-Warnungen (Internet)", "", "dwd_severe", "dwd_severe", "", WX_DwdSevereActive, WX_KoDwdSevere, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
     {"Anzahl gueltiger DWD-Warnungen", "Anzahl g\u00fcltiger DWD-Warnungen", "DWD-Warnungen (Internet)", "", "dwd_count", "dwd_count", "", WX_DwdCountActive, WX_KoDwdCount, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
     {"Stoerung DWD-Abruf", "St\u00f6rung DWD-Abruf", "DWD-Warnungen (Internet)", "", "dwd_fault", "dwd_fault", "", WX_DwdFaultActive, WX_KoDwdFault, WxSensor::None, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
+    {"Regenmenge gestern", "Regenmenge gestern", "Regen", "mm", "rain_yesterday", "raincounter_yesterday", "mm", WX_RainYesterdayActive, WX_KoRainYesterday, WxSensor::None, 0xFFFF, true, 2, WxFmt::Number, "precipitation", "mm", 1, {{9, 1, 1.0f}}},
+    {"Regenmenge diese Woche", "Regenmenge diese Woche", "Regen", "mm", "rain_week", "raincounter_week", "mm", WX_RainWeekActive, WX_KoRainWeek, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Regenmenge dieser Monat", "Regenmenge dieser Monat", "Regen", "mm", "rain_month", "raincounter_month", "mm", WX_RainMonthActive, WX_KoRainMonth, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Regenmenge dieses Jahr", "Regenmenge dieses Jahr", "Regen", "mm", "rain_year", "raincounter_year", "mm", WX_RainYearActive, WX_KoRainYear, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
 };
 

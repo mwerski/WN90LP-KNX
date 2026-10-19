@@ -266,7 +266,7 @@
               </ParameterType>
             </ParameterTypes>
             <Parameters>
-              <Union SizeInBit="17576">
+              <Union SizeInBit="17928">
                 <Memory CodeSegment="%MID%" Offset="0" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00001" Name="SdsPresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="0" Text="Feinstaubsensor SDS011 vorhanden" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00002" Name="OneWirePresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="1" Text="Temperatursensor 1-Wire (DS18B20) vorhanden" Value="0" />
@@ -931,6 +931,25 @@
                 <Parameter Id="%AID%_UP-%TT%00657" Name="DwdCountCycle" ParameterType="%AID%_PT-WxCycle" Offset="2176" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00658" Name="DwdFaultActive" ParameterType="%AID%_PT-CheckBox" Offset="2186" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00659" Name="DwdFaultCycle" ParameterType="%AID%_PT-WxCycle" Offset="2187" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00664" Name="RainYesterdayActive" ParameterType="%AID%_PT-CheckBox" Offset="2197" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00665" Name="RainYesterdayCycle" ParameterType="%AID%_PT-WxCycle" Offset="2198" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00666" Name="RainYesterdayAbs" ParameterType="%AID%_PT-WxAbs" Offset="2200" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00667" Name="RainYesterdayRel" ParameterType="%AID%_PT-WxRel" Offset="2204" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00668" Name="RainWeekActive" ParameterType="%AID%_PT-CheckBox" Offset="2208" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00669" Name="RainWeekDpt" ParameterType="%AID%_PT-WxDpt7" Offset="2208" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00670" Name="RainWeekCycle" ParameterType="%AID%_PT-WxCycle" Offset="2209" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00671" Name="RainWeekAbs" ParameterType="%AID%_PT-WxAbs" Offset="2211" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00672" Name="RainWeekRel" ParameterType="%AID%_PT-WxRel" Offset="2215" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00673" Name="RainMonthActive" ParameterType="%AID%_PT-CheckBox" Offset="2219" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00674" Name="RainMonthDpt" ParameterType="%AID%_PT-WxDpt7" Offset="2219" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00675" Name="RainMonthCycle" ParameterType="%AID%_PT-WxCycle" Offset="2220" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00676" Name="RainMonthAbs" ParameterType="%AID%_PT-WxAbs" Offset="2222" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00677" Name="RainMonthRel" ParameterType="%AID%_PT-WxRel" Offset="2226" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00678" Name="RainYearActive" ParameterType="%AID%_PT-CheckBox" Offset="2230" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00679" Name="RainYearDpt" ParameterType="%AID%_PT-WxDpt7" Offset="2230" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00680" Name="RainYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2231" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00681" Name="RainYearAbs" ParameterType="%AID%_PT-WxAbs" Offset="2233" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="mm" />
+                <Parameter Id="%AID%_UP-%TT%00682" Name="RainYearRel" ParameterType="%AID%_PT-WxRel" Offset="2237" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -1597,6 +1616,25 @@
               <ParameterRef Id="%AID%_UP-%TT%00657_R-%TT%0065701" RefId="%AID%_UP-%TT%00657" />
               <ParameterRef Id="%AID%_UP-%TT%00658_R-%TT%0065801" RefId="%AID%_UP-%TT%00658" />
               <ParameterRef Id="%AID%_UP-%TT%00659_R-%TT%0065901" RefId="%AID%_UP-%TT%00659" />
+              <ParameterRef Id="%AID%_UP-%TT%00664_R-%TT%0066401" RefId="%AID%_UP-%TT%00664" />
+              <ParameterRef Id="%AID%_UP-%TT%00665_R-%TT%0066501" RefId="%AID%_UP-%TT%00665" />
+              <ParameterRef Id="%AID%_UP-%TT%00666_R-%TT%0066601" RefId="%AID%_UP-%TT%00666" />
+              <ParameterRef Id="%AID%_UP-%TT%00667_R-%TT%0066701" RefId="%AID%_UP-%TT%00667" />
+              <ParameterRef Id="%AID%_UP-%TT%00668_R-%TT%0066801" RefId="%AID%_UP-%TT%00668" />
+              <ParameterRef Id="%AID%_UP-%TT%00669_R-%TT%0066901" RefId="%AID%_UP-%TT%00669" />
+              <ParameterRef Id="%AID%_UP-%TT%00670_R-%TT%0067001" RefId="%AID%_UP-%TT%00670" />
+              <ParameterRef Id="%AID%_UP-%TT%00671_R-%TT%0067101" RefId="%AID%_UP-%TT%00671" />
+              <ParameterRef Id="%AID%_UP-%TT%00672_R-%TT%0067201" RefId="%AID%_UP-%TT%00672" />
+              <ParameterRef Id="%AID%_UP-%TT%00673_R-%TT%0067301" RefId="%AID%_UP-%TT%00673" />
+              <ParameterRef Id="%AID%_UP-%TT%00674_R-%TT%0067401" RefId="%AID%_UP-%TT%00674" />
+              <ParameterRef Id="%AID%_UP-%TT%00675_R-%TT%0067501" RefId="%AID%_UP-%TT%00675" />
+              <ParameterRef Id="%AID%_UP-%TT%00676_R-%TT%0067601" RefId="%AID%_UP-%TT%00676" />
+              <ParameterRef Id="%AID%_UP-%TT%00677_R-%TT%0067701" RefId="%AID%_UP-%TT%00677" />
+              <ParameterRef Id="%AID%_UP-%TT%00678_R-%TT%0067801" RefId="%AID%_UP-%TT%00678" />
+              <ParameterRef Id="%AID%_UP-%TT%00679_R-%TT%0067901" RefId="%AID%_UP-%TT%00679" />
+              <ParameterRef Id="%AID%_UP-%TT%00680_R-%TT%0068001" RefId="%AID%_UP-%TT%00680" />
+              <ParameterRef Id="%AID%_UP-%TT%00681_R-%TT%0068101" RefId="%AID%_UP-%TT%00681" />
+              <ParameterRef Id="%AID%_UP-%TT%00682_R-%TT%0068201" RefId="%AID%_UP-%TT%00682" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -1761,6 +1799,10 @@
               <ComObject Id="%AID%_O-%TT%00167" Name="DwdSevere" Text="DWD-Unwetterwarnung (Stufe 3 oder 4)" Number="167" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
               <ComObject Id="%AID%_O-%TT%00168" Name="DwdCount" Text="Anzahl gültiger DWD-Warnungen" Number="168" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
               <ComObject Id="%AID%_O-%TT%00169" Name="DwdFault" Text="Störung DWD-Abruf" Number="169" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
+              <ComObject Id="%AID%_O-%TT%00170" Name="RainYesterday" Text="Regenmenge gestern" Number="170" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
+              <ComObject Id="%AID%_O-%TT%00171" Name="RainWeek" Text="Regenmenge diese Woche" Number="171" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
+              <ComObject Id="%AID%_O-%TT%00172" Name="RainMonth" Text="Regenmenge dieser Monat" Number="172" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
+              <ComObject Id="%AID%_O-%TT%00173" Name="RainYear" Text="Regenmenge dieses Jahr" Number="173" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
               <ComObject Id="%AID%_O-%TT%00148" Name="Room1TempIn" Text="Raumtemperatur Raum 1" Number="148" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
               <ComObject Id="%AID%_O-%TT%00149" Name="Room1HumIn" Text="Raumfeuchte Raum 1" Number="149" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-7" />
               <ComObject Id="%AID%_O-%TT%00150" Name="Room2TempIn" Text="Raumtemperatur Raum 2" Number="150" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
@@ -2009,6 +2051,13 @@
               <ComObjectRef Id="%AID%_O-%TT%00167_R-%TT%0016701" RefId="%AID%_O-%TT%00167" ObjectSize="1 Bit" DatapointType="DPST-1-5" />
               <ComObjectRef Id="%AID%_O-%TT%00168_R-%TT%0016801" RefId="%AID%_O-%TT%00168" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
               <ComObjectRef Id="%AID%_O-%TT%00169_R-%TT%0016901" RefId="%AID%_O-%TT%00169" ObjectSize="1 Bit" DatapointType="DPST-1-5" />
+              <ComObjectRef Id="%AID%_O-%TT%00170_R-%TT%0017001" RefId="%AID%_O-%TT%00170" ObjectSize="2 Bytes" DatapointType="DPST-9-26" />
+              <ComObjectRef Id="%AID%_O-%TT%00171_R-%TT%0017101" RefId="%AID%_O-%TT%00171" ObjectSize="2 Bytes" DatapointType="DPST-9-26" />
+              <ComObjectRef Id="%AID%_O-%TT%00171_R-%TT%0017102" RefId="%AID%_O-%TT%00171" ObjectSize="4 Bytes" DatapointType="DPT-14" />
+              <ComObjectRef Id="%AID%_O-%TT%00172_R-%TT%0017201" RefId="%AID%_O-%TT%00172" ObjectSize="2 Bytes" DatapointType="DPST-9-26" />
+              <ComObjectRef Id="%AID%_O-%TT%00172_R-%TT%0017202" RefId="%AID%_O-%TT%00172" ObjectSize="4 Bytes" DatapointType="DPT-14" />
+              <ComObjectRef Id="%AID%_O-%TT%00173_R-%TT%0017301" RefId="%AID%_O-%TT%00173" ObjectSize="2 Bytes" DatapointType="DPST-9-26" />
+              <ComObjectRef Id="%AID%_O-%TT%00173_R-%TT%0017302" RefId="%AID%_O-%TT%00173" ObjectSize="4 Bytes" DatapointType="DPT-14" />
               <ComObjectRef Id="%AID%_O-%TT%00148_R-%TT%0014801" RefId="%AID%_O-%TT%00148" />
               <ComObjectRef Id="%AID%_O-%TT%00149_R-%TT%0014901" RefId="%AID%_O-%TT%00149" />
               <ComObjectRef Id="%AID%_O-%TT%00150_R-%TT%0015001" RefId="%AID%_O-%TT%00150" />
@@ -2670,6 +2719,74 @@
                   <when test="1">
                     <ParameterRefRef RefId="%AID%_UP-%TT%00248_R-%TT%0024801" IndentLevel="2" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00034_R-%TT%0003401" />
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tagessumme des Vortags (0-24 Uhr Ortszeit), wird um Mitternacht übernommen und bleibt über Neustarts erhalten. Ungültig, solange noch kein vollständiger Tag gemessen wurde oder die Station über Mitternacht aus war." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00664_R-%TT%0066401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00664_R-%TT%0066401">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00665_R-%TT%0066501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00666_R-%TT%0066601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00667_R-%TT%0066701" IndentLevel="2" />
+                    <ComObjectRefRef RefId="%AID%_O-%TT%00170_R-%TT%0017001" />
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge diese Woche" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Seit Montag 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00668_R-%TT%0066801" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00668_R-%TT%0066801">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00669_R-%TT%0066901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00670_R-%TT%0067001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00671_R-%TT%0067101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00672_R-%TT%0067201" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00669_R-%TT%0066901">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00171_R-%TT%0017101" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00171_R-%TT%0017102" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge dieser Monat" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Seit dem Monatsersten 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00673_R-%TT%0067301" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00673_R-%TT%0067301">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00674_R-%TT%0067401" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00675_R-%TT%0067501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00676_R-%TT%0067601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00677_R-%TT%0067701" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00674_R-%TT%0067401">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00172_R-%TT%0017201" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00172_R-%TT%0017202" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge dieses Jahr" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Seit dem 1. Januar 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start. DPT 9 löst große Werte grob auf (bei 1000 mm etwa 0,6 mm), DPT 14 ist genau." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00678_R-%TT%0067801" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00678_R-%TT%0067801">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00679_R-%TT%0067901" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00680_R-%TT%0068001" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00681_R-%TT%0068101" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00682_R-%TT%0068201" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00679_R-%TT%0067901">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00173_R-%TT%0017301" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00173_R-%TT%0017302" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
               </ParameterBlock>

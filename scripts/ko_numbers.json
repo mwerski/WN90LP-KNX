@@ -167,5 +167,9 @@
  "DwdEvent": 166,
  "DwdSevere": 167,
  "DwdCount": 168,
- "DwdFault": 169
+ "DwdFault": 169,
+ "RainYesterday": 170,
+ "RainWeek": 171,
+ "RainMonth": 172,
+ "RainYear": 173
 }

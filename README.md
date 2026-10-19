@@ -20,6 +20,7 @@ und optional per MQTT bereit.
 - Berechnet: absolute Feuchte, Taupunkt, Frostpunkt, Humidex, Hitzeindex, Windchill, Discomfort-Index,
   Beaufort, Luftdruck auf Meereshöhe, Luftdrucktendenz 1 h / 3 h
 - Regen: Gesamtmenge, Intensität (mm/h), Mengen der letzten 5 min / 1 h / 6 h / 24 h / 48 h / 72 h, heute,
+  gestern, diese Woche (ab Montag), dieser Monat, dieses Jahr (remanent, Ortszeit),
   „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
   Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
 - Feinstaub PM2,5 / PM10, auch feuchtekorrigiert

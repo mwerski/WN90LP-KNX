@@ -440,6 +440,18 @@ VALUES = [
     V("DwdCount", "DwdOfficial", "Anzahl gültiger DWD-Warnungen", "", BFT, 3600, 0, 0, thresholds=False, decimals=0, mqtt="dwd_count"),
     V("DwdFault", "DwdOfficial", "Störung DWD-Abruf", "", ALARM, 3600, 0, 0, True, thresholds=False, decimals=0, mqtt="dwd_fault",
       info="1, wenn seit drei Abrufintervallen keine Daten vom DWD kamen (Internet, DNS oder Server)."),
+    # Regensummen nach Kalender (ab 1.1); hinten angefuegt, damit bestehende KO-Nummern bleiben
+    V("RainYesterday", "Rain", "Regenmenge gestern", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="rain_yesterday",
+      influx="raincounter_yesterday",
+      info="Tagessumme des Vortags (0-24 Uhr Ortszeit), wird um Mitternacht übernommen und bleibt über Neustarts erhalten. "
+           "Ungültig, solange noch kein vollständiger Tag gemessen wurde oder die Station über Mitternacht aus war."),
+    V("RainWeek", "Rain", "Regenmenge diese Woche", "mm", RAIN, 3600, 1, 0, decimals=1, mqtt="rain_week", influx="raincounter_week",
+      info="Seit Montag 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start."),
+    V("RainMonth", "Rain", "Regenmenge dieser Monat", "mm", RAIN, 3600, 1, 0, decimals=1, mqtt="rain_month", influx="raincounter_month",
+      info="Seit dem Monatsersten 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start."),
+    V("RainYear", "Rain", "Regenmenge dieses Jahr", "mm", RAIN, 3600, 5, 0, decimals=1, mqtt="rain_year", influx="raincounter_year",
+      info="Seit dem 1. Januar 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start. DPT 9 löst große Werte "
+           "grob auf (bei 1000 mm etwa 0,6 mm), DPT 14 ist genau."),
 ]
 
 # Stoerungs-KOs vor den Messwerten

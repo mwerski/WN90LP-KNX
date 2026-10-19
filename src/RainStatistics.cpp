@@ -1,5 +1,7 @@
 #include "RainStatistics.h"
+#include "MeasuredValue.h"
 #include "OpenKNX.h"
+#include <utility>
 
 // Sprung von mehr als 50 mm zwischen zwei Abfragen (2 s): Zaehler der Wetterstation wurde zurueckgesetzt
 static constexpr uint16_t MAX_PLAUSIBLE_DELTA = 5000;
@@ -106,12 +108,64 @@ void RainStatistics::checkDay()
 {
     const OpenKNX::DateTime now = openknx.time.getLocalTime();
     const uint32_t key = now.year * 10000UL + now.month * 100UL + now.day;
-    if (key == _dayKey)
+    const bool newDay = key != _dayKey;
+    const long today = MeasuredValue::daysFromCivil(now.year, now.month, now.day);
+    if (newDay)
+    {
+        // Vortag nur uebernehmen, wenn der bisherige Tag direkt der Vortag war (sonst fehlt Messzeit)
+        const long previous = _dayKey ? MeasuredValue::daysFromCivil(_dayKey / 10000, (_dayKey / 100) % 100, _dayKey % 100) : 0;
+        _yesterday = (_dayKey && previous == today - 1) ? (float)(_total - _midnightTotal) : NAN;
+    }
+
+    // Neu beginnende Zeitraeume starten beim Tageswechsel mit dem aktuellen Stand; unbekannte Zeitraeume
+    // (z. B. nach einem Firmware-Update) mit dem heutigen Tagesbeginn, damit der Regen von heute enthalten ist
+    const double start = newDay ? _total : _midnightTotal;
+    const uint32_t weekKey = (uint32_t)(today - (today + 3) % 7); // 1.1.1970 war ein Donnerstag
+    const uint32_t monthKey = now.year * 100UL + now.month;
+    bool changed = false;
+    for (auto entry : {std::make_pair(&_week, weekKey), std::make_pair(&_month, monthKey), std::make_pair(&_year, (uint32_t)now.year)})
+    {
+        Period &p = *entry.first;
+        if (p.key != entry.second)
+        {
+            p.start = start;
+            p.key = entry.second;
+            changed = true;
+        }
+    }
+    if (!newDay)
+    {
+        if (changed)
+            _saveRequested = true;
         return;
+    }
     // Neuer Tag (oder erste gueltige Uhrzeit): Tagesmenge beginnt beim aktuellen Stand
     _dayKey = key;
     _midnightTotal = _total;
     _saveRequested = true;
+}
+
+void RainStatistics::writePeriodFlash()
+{
+    openknx.flash.writeFloat(_yesterday);
+    for (const Period *p : {&_week, &_month, &_year})
+    {
+        openknx.flash.writeDouble(p->start);
+        openknx.flash.writeInt(p->key);
+    }
+}
+
+void RainStatistics::readPeriodFlash()
+{
+    _yesterday = openknx.flash.readFloat();
+    for (Period *p : {&_week, &_month, &_year})
+    {
+        p->start = openknx.flash.readDouble();
+        p->key = openknx.flash.readInt();
+        // Unplausibel (z. B. Zaehler zurueckgesetzt): Zeitraum neu beginnen
+        if (isnan(p->start) || p->start > _total)
+            p->key = 0;
+    }
 }
 
 float RainStatistics::back(const float *ring, uint8_t size, uint8_t head, uint8_t count, uint8_t steps) const
