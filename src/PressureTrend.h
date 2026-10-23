@@ -13,13 +13,15 @@ class PressureTrend
     uint8_t samples() const { return _count; }
     float sample(uint8_t stepsBack) const;
 
-    // Verlauf ueber Neustarts (OTA, ETS) retten; wird uebernommen, wenn die Luecke hoechstens 30 min betraegt
+    // Verlauf ueber Neustarts retten; bei einer Luecke bis 3 h werden die fehlenden Werte linear aufgefuellt.
+    // Gespeichert wird stuendlich und vor gewollten Neustarts, nach einem Absturz kann der Stand also bis 1 h alt sein.
     void writeFlash();
     void readFlash();
 
   private:
     static constexpr uint8_t SIZE = 13; // 3 h in 15-min-Schritten + aktueller Wert
     static constexpr uint32_t STEP = 15 * 60000UL;
+    static constexpr uint32_t MAX_GAP_S = 3 * 3600;
 
     float _ring[SIZE] = {};
     uint8_t _head = 0;

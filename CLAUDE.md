@@ -72,6 +72,8 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
 - **Flash-Version 8** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38][Luftdruck 58][Regen gestern/Woche/Monat/Jahr 40]; ältere Versionen werden noch gelesen. Grenzen je Version als `FLASH_END_Vn` (kumuliert) in WeatherModule.cpp – neue Blöcke nur hinten anfügen und eine neue Grenze ergänzen. Vor jedem gewollten Neustart (ETS, OTA, Konsole) erzwingt `processBeforeRestart()` das Speichern.
+- **Absturzdiagnose ohne USB** (`Diag.cpp`): `set_arduino_panic_handler()` sichert Ursache, Task und bis zu 16 Backtrace-Adressen im RTC-Speicher; nach dem Neustart im Log und bei `wx sensors`. Auswerten mit `xtensa-esp32s3-elf-addr2line -pfiaC -e <firmware.elf> <Adressen>` – dafür die `firmware.elf` jedes ausgelieferten Builds unter `release/<version>.elf` aufheben (nicht versioniert).
+- **Luftdruckverlauf** (`PressureTrend`): Nach einem Neustart werden Lücken bis 3 h linear aufgefüllt, längere Ausfälle beginnen neu.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.

@@ -7,6 +7,21 @@ namespace Diag
     static constexpr uint32_t MAGIC = 0x57583930; // "WX90"
     RTC_NOINIT_ATTR static uint32_t s_magic;
     RTC_NOINIT_ATTR static uint8_t s_stage;
+
+    // Absturzdaten aus dem Panic-Handler (ueberstehen den Neustart, ohne USB auswertbar)
+    static constexpr uint8_t CRASH_DEPTH = 16;
+    struct CrashInfo
+    {
+        uint32_t magic;
+        char reason[48];
+        char task[16];
+        uint8_t depth;
+        uint32_t pc[CRASH_DEPTH];
+    };
+    RTC_NOINIT_ATTR static CrashInfo s_crash;
+    static CrashInfo s_lastCrash; // Kopie fuer die Anzeige
+    static bool s_haveCrash = false;
+    static void recordCrash(arduino_panic_info_t *info, void *);
     static uint8_t s_lastStage = None;
     static esp_reset_reason_t s_reason = ESP_RST_UNKNOWN;
 
@@ -124,6 +139,15 @@ namespace Diag
         s_lastStage = s_magic == MAGIC ? s_stage : None;
         s_magic = MAGIC;
         s_stage = None;
+        if (s_crash.magic == MAGIC && s_crash.depth <= CRASH_DEPTH)
+        {
+            s_lastCrash = s_crash;
+            s_lastCrash.reason[sizeof(s_lastCrash.reason) - 1] = 0;
+            s_lastCrash.task[sizeof(s_lastCrash.task) - 1] = 0;
+            s_haveCrash = true;
+        }
+        s_crash.magic = 0;
+        set_arduino_panic_handler(recordCrash, nullptr);
         report();
     }
 
@@ -134,6 +158,36 @@ namespace Diag
             logError("Weather", "Letzter Neustart: %s, zuletzt aktiv: %s", reasonName(s_reason), stageName(s_lastStage));
         else
             logInfo("Weather", "Letzter Neustart: %s", reasonName(s_reason));
+        if (!s_haveCrash)
+            return;
+        // Backtrace wie im seriellen Absturzprotokoll; mit addr2line und der firmware.elf dieses Builds auswerten
+        char bt[CRASH_DEPTH * 11 + 1];
+        size_t n = 0;
+        for (uint8_t i = 0; i < s_lastCrash.depth && n + 11 < sizeof(bt); i++)
+            n += snprintf(bt + n, sizeof(bt) - n, " 0x%08lx", (unsigned long)s_lastCrash.pc[i]);
+        bt[n] = 0;
+        logError("Weather", "Absturz in Task \"%s\": %s", s_lastCrash.task, s_lastCrash.reason);
+        logError("Weather", "Backtrace:%s", bt);
+    }
+
+    static void IRAM_ATTR copyText(char *dst, size_t size, const char *src)
+    {
+        size_t i = 0;
+        if (src)
+            for (; i + 1 < size && src[i]; i++)
+                dst[i] = src[i];
+        dst[i] = 0;
+    }
+
+    // Aufruf aus dem Panic-Handler des Arduino-Kerns (set_arduino_panic_handler): nur RTC-Speicher beschreiben
+    static void IRAM_ATTR recordCrash(arduino_panic_info_t *info, void *)
+    {
+        s_crash.magic = MAGIC;
+        copyText(s_crash.reason, sizeof(s_crash.reason), info->reason);
+        copyText(s_crash.task, sizeof(s_crash.task), pcTaskGetName(NULL));
+        s_crash.depth = 0;
+        for (uint8_t i = 0; i < info->backtrace_len && s_crash.depth < CRASH_DEPTH; i++)
+            s_crash.pc[s_crash.depth++] = info->backtrace[i];
     }
 
     bool koExists(uint16_t ko)

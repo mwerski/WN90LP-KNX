@@ -62,19 +62,31 @@ void PressureTrend::readFlash()
 
 void PressureTrend::applyRestore()
 {
-    if (!openknx.time.isValid())
+    // Fuer das Auffuellen werden Uhrzeit und ein aktueller Messwert gebraucht
+    if (!openknx.time.isValid() || isnan(_current))
         return;
     _restorePending = false;
     const uint32_t now = (uint32_t)openknx.time.getUtcTime().toTime_t();
-    if (now < _lastEpoch || now - _lastEpoch > 1800)
+    if (now < _lastEpoch || now - _lastEpoch > MAX_GAP_S)
     {
         _count = 0; // Luecke zu gross: neu beginnen
         return;
     }
-    // Naechsten Wert im 15-min-Raster ab dem letzten gespeicherten Wert einreihen
+    // Verpasste 15-min-Werte zwischen letztem gespeichertem und aktuellem Wert linear auffuellen
+    const uint32_t missed = (now - _lastEpoch) / (STEP / 1000);
+    const float last = _ring[_head];
+    for (uint32_t k = 1; k <= missed; k++)
+    {
+        _head = (_head + 1) % SIZE;
+        _ring[_head] = last + (_current - last) * k / (missed + 1);
+        if (_count < SIZE)
+            _count++;
+    }
+    _lastEpoch += missed * (STEP / 1000);
+    // Naechsten Wert im 15-min-Raster ab dem letzten (aufgefuellten) Wert einreihen
     const uint32_t ageMs = (now - _lastEpoch) * 1000UL;
     _timer = millis() - min(ageMs, STEP);
-    logInfo("Weather", "Luftdruckverlauf uebernommen: %u Werte, letzter vor %lu s", _count, now - _lastEpoch);
+    logInfo("Weather", "Luftdruckverlauf uebernommen: %u Werte, %lu aufgefuellt", _count, missed);
 }
 
 float PressureTrend::sample(uint8_t stepsBack) const
