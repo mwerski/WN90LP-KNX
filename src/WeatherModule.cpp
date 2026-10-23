@@ -1350,11 +1350,21 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             snap->emplace_back();
             snap->back().reserve(PART_SIZE + 512);
         }
+        // serializeJson() ersetzt den Inhalt eines std::string (ArduinoJson 7), daher ueber einen Zwischenpuffer
         std::string &part = snap->back();
         if (!first)
             part += ',';
         first = false;
-        serializeJson(o, part);
+        char buf[384];
+        const size_t len = serializeJson(o, buf, sizeof(buf));
+        if (len < sizeof(buf) - 1)
+            part.append(buf, len);
+        else
+        {
+            std::string big;
+            serializeJson(o, big);
+            part += big;
+        }
     }
     snap->back() += "]}";
     return snap;
