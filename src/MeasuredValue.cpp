@@ -3,6 +3,7 @@
 #include "Astro.h"
 #include "DwdWarnings.h"
 #include "Forecast.h"
+#include "ParticleStats.h"
 #include "Warnings.h"
 
 int64_t MeasuredValue::s_localMidnightUtc = 0;
@@ -148,6 +149,8 @@ KNXValue MeasuredValue::busValue() const
                 return KNXValue(DwdWarnings::eventText(false));
             if (_def->fmt == WxFmt::WarnText)
                 return KNXValue(Warnings::text((uint8_t)lroundf(bus), false));
+            if (_def->fmt == WxFmt::AqiText)
+                return KNXValue(ParticleStats::indexText((uint8_t)lroundf(bus), false));
             return KNXValue(Forecast::text((uint8_t)lroundf(bus), false));
         case 10:
         {
@@ -271,6 +274,8 @@ std::string MeasuredValue::format(float value, const WxValueDef *def, bool withU
         case WxFmt::DwdText:
             // Ereignistext des DWD ist ungekuerzt; nur das KO kuerzt auf 14 Zeichen
             return DwdWarnings::eventText(true);
+        case WxFmt::AqiText:
+            return ParticleStats::indexText((uint8_t)lroundf(value), true);
         case WxFmt::MoonText:
         case WxFmt::MoonPhase:
             return full ? Astro::moonPhaseLongText((uint8_t)lroundf(value)) : Astro::moonPhaseText((uint8_t)lroundf(value), true);

@@ -3,6 +3,7 @@
 #include "OneWireSensor.h"
 #include "OpenKNX.h"
 #include "PressureTrend.h"
+#include "ParticleStats.h"
 #include "RainStatistics.h"
 #include "Season.h"
 #include "Sds011Sensor.h"
@@ -21,10 +22,10 @@
 // Firmware-Version = ETS-Applikationsversion (Major.Minor) + Revision. Die Revision geht auch an
 // openknx.init() (Versionsanzeige von OpenKNX in Konsole/Web-UI, dort mit Git-Hash) und muss bei
 // einer neuen Applikationsversion wieder bei 0 beginnen (max. 31).
-#define WX_FIRMWARE_REVISION 1
+#define WX_FIRMWARE_REVISION 0
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
-#define WX_FIRMWARE_VERSION "1.1." WX_STR(WX_FIRMWARE_REVISION)
+#define WX_FIRMWARE_VERSION "1.2." WX_STR(WX_FIRMWARE_REVISION)
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -90,6 +91,7 @@ class WeatherModule : public OpenKNX::Module
     void invalidateWn90();
     void processSds();
     void updateRain();
+    void updateParticles();
     void updateForecast();
     void updateWindAlarms();
     void updateStatusLed();
@@ -128,6 +130,7 @@ class WeatherModule : public OpenKNX::Module
     Sds011Sensor _sds;
     OneWireSensor _oneWire;
     RainStatistics _rain;
+    ParticleStats _pm;
     PressureTrend _pressure;
     MeasuredValue _values[WX_VALUE_COUNT];
 

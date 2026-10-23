@@ -68,6 +68,7 @@ DURATION = [("DPT 13.100 (4 Byte, s)", "DPST-13-100", "4 Bytes", 13, 100, 1.0),
             ("DPT 7.006 (2 Byte, min)", "DPST-7-6", "2 Bytes", 7, 1, 1.0 / 60)]
 HOURS = [("DPT 9 (2 Byte, h)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, h)")]
 PERCENT = [("DPT 5.001 (1 Byte, %)", "DPST-5-1", "1 Byte", 5, 1, 1.0)]
+COUNT = [("DPT 7.001 (2 Byte, Anzahl)", "DPST-7-1", "2 Bytes", 7, 1, 1.0)]
 ENERGY = [("DPT 13.010 (4 Byte, Wh)", "DPST-13-10", "4 Bytes", 13, 10, 1000.0), T14(None, "DPT 14 (4 Byte, kWh)")]
 # Faktor -1 = invertiert (1.100: 1 = Heizen = Winter)
 SEASON = [("DPT 1.002 (1 Bit, 1 = Sommer)", "DPST-1-2", "1 Bit", 1, 2, 1.0),
@@ -452,6 +453,44 @@ VALUES = [
     V("RainYear", "Rain", "Regenmenge dieses Jahr", "mm", RAIN, 3600, 5, 0, decimals=1, mqtt="rain_year", influx="raincounter_year",
       info="Seit dem 1. Januar 0 Uhr. Im ersten Zeitraum nach der Inbetriebnahme nur seit dem Start. DPT 9 löst große Werte "
            "grob auf (bei 1000 mm etwa 0,6 mm), DPT 14 ist genau."),
+    # Feinstaub-Auswertung (ab 1.2): Mittelwerte, WHO-Richtwerte, Luftqualitaetsindex, Ampel
+    V("Pm25Mean1h", "Particles", "PM2,5 Mittel 1 Stunde", "µg/m³", PM, 600, 2, 0, sensor="sds", mqtt="pm25_1h",
+      info="Gleitendes Mittel der letzten Stunde."),
+    V("Pm10Mean1h", "Particles", "PM10 Mittel 1 Stunde", "µg/m³", PM, 600, 2, 0, sensor="sds", mqtt="pm10_1h",
+      info="Gleitendes Mittel der letzten Stunde."),
+    V("Pm25Mean24h", "Particles", "PM2,5 Mittel 24 Stunden", "µg/m³", PM, 1800, 1, 0, True, sensor="sds", mqtt="pm25_24h",
+      info="Gleitendes Mittel der letzten 24 Stundenmittel; gültig, sobald 18 Stunden mit Messwerten vorliegen. Grundlage für WHO-Richtwert und Luftqualitätsindex."),
+    V("Pm10Mean24h", "Particles", "PM10 Mittel 24 Stunden", "µg/m³", PM, 1800, 1, 0, True, sensor="sds", mqtt="pm10_24h",
+      info="Gleitendes Mittel der letzten 24 Stundenmittel; gültig, sobald 18 Stunden mit Messwerten vorliegen."),
+    V("Pm25Yesterday", "Particles", "PM2,5 Tagesmittel gestern", "µg/m³", PM, 3600, 1, 0, sensor="sds", mqtt="pm25_yesterday",
+      info="Mittel des Vortags (0-24 Uhr Ortszeit); ungültig, wenn die Station über Mitternacht aus war."),
+    V("Pm10Yesterday", "Particles", "PM10 Tagesmittel gestern", "µg/m³", PM, 3600, 1, 0, sensor="sds", mqtt="pm10_yesterday",
+      info="Mittel des Vortags (0-24 Uhr Ortszeit); ungültig, wenn die Station über Mitternacht aus war."),
+    V("Pm25YearMean", "Particles", "PM2,5 Jahresmittel (laufendes Jahr)", "µg/m³", PM, 3600, 0.5, 0, sensor="sds", mqtt="pm25_year",
+      info="Mittel der Tagesmittel seit 1. Januar. WHO-Leitwert 5 µg/m³, EU-Grenzwert 25 µg/m³ (ab 2030: 10)."),
+    V("Pm10YearMean", "Particles", "PM10 Jahresmittel (laufendes Jahr)", "µg/m³", PM, 3600, 0.5, 0, sensor="sds", mqtt="pm10_year",
+      info="Mittel der Tagesmittel seit 1. Januar. WHO-Leitwert 15 µg/m³, EU-Grenzwert 40 µg/m³ (ab 2030: 20)."),
+    V("Pm25WhoExceeded", "Particles", "PM2,5 über WHO-Richtwert (24 h)", "", ALARM, 3600, 0, 0, True, sensor="sds", thresholds=False,
+      decimals=0, mqtt="pm25_who_exceeded", info="1, solange das 24-Stunden-Mittel über 15 µg/m³ liegt (WHO 2021)."),
+    V("Pm10WhoExceeded", "Particles", "PM10 über WHO-Richtwert (24 h)", "", ALARM, 3600, 0, 0, True, sensor="sds", thresholds=False,
+      decimals=0, mqtt="pm10_who_exceeded", info="1, solange das 24-Stunden-Mittel über 45 µg/m³ liegt (WHO 2021)."),
+    V("Pm25ExceedDays", "Particles", "PM2,5 Überschreitungstage (laufendes Jahr)", "", COUNT, 3600, 0, 0, sensor="sds",
+      thresholds=False, decimals=0, mqtt="pm25_exceed_days",
+      info="Tage seit 1. Januar mit Tagesmittel über der eingestellten Schwelle (unten auf dieser Seite)."),
+    V("Pm10ExceedDays", "Particles", "PM10 Überschreitungstage (laufendes Jahr)", "", COUNT, 3600, 0, 0, sensor="sds",
+      thresholds=False, decimals=0, mqtt="pm10_exceed_days",
+      info="Tage seit 1. Januar mit Tagesmittel über der eingestellten Schwelle (unten auf dieser Seite)."),
+    V("AqiPm25", "Particles", "Luftqualitätsindex PM2,5 (1-5)", "", BFT, 3600, 0, 0, sensor="sds", thresholds=False, decimals=0,
+      mqtt="aqi_pm25", info="Umweltbundesamt, 24-Stunden-Mittel: 1 sehr gut (bis 10), 2 gut (bis 20), 3 mäßig (bis 25), 4 schlecht (bis 50), 5 sehr schlecht."),
+    V("AqiPm10", "Particles", "Luftqualitätsindex PM10 (1-5)", "", BFT, 3600, 0, 0, sensor="sds", thresholds=False, decimals=0,
+      mqtt="aqi_pm10", info="Umweltbundesamt, 24-Stunden-Mittel: 1 sehr gut (bis 20), 2 gut (bis 35), 3 mäßig (bis 50), 4 schlecht (bis 100), 5 sehr schlecht."),
+    V("Aqi", "Particles", "Luftqualitätsindex Feinstaub (1-5)", "", BFT, 3600, 0, 0, True, sensor="sds", thresholds=False, decimals=0,
+      mqtt="aqi", info="Schlechterer Wert aus PM2,5 und PM10."),
+    V("AqiText", "Particles", "Luftqualität Feinstaub (Text)", "", TEXT, 3600, 0, 0, True, sensor="sds", thresholds=False, decimals=0,
+      mqtt="aqi_text", influx="", fmt="aqitext", info="„sehr gut“, „gut“, „mäßig“, „schlecht“ oder „sehr schlecht“."),
+    V("PmTrafficLight", "Particles", "Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)", "", BFT, 3600, 0, 0, True, sensor="sds",
+      thresholds=False, decimals=0, mqtt="pm_traffic_light",
+      info="0 grün (Index sehr gut oder gut), 1 gelb (mäßig), 2 rot (schlecht oder sehr schlecht)."),
 ]
 
 # Stoerungs-KOs vor den Messwerten
@@ -474,7 +513,7 @@ INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 448  # frei: 446-447
+GENERAL_SIZE = 448  # frei: 447
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -615,6 +654,7 @@ GENERAL = [
     ("LedMode", "%AID%_PT-WxLedMode", 443, 0, "Statusanzeige", "2", None),
     ("LedBrightness", "%AID%_PT-WxLedBrightness", 444, 0, "Helligkeit der Statusanzeige", "10", "%"),
     ("LedHeartbeat", "%AID%_PT-OnOffYesNo", 445, 7, "Lebenszeichen (kurz grün alle 10 s)", "0", None),
+    ("PmLimit", "%AID%_PT-WxPmLimit", 446, 0, "Überschreitungstage zählen nach", "0", None),
 ]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
@@ -936,6 +976,13 @@ def build():
         '                  <Enumeration Text="alle Zustände" Value="2" Id="%ENID%" />',
         '                </TypeRestriction>',
         '              </ParameterType>',
+        '              <ParameterType Id="%AID%_PT-WxPmLimit" Name="WxPmLimit">',
+        '                <TypeRestriction Base="Value" SizeInBit="8">',
+        '                  <Enumeration Text="WHO 2021 (Tagesmittel PM2,5 über 15, PM10 über 45 µg/m³)" Value="0" Id="%ENID%" />',
+        '                  <Enumeration Text="EU ab 2030 (Tagesmittel PM2,5 über 25, PM10 über 45 µg/m³)" Value="1" Id="%ENID%" />',
+        '                  <Enumeration Text="EU bis 2029 (Tagesmittel PM10 über 50 µg/m³, PM2,5 über 25 µg/m³)" Value="2" Id="%ENID%" />',
+        '                </TypeRestriction>',
+        '              </ParameterType>',
         '              <ParameterType Id="%AID%_PT-WxLedBrightness" Name="WxLedBrightness">',
         '                <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="100" />',
         '              </ParameterType>',
@@ -1118,6 +1165,11 @@ def build():
             w(f'{q}    <ParameterRefRef RefId="{ids.ref("DwdInterval")}" IndentLevel="2" />')
             w(f'{q}  </when>')
             w(f'{q}</choose>')
+        if gkey == "Particles":
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Auswertung" UIHint="Headline" />')
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Mittelwerte aus den feuchtekorrigierten Messwerten (ohne Luftfeuchte aus den Rohwerten). Der Luftqualitätsindex folgt dem Umweltbundesamt (24-Stunden-Mittel), die Ampel fasst ihn zusammen: grün = sehr gut/gut, gelb = mäßig, rot = schlecht/sehr schlecht. Der SDS011 ist ein preiswerter optischer Sensor; die Werte eignen sich für Tendenz und Ampel, nicht als Nachweis von Grenzwerten." UIHint="Information" />')
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="WHO-Leitlinie 2021: Tagesmittel PM2,5 15, PM10 45 µg/m³ (höchstens 3-4 Tage im Jahr darüber), Jahresmittel PM2,5 5, PM10 15 µg/m³. EU-Grenzwerte ab 2030: Tagesmittel PM2,5 25, PM10 45 µg/m³ (höchstens 18 Tage), Jahresmittel PM2,5 10, PM10 20 µg/m³." UIHint="Information" />')
+            w(f'{q}<ParameterRefRef RefId="{ids.ref("PmLimit")}" IndentLevel="1" />')
         if gkey == "DegreeDays":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Gradtagzahl nach VDI 3807 (G20/15) und Kühlgradtage aus der Tagesmitteltemperatur (Verfahren wie bei Sommer/Winter), für den witterungsbereinigten Vergleich des Energieverbrauchs. Wird um Mitternacht fortgeschrieben und bleibt über Neustarts erhalten." UIHint="Information" />')
             for n in ("DdIndoor", "DdHeatLimit", "DdCoolBase"):
@@ -1230,7 +1282,8 @@ def build():
     h.append("    MoonPhase, // 0..7")
     h.append("    MoonText,  // 0..7, Text")
     h.append("    WarnText,  // Kategorie * 10 + Stufe, Text")
-    h.append("    DwdText    // Aenderungszaehler, Text aus dem DWD-Abruf")
+    h.append("    DwdText,   // Aenderungszaehler, Text aus dem DWD-Abruf")
+    h.append("    AqiText    // Luftqualitaetsindex 1..5, Text")
     h.append("};")
     h.append("")
     h.append("struct WxDptOption")
@@ -1279,7 +1332,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")

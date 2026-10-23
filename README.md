@@ -23,6 +23,9 @@ und optional per MQTT bereit.
   gestern, diese Woche (ab Montag), dieser Monat, dieses Jahr (remanent, Ortszeit),
   „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
   Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
+- Feinstaub (SDS011): gleitende Mittel 1 h und 24 h, Tagesmittel gestern, Jahresmittel, „über WHO-Richtwert“,
+  Überschreitungstage im Jahr (Schwelle WHO 2021 / EU ab 2030 / EU bis 2029), Luftqualitätsindex des
+  Umweltbundesamts (1–5, je Schadstoff und gesamt, mit Text) und Ampel (0 grün, 1 gelb, 2 rot); remanent
 - Feinstaub PM2,5 / PM10, auch feuchtekorrigiert
 - Optional verwenden die Berechnungen (Taupunkt, Behaglichkeit, Luftdruck auf Meereshöhe …) die 1-Wire-Temperatur
   statt der Temperatur der Wetterstation; bei Ausfall des 1-Wire-Sensors automatisch wieder die Wetterstation.
@@ -156,6 +159,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx sensors` | Zustand WN90LP (Modbus), SDS011, 1-Wire, Uhrzeit |
 | `wx raw` | Rohwerte der Modbus-Register 0x0165–0x016E |
 | `wx rain` | Regenstatistik |
+| `wx pm` | Feinstaub: Mittelwerte, Index, Überschreitungstage |
 | `wx pressure` | Luftdruckverlauf und Tendenz |
 | `wx forecast` | Zambretti-Prognose und Wettersymbol mit Begründung |
 | `wx minmax` | Minimum/Maximum, Windalarme, Dämmerung, Frost/Glätte |

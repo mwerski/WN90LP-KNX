@@ -173,6 +173,23 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 191 | Regenmenge diese Woche | Regen | 9.026, 14.x |
 | 192 | Regenmenge dieser Monat | Regen | 9.026, 14.x |
 | 193 | Regenmenge dieses Jahr | Regen | 9.026, 14.x |
+| 194 | PM2,5 Mittel 1 Stunde | Feinstaub | 9.030 |
+| 195 | PM10 Mittel 1 Stunde | Feinstaub | 9.030 |
+| 196 | PM2,5 Mittel 24 Stunden | Feinstaub | 9.030 |
+| 197 | PM10 Mittel 24 Stunden | Feinstaub | 9.030 |
+| 198 | PM2,5 Tagesmittel gestern | Feinstaub | 9.030 |
+| 199 | PM10 Tagesmittel gestern | Feinstaub | 9.030 |
+| 200 | PM2,5 Jahresmittel (laufendes Jahr) | Feinstaub | 9.030 |
+| 201 | PM10 Jahresmittel (laufendes Jahr) | Feinstaub | 9.030 |
+| 202 | PM2,5 über WHO-Richtwert (24 h) | Feinstaub | 1.005 |
+| 203 | PM10 über WHO-Richtwert (24 h) | Feinstaub | 1.005 |
+| 204 | PM2,5 Überschreitungstage (laufendes Jahr) | Feinstaub | 7.001 |
+| 205 | PM10 Überschreitungstage (laufendes Jahr) | Feinstaub | 7.001 |
+| 206 | Luftqualitätsindex PM2,5 (1-5) | Feinstaub | 5.010 |
+| 207 | Luftqualitätsindex PM10 (1-5) | Feinstaub | 5.010 |
+| 208 | Luftqualitätsindex Feinstaub (1-5) | Feinstaub | 5.010 |
+| 209 | Luftqualität Feinstaub (Text) | Feinstaub | 16.001 |
+| 210 | Feinstaub-Ampel (0 grün, 1 gelb, 2 rot) | Feinstaub | 5.010 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |

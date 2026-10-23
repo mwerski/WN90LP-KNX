@@ -171,5 +171,22 @@
  "RainYesterday": 170,
  "RainWeek": 171,
  "RainMonth": 172,
- "RainYear": 173
+ "RainYear": 173,
+ "Pm25Mean1h": 174,
+ "Pm10Mean1h": 175,
+ "Pm25Mean24h": 176,
+ "Pm10Mean24h": 177,
+ "Pm25Yesterday": 178,
+ "Pm10Yesterday": 179,
+ "Pm25YearMean": 180,
+ "Pm10YearMean": 181,
+ "Pm25WhoExceeded": 182,
+ "Pm10WhoExceeded": 183,
+ "Pm25ExceedDays": 184,
+ "Pm10ExceedDays": 185,
+ "AqiPm25": 186,
+ "AqiPm10": 187,
+ "Aqi": 188,
+ "AqiText": 189,
+ "PmTrafficLight": 190
 }

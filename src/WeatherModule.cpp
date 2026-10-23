@@ -18,7 +18,7 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
     return d.year * 10000UL + d.month * 100UL + d.day;
 }
 
-static constexpr uint8_t FLASH_VERSION = 8; // 8: + Regen gestern/Woche/Monat/Jahr; 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
+static constexpr uint8_t FLASH_VERSION = 9; // 9: + Feinstaub-Auswertung; 8: + Regen gestern/Woche/Monat/Jahr; 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
@@ -123,6 +123,10 @@ void WeatherModule::setup(bool configured)
         _ledMode = min<uint8_t>(ParamWX_LedMode, 2);
         _ledBrightness = constrain(ParamWX_LedBrightness, 1, 100);
         _ledHeartbeat = ParamWX_LedHeartbeat;
+        // Schwelle fuer Ueberschreitungstage (Tagesmittel): WHO 2021, EU ab 2030, EU bis 2029
+        static const float PM_LIMITS[3][2] = {{15, 45}, {25, 45}, {25, 50}};
+        const uint8_t pmLimit = min<uint8_t>(ParamWX_PmLimit, 2);
+        _pm.setLimits(PM_LIMITS[pmLimit][0], PM_LIMITS[pmLimit][1]);
         if (ParamWX_DwdActive)
             dwdWarnings.setup(ParamWX_DwdCell, ParamWX_DwdInterval);
         _season.setup(ParamWX_SwMethod, ParamWX_SwEvening ? 22 : 21, ParamWX_SwDays, (float)ParamWX_SwThreshold,
@@ -233,6 +237,7 @@ void WeatherModule::loop(bool configured)
     {
         if (_sds.loop())
             processSds();
+        _pm.loop();
         updateFault(WX_KO_FAULT_SDS, _faultSds, _sds.faulty(), "Feinstaubsensor");
         if (_faultSds)
         {
@@ -255,6 +260,8 @@ void WeatherModule::loop(bool configured)
     {
         _rainTimer = millis();
         updateRain();
+        if (_sdsEnabled)
+            updateParticles();
         set(WxId::Trend1h, _pressure.trend(1));
         set(WxId::Trend3h, _pressure.trend(3));
     }
@@ -290,7 +297,10 @@ void WeatherModule::loop(bool configured)
         updateWindAlarms();
     }
     updateStatusLed();
-    if (_rain.saveRequested())
+    // Beide abfragen (setzt die Anforderung zurueck), dann einmal speichern
+    const bool saveRain = _rain.saveRequested();
+    const bool savePm = _pm.saveRequested();
+    if (saveRain || savePm)
         openknx.flash.save(true);
 
     Diag::stage(Diag::Send);
@@ -980,7 +990,38 @@ void WeatherModule::processSds()
     {
         set(WxId::Pm25Norm, WeatherCalc::normalizePm25(pm25, hum.value()));
         set(WxId::Pm10Norm, WeatherCalc::normalizePm10(pm10, hum.value()));
+        _pm.feed(val(WxId::Pm25Norm).value(), val(WxId::Pm10Norm).value());
     }
+    else
+        _pm.feed(pm25, pm10);
+}
+
+void WeatherModule::updateParticles()
+{
+    using P = ParticleStats;
+    set(WxId::Pm25Mean1h, _pm.mean1h(P::Pm25));
+    set(WxId::Pm10Mean1h, _pm.mean1h(P::Pm10));
+    const float m25 = _pm.mean24h(P::Pm25);
+    const float m10 = _pm.mean24h(P::Pm10);
+    set(WxId::Pm25Mean24h, m25);
+    set(WxId::Pm10Mean24h, m10);
+    set(WxId::Pm25Yesterday, _pm.yesterday(P::Pm25));
+    set(WxId::Pm10Yesterday, _pm.yesterday(P::Pm10));
+    set(WxId::Pm25YearMean, _pm.yearMean(P::Pm25));
+    set(WxId::Pm10YearMean, _pm.yearMean(P::Pm10));
+    set(WxId::Pm25WhoExceeded, isnan(m25) ? NAN : (m25 > 15.0f ? 1.0f : 0.0f));
+    set(WxId::Pm10WhoExceeded, isnan(m10) ? NAN : (m10 > 45.0f ? 1.0f : 0.0f));
+    set(WxId::Pm25ExceedDays, _pm.exceedDays(P::Pm25));
+    set(WxId::Pm10ExceedDays, _pm.exceedDays(P::Pm10));
+    const float i25 = _pm.index(P::Pm25);
+    const float i10 = _pm.index(P::Pm10);
+    set(WxId::AqiPm25, i25);
+    set(WxId::AqiPm10, i10);
+    // Gesamtindex: schlechterer der beiden; ein fehlender Wert zaehlt nicht
+    const float aqi = isnan(i25) ? i10 : (isnan(i10) ? i25 : max(i25, i10));
+    set(WxId::Aqi, aqi);
+    set(WxId::AqiText, aqi);
+    set(WxId::PmTrafficLight, isnan(aqi) ? NAN : (aqi <= 2 ? 0.0f : (aqi == 3 ? 1.0f : 2.0f)));
 }
 
 void WeatherModule::updateRain()
@@ -1131,8 +1172,8 @@ void WeatherModule::publishMqtt()
         if (!v.valid())
             continue;
         const WxFmt fmt = WX_VALUES[i].fmt;
-        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::DwdText || fmt == WxFmt::Time ||
-            fmt == WxFmt::Date)
+        if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::DwdText || fmt == WxFmt::AqiText ||
+            fmt == WxFmt::Time || fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
             // Texte zusaetzlich ungekuerzt als <feld>_long (das Feld selbst bleibt der 14-Zeichen-Text wie am KO)
@@ -1315,10 +1356,11 @@ static constexpr uint16_t FLASH_END_V5 = FLASH_END_V4 + SUNSHINE_FLASH_SIZE;
 static constexpr uint16_t FLASH_END_V6 = FLASH_END_V5 + Irrigation::FLASH_SIZE + DegreeDays::FLASH_SIZE;
 static constexpr uint16_t FLASH_END_V7 = FLASH_END_V6 + PressureTrend::FLASH_SIZE;
 static constexpr uint16_t FLASH_END_V8 = FLASH_END_V7 + RainStatistics::PERIOD_FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V9 = FLASH_END_V8 + ParticleStats::FLASH_SIZE;
 
 uint16_t WeatherModule::flashSize()
 {
-    return FLASH_END_V8;
+    return FLASH_END_V9;
 }
 
 void WeatherModule::writeFlash()
@@ -1343,6 +1385,7 @@ void WeatherModule::writeFlash()
     _degreeDays.writeFlash();
     _pressure.writeFlash();
     _rain.writePeriodFlash();
+    _pm.writeFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -1391,6 +1434,9 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     if (version < 8 || size < FLASH_END_V8)
         return;
     _rain.readPeriodFlash();
+    if (version < 9 || size < FLASH_END_V9)
+        return;
+    _pm.readFlash();
 }
 
 // ---------------------------------------------------------------------------
@@ -1411,6 +1457,7 @@ void WeatherModule::showHelp()
     openknx.console.printHelpLine("wx climate", "Lueftung, Bewaesserung, Gradtage");
     openknx.console.printHelpLine("wx perf", "Laufzeiten seit dem letzten Aufruf (Diagnose)");
     openknx.console.printHelpLine("wx 1w scan", "1-Wire-Bus nach Sensoren durchsuchen");
+    openknx.console.printHelpLine("wx pm", "Feinstaub: Mittelwerte, Index, Ueberschreitungstage");
     openknx.console.printHelpLine("wx led <pin> <r> <g> <b>", "WS2812 an GPIO direkt ansteuern (Diagnose)");
 }
 
@@ -1468,6 +1515,14 @@ bool WeatherModule::processCommand(const std::string cmd, bool diagnoseKo)
         showClimate();
     else if (cmd == "wx perf")
         Diag::perf();
+    else if (cmd == "wx pm")
+    {
+        using P = ParticleStats;
+        for (P::Pm pm : {P::Pm25, P::Pm10})
+            logInfoP("%s: 1 h %.1f | 24 h %.1f | gestern %.1f | Jahr %.1f ug/m3 | Index %.0f | Ueberschreitungstage %.0f",
+                     pm == P::Pm25 ? "PM2,5" : "PM10 ", _pm.mean1h(pm), _pm.mean24h(pm), _pm.yesterday(pm), _pm.yearMean(pm), _pm.index(pm),
+                     _pm.exceedDays(pm));
+    }
     else if (cmd == "wx 1w scan")
     {
         if (_oneWireEnabled)

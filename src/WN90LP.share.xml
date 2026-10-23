@@ -153,6 +153,13 @@
                   <Enumeration Text="alle Zustände" Value="2" Id="%ENID%" />
                 </TypeRestriction>
               </ParameterType>
+              <ParameterType Id="%AID%_PT-WxPmLimit" Name="WxPmLimit">
+                <TypeRestriction Base="Value" SizeInBit="8">
+                  <Enumeration Text="WHO 2021 (Tagesmittel PM2,5 über 15, PM10 über 45 µg/m³)" Value="0" Id="%ENID%" />
+                  <Enumeration Text="EU ab 2030 (Tagesmittel PM2,5 über 25, PM10 über 45 µg/m³)" Value="1" Id="%ENID%" />
+                  <Enumeration Text="EU bis 2029 (Tagesmittel PM10 über 50 µg/m³, PM2,5 über 25 µg/m³)" Value="2" Id="%ENID%" />
+                </TypeRestriction>
+              </ParameterType>
               <ParameterType Id="%AID%_PT-WxLedBrightness" Name="WxLedBrightness">
                 <TypeNumber SizeInBit="8" Type="unsignedInt" minInclusive="1" maxInclusive="100" />
               </ParameterType>
@@ -266,7 +273,7 @@
               </ParameterType>
             </ParameterTypes>
             <Parameters>
-              <Union SizeInBit="17928">
+              <Union SizeInBit="19424">
                 <Memory CodeSegment="%MID%" Offset="0" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00001" Name="SdsPresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="0" Text="Feinstaubsensor SDS011 vorhanden" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00002" Name="OneWirePresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="1" Text="Temperatursensor 1-Wire (DS18B20) vorhanden" Value="0" />
@@ -407,6 +414,7 @@
                 <Parameter Id="%AID%_UP-%TT%00661" Name="LedMode" ParameterType="%AID%_PT-WxLedMode" Offset="443" BitOffset="0" Text="Statusanzeige" Value="2" />
                 <Parameter Id="%AID%_UP-%TT%00662" Name="LedBrightness" ParameterType="%AID%_PT-WxLedBrightness" Offset="444" BitOffset="0" Text="Helligkeit der Statusanzeige" Value="10" SuffixText="%" />
                 <Parameter Id="%AID%_UP-%TT%00663" Name="LedHeartbeat" ParameterType="%AID%_PT-OnOffYesNo" Offset="445" BitOffset="7" Text="Lebenszeichen (kurz grün alle 10 s)" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00683" Name="PmLimit" ParameterType="%AID%_PT-WxPmLimit" Offset="446" BitOffset="0" Text="Überschreitungstage zählen nach" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00109" Name="TempActive" ParameterType="%AID%_PT-CheckBox" Offset="448" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00110" Name="TempDpt" ParameterType="%AID%_PT-WxDpt1" Offset="448" BitOffset="5" Text="Datenpunkttyp" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00111" Name="TempCycle" ParameterType="%AID%_PT-WxCycle" Offset="449" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="300" SuffixText="s" />
@@ -950,6 +958,56 @@
                 <Parameter Id="%AID%_UP-%TT%00680" Name="RainYearCycle" ParameterType="%AID%_PT-WxCycle" Offset="2231" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00681" Name="RainYearAbs" ParameterType="%AID%_PT-WxAbs" Offset="2233" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="5" SuffixText="mm" />
                 <Parameter Id="%AID%_UP-%TT%00682" Name="RainYearRel" ParameterType="%AID%_PT-WxRel" Offset="2237" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00684" Name="Pm25Mean1hActive" ParameterType="%AID%_PT-CheckBox" Offset="2241" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00685" Name="Pm25Mean1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="2242" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00686" Name="Pm25Mean1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="2244" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00687" Name="Pm25Mean1hRel" ParameterType="%AID%_PT-WxRel" Offset="2248" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00688" Name="Pm10Mean1hActive" ParameterType="%AID%_PT-CheckBox" Offset="2252" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00689" Name="Pm10Mean1hCycle" ParameterType="%AID%_PT-WxCycle" Offset="2253" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00690" Name="Pm10Mean1hAbs" ParameterType="%AID%_PT-WxAbs" Offset="2255" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="2" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00691" Name="Pm10Mean1hRel" ParameterType="%AID%_PT-WxRel" Offset="2259" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00692" Name="Pm25Mean24hActive" ParameterType="%AID%_PT-CheckBox" Offset="2263" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00693" Name="Pm25Mean24hCycle" ParameterType="%AID%_PT-WxCycle" Offset="2264" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00694" Name="Pm25Mean24hAbs" ParameterType="%AID%_PT-WxAbs" Offset="2266" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00695" Name="Pm25Mean24hRel" ParameterType="%AID%_PT-WxRel" Offset="2270" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00696" Name="Pm10Mean24hActive" ParameterType="%AID%_PT-CheckBox" Offset="2274" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00697" Name="Pm10Mean24hCycle" ParameterType="%AID%_PT-WxCycle" Offset="2275" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00698" Name="Pm10Mean24hAbs" ParameterType="%AID%_PT-WxAbs" Offset="2277" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00699" Name="Pm10Mean24hRel" ParameterType="%AID%_PT-WxRel" Offset="2281" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00700" Name="Pm25YesterdayActive" ParameterType="%AID%_PT-CheckBox" Offset="2285" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00701" Name="Pm25YesterdayCycle" ParameterType="%AID%_PT-WxCycle" Offset="2286" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00702" Name="Pm25YesterdayAbs" ParameterType="%AID%_PT-WxAbs" Offset="2288" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00703" Name="Pm25YesterdayRel" ParameterType="%AID%_PT-WxRel" Offset="2292" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00704" Name="Pm10YesterdayActive" ParameterType="%AID%_PT-CheckBox" Offset="2296" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00705" Name="Pm10YesterdayCycle" ParameterType="%AID%_PT-WxCycle" Offset="2297" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00706" Name="Pm10YesterdayAbs" ParameterType="%AID%_PT-WxAbs" Offset="2299" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00707" Name="Pm10YesterdayRel" ParameterType="%AID%_PT-WxRel" Offset="2303" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00708" Name="Pm25YearMeanActive" ParameterType="%AID%_PT-CheckBox" Offset="2307" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00709" Name="Pm25YearMeanCycle" ParameterType="%AID%_PT-WxCycle" Offset="2308" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00710" Name="Pm25YearMeanAbs" ParameterType="%AID%_PT-WxAbs" Offset="2310" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00711" Name="Pm25YearMeanRel" ParameterType="%AID%_PT-WxRel" Offset="2314" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00712" Name="Pm10YearMeanActive" ParameterType="%AID%_PT-CheckBox" Offset="2318" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00713" Name="Pm10YearMeanCycle" ParameterType="%AID%_PT-WxCycle" Offset="2319" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00714" Name="Pm10YearMeanAbs" ParameterType="%AID%_PT-WxAbs" Offset="2321" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" SuffixText="µg/m³" />
+                <Parameter Id="%AID%_UP-%TT%00715" Name="Pm10YearMeanRel" ParameterType="%AID%_PT-WxRel" Offset="2325" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00716" Name="Pm25WhoExceededActive" ParameterType="%AID%_PT-CheckBox" Offset="2329" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00717" Name="Pm25WhoExceededCycle" ParameterType="%AID%_PT-WxCycle" Offset="2330" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00718" Name="Pm10WhoExceededActive" ParameterType="%AID%_PT-CheckBox" Offset="2340" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00719" Name="Pm10WhoExceededCycle" ParameterType="%AID%_PT-WxCycle" Offset="2341" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00720" Name="Pm25ExceedDaysActive" ParameterType="%AID%_PT-CheckBox" Offset="2351" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00721" Name="Pm25ExceedDaysCycle" ParameterType="%AID%_PT-WxCycle" Offset="2352" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00722" Name="Pm10ExceedDaysActive" ParameterType="%AID%_PT-CheckBox" Offset="2362" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00723" Name="Pm10ExceedDaysCycle" ParameterType="%AID%_PT-WxCycle" Offset="2363" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00724" Name="AqiPm25Active" ParameterType="%AID%_PT-CheckBox" Offset="2373" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00725" Name="AqiPm25Cycle" ParameterType="%AID%_PT-WxCycle" Offset="2374" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00726" Name="AqiPm10Active" ParameterType="%AID%_PT-CheckBox" Offset="2384" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00727" Name="AqiPm10Cycle" ParameterType="%AID%_PT-WxCycle" Offset="2385" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00728" Name="AqiActive" ParameterType="%AID%_PT-CheckBox" Offset="2395" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00729" Name="AqiCycle" ParameterType="%AID%_PT-WxCycle" Offset="2396" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00730" Name="AqiTextActive" ParameterType="%AID%_PT-CheckBox" Offset="2406" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00731" Name="AqiTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="2407" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00732" Name="PmTrafficLightActive" ParameterType="%AID%_PT-CheckBox" Offset="2417" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00733" Name="PmTrafficLightCycle" ParameterType="%AID%_PT-WxCycle" Offset="2418" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -1092,6 +1150,7 @@
               <ParameterRef Id="%AID%_UP-%TT%00661_R-%TT%0066101" RefId="%AID%_UP-%TT%00661" />
               <ParameterRef Id="%AID%_UP-%TT%00662_R-%TT%0066201" RefId="%AID%_UP-%TT%00662" />
               <ParameterRef Id="%AID%_UP-%TT%00663_R-%TT%0066301" RefId="%AID%_UP-%TT%00663" />
+              <ParameterRef Id="%AID%_UP-%TT%00683_R-%TT%0068301" RefId="%AID%_UP-%TT%00683" />
               <ParameterRef Id="%AID%_UP-%TT%00109_R-%TT%0010901" RefId="%AID%_UP-%TT%00109" />
               <ParameterRef Id="%AID%_UP-%TT%00110_R-%TT%0011001" RefId="%AID%_UP-%TT%00110" />
               <ParameterRef Id="%AID%_UP-%TT%00111_R-%TT%0011101" RefId="%AID%_UP-%TT%00111" />
@@ -1635,6 +1694,56 @@
               <ParameterRef Id="%AID%_UP-%TT%00680_R-%TT%0068001" RefId="%AID%_UP-%TT%00680" />
               <ParameterRef Id="%AID%_UP-%TT%00681_R-%TT%0068101" RefId="%AID%_UP-%TT%00681" />
               <ParameterRef Id="%AID%_UP-%TT%00682_R-%TT%0068201" RefId="%AID%_UP-%TT%00682" />
+              <ParameterRef Id="%AID%_UP-%TT%00684_R-%TT%0068401" RefId="%AID%_UP-%TT%00684" />
+              <ParameterRef Id="%AID%_UP-%TT%00685_R-%TT%0068501" RefId="%AID%_UP-%TT%00685" />
+              <ParameterRef Id="%AID%_UP-%TT%00686_R-%TT%0068601" RefId="%AID%_UP-%TT%00686" />
+              <ParameterRef Id="%AID%_UP-%TT%00687_R-%TT%0068701" RefId="%AID%_UP-%TT%00687" />
+              <ParameterRef Id="%AID%_UP-%TT%00688_R-%TT%0068801" RefId="%AID%_UP-%TT%00688" />
+              <ParameterRef Id="%AID%_UP-%TT%00689_R-%TT%0068901" RefId="%AID%_UP-%TT%00689" />
+              <ParameterRef Id="%AID%_UP-%TT%00690_R-%TT%0069001" RefId="%AID%_UP-%TT%00690" />
+              <ParameterRef Id="%AID%_UP-%TT%00691_R-%TT%0069101" RefId="%AID%_UP-%TT%00691" />
+              <ParameterRef Id="%AID%_UP-%TT%00692_R-%TT%0069201" RefId="%AID%_UP-%TT%00692" />
+              <ParameterRef Id="%AID%_UP-%TT%00693_R-%TT%0069301" RefId="%AID%_UP-%TT%00693" />
+              <ParameterRef Id="%AID%_UP-%TT%00694_R-%TT%0069401" RefId="%AID%_UP-%TT%00694" />
+              <ParameterRef Id="%AID%_UP-%TT%00695_R-%TT%0069501" RefId="%AID%_UP-%TT%00695" />
+              <ParameterRef Id="%AID%_UP-%TT%00696_R-%TT%0069601" RefId="%AID%_UP-%TT%00696" />
+              <ParameterRef Id="%AID%_UP-%TT%00697_R-%TT%0069701" RefId="%AID%_UP-%TT%00697" />
+              <ParameterRef Id="%AID%_UP-%TT%00698_R-%TT%0069801" RefId="%AID%_UP-%TT%00698" />
+              <ParameterRef Id="%AID%_UP-%TT%00699_R-%TT%0069901" RefId="%AID%_UP-%TT%00699" />
+              <ParameterRef Id="%AID%_UP-%TT%00700_R-%TT%0070001" RefId="%AID%_UP-%TT%00700" />
+              <ParameterRef Id="%AID%_UP-%TT%00701_R-%TT%0070101" RefId="%AID%_UP-%TT%00701" />
+              <ParameterRef Id="%AID%_UP-%TT%00702_R-%TT%0070201" RefId="%AID%_UP-%TT%00702" />
+              <ParameterRef Id="%AID%_UP-%TT%00703_R-%TT%0070301" RefId="%AID%_UP-%TT%00703" />
+              <ParameterRef Id="%AID%_UP-%TT%00704_R-%TT%0070401" RefId="%AID%_UP-%TT%00704" />
+              <ParameterRef Id="%AID%_UP-%TT%00705_R-%TT%0070501" RefId="%AID%_UP-%TT%00705" />
+              <ParameterRef Id="%AID%_UP-%TT%00706_R-%TT%0070601" RefId="%AID%_UP-%TT%00706" />
+              <ParameterRef Id="%AID%_UP-%TT%00707_R-%TT%0070701" RefId="%AID%_UP-%TT%00707" />
+              <ParameterRef Id="%AID%_UP-%TT%00708_R-%TT%0070801" RefId="%AID%_UP-%TT%00708" />
+              <ParameterRef Id="%AID%_UP-%TT%00709_R-%TT%0070901" RefId="%AID%_UP-%TT%00709" />
+              <ParameterRef Id="%AID%_UP-%TT%00710_R-%TT%0071001" RefId="%AID%_UP-%TT%00710" />
+              <ParameterRef Id="%AID%_UP-%TT%00711_R-%TT%0071101" RefId="%AID%_UP-%TT%00711" />
+              <ParameterRef Id="%AID%_UP-%TT%00712_R-%TT%0071201" RefId="%AID%_UP-%TT%00712" />
+              <ParameterRef Id="%AID%_UP-%TT%00713_R-%TT%0071301" RefId="%AID%_UP-%TT%00713" />
+              <ParameterRef Id="%AID%_UP-%TT%00714_R-%TT%0071401" RefId="%AID%_UP-%TT%00714" />
+              <ParameterRef Id="%AID%_UP-%TT%00715_R-%TT%0071501" RefId="%AID%_UP-%TT%00715" />
+              <ParameterRef Id="%AID%_UP-%TT%00716_R-%TT%0071601" RefId="%AID%_UP-%TT%00716" />
+              <ParameterRef Id="%AID%_UP-%TT%00717_R-%TT%0071701" RefId="%AID%_UP-%TT%00717" />
+              <ParameterRef Id="%AID%_UP-%TT%00718_R-%TT%0071801" RefId="%AID%_UP-%TT%00718" />
+              <ParameterRef Id="%AID%_UP-%TT%00719_R-%TT%0071901" RefId="%AID%_UP-%TT%00719" />
+              <ParameterRef Id="%AID%_UP-%TT%00720_R-%TT%0072001" RefId="%AID%_UP-%TT%00720" />
+              <ParameterRef Id="%AID%_UP-%TT%00721_R-%TT%0072101" RefId="%AID%_UP-%TT%00721" />
+              <ParameterRef Id="%AID%_UP-%TT%00722_R-%TT%0072201" RefId="%AID%_UP-%TT%00722" />
+              <ParameterRef Id="%AID%_UP-%TT%00723_R-%TT%0072301" RefId="%AID%_UP-%TT%00723" />
+              <ParameterRef Id="%AID%_UP-%TT%00724_R-%TT%0072401" RefId="%AID%_UP-%TT%00724" />
+              <ParameterRef Id="%AID%_UP-%TT%00725_R-%TT%0072501" RefId="%AID%_UP-%TT%00725" />
+              <ParameterRef Id="%AID%_UP-%TT%00726_R-%TT%0072601" RefId="%AID%_UP-%TT%00726" />
+              <ParameterRef Id="%AID%_UP-%TT%00727_R-%TT%0072701" RefId="%AID%_UP-%TT%00727" />
+              <ParameterRef Id="%AID%_UP-%TT%00728_R-%TT%0072801" RefId="%AID%_UP-%TT%00728" />
+              <ParameterRef Id="%AID%_UP-%TT%00729_R-%TT%0072901" RefId="%AID%_UP-%TT%00729" />
+              <ParameterRef Id="%AID%_UP-%TT%00730_R-%TT%0073001" RefId="%AID%_UP-%TT%00730" />
+              <ParameterRef Id="%AID%_UP-%TT%00731_R-%TT%0073101" RefId="%AID%_UP-%TT%00731" />
+              <ParameterRef Id="%AID%_UP-%TT%00732_R-%TT%0073201" RefId="%AID%_UP-%TT%00732" />
+              <ParameterRef Id="%AID%_UP-%TT%00733_R-%TT%0073301" RefId="%AID%_UP-%TT%00733" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -1803,6 +1912,23 @@
               <ComObject Id="%AID%_O-%TT%00171" Name="RainWeek" Text="Regenmenge diese Woche" Number="171" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
               <ComObject Id="%AID%_O-%TT%00172" Name="RainMonth" Text="Regenmenge dieser Monat" Number="172" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
               <ComObject Id="%AID%_O-%TT%00173" Name="RainYear" Text="Regenmenge dieses Jahr" Number="173" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-26" />
+              <ComObject Id="%AID%_O-%TT%00174" Name="Pm25Mean1h" Text="PM2,5 Mittel 1 Stunde" Number="174" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00175" Name="Pm10Mean1h" Text="PM10 Mittel 1 Stunde" Number="175" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00176" Name="Pm25Mean24h" Text="PM2,5 Mittel 24 Stunden" Number="176" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00177" Name="Pm10Mean24h" Text="PM10 Mittel 24 Stunden" Number="177" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00178" Name="Pm25Yesterday" Text="PM2,5 Tagesmittel gestern" Number="178" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00179" Name="Pm10Yesterday" Text="PM10 Tagesmittel gestern" Number="179" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00180" Name="Pm25YearMean" Text="PM2,5 Jahresmittel (laufendes Jahr)" Number="180" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00181" Name="Pm10YearMean" Text="PM10 Jahresmittel (laufendes Jahr)" Number="181" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-30" />
+              <ComObject Id="%AID%_O-%TT%00182" Name="Pm25WhoExceeded" Text="PM2,5 über WHO-Richtwert (24 h)" Number="182" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
+              <ComObject Id="%AID%_O-%TT%00183" Name="Pm10WhoExceeded" Text="PM10 über WHO-Richtwert (24 h)" Number="183" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
+              <ComObject Id="%AID%_O-%TT%00184" Name="Pm25ExceedDays" Text="PM2,5 Überschreitungstage (laufendes Jahr)" Number="184" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-7-1" />
+              <ComObject Id="%AID%_O-%TT%00185" Name="Pm10ExceedDays" Text="PM10 Überschreitungstage (laufendes Jahr)" Number="185" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-7-1" />
+              <ComObject Id="%AID%_O-%TT%00186" Name="AqiPm25" Text="Luftqualitätsindex PM2,5 (1-5)" Number="186" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00187" Name="AqiPm10" Text="Luftqualitätsindex PM10 (1-5)" Number="187" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00188" Name="Aqi" Text="Luftqualitätsindex Feinstaub (1-5)" Number="188" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00189" Name="AqiText" Text="Luftqualität Feinstaub (Text)" Number="189" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
+              <ComObject Id="%AID%_O-%TT%00190" Name="PmTrafficLight" Text="Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)" Number="190" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
               <ComObject Id="%AID%_O-%TT%00148" Name="Room1TempIn" Text="Raumtemperatur Raum 1" Number="148" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
               <ComObject Id="%AID%_O-%TT%00149" Name="Room1HumIn" Text="Raumfeuchte Raum 1" Number="149" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-7" />
               <ComObject Id="%AID%_O-%TT%00150" Name="Room2TempIn" Text="Raumtemperatur Raum 2" Number="150" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
@@ -2058,6 +2184,23 @@
               <ComObjectRef Id="%AID%_O-%TT%00172_R-%TT%0017202" RefId="%AID%_O-%TT%00172" ObjectSize="4 Bytes" DatapointType="DPT-14" />
               <ComObjectRef Id="%AID%_O-%TT%00173_R-%TT%0017301" RefId="%AID%_O-%TT%00173" ObjectSize="2 Bytes" DatapointType="DPST-9-26" />
               <ComObjectRef Id="%AID%_O-%TT%00173_R-%TT%0017302" RefId="%AID%_O-%TT%00173" ObjectSize="4 Bytes" DatapointType="DPT-14" />
+              <ComObjectRef Id="%AID%_O-%TT%00174_R-%TT%0017401" RefId="%AID%_O-%TT%00174" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00175_R-%TT%0017501" RefId="%AID%_O-%TT%00175" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00176_R-%TT%0017601" RefId="%AID%_O-%TT%00176" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00177_R-%TT%0017701" RefId="%AID%_O-%TT%00177" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00178_R-%TT%0017801" RefId="%AID%_O-%TT%00178" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00179_R-%TT%0017901" RefId="%AID%_O-%TT%00179" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00180_R-%TT%0018001" RefId="%AID%_O-%TT%00180" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00181_R-%TT%0018101" RefId="%AID%_O-%TT%00181" ObjectSize="2 Bytes" DatapointType="DPST-9-30" />
+              <ComObjectRef Id="%AID%_O-%TT%00182_R-%TT%0018201" RefId="%AID%_O-%TT%00182" ObjectSize="1 Bit" DatapointType="DPST-1-5" />
+              <ComObjectRef Id="%AID%_O-%TT%00183_R-%TT%0018301" RefId="%AID%_O-%TT%00183" ObjectSize="1 Bit" DatapointType="DPST-1-5" />
+              <ComObjectRef Id="%AID%_O-%TT%00184_R-%TT%0018401" RefId="%AID%_O-%TT%00184" ObjectSize="2 Bytes" DatapointType="DPST-7-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00185_R-%TT%0018501" RefId="%AID%_O-%TT%00185" ObjectSize="2 Bytes" DatapointType="DPST-7-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00186_R-%TT%0018601" RefId="%AID%_O-%TT%00186" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00187_R-%TT%0018701" RefId="%AID%_O-%TT%00187" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00188_R-%TT%0018801" RefId="%AID%_O-%TT%00188" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00189_R-%TT%0018901" RefId="%AID%_O-%TT%00189" ObjectSize="14 Bytes" DatapointType="DPST-16-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00190_R-%TT%0019001" RefId="%AID%_O-%TT%00190" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
               <ComObjectRef Id="%AID%_O-%TT%00148_R-%TT%0014801" RefId="%AID%_O-%TT%00148" />
               <ComObjectRef Id="%AID%_O-%TT%00149_R-%TT%0014901" RefId="%AID%_O-%TT%00149" />
               <ComObjectRef Id="%AID%_O-%TT%00150_R-%TT%0015001" RefId="%AID%_O-%TT%00150" />
@@ -2793,6 +2936,10 @@
               <choose ParamRefId="%AID%_UP-%TT%00001_R-%TT%0000101">
                 <when test="1">
                   <ParameterBlock Id="%AID%_PB-nnn" Name="Particles" Text="Feinstaub" Icon="blur">
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Auswertung" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mittelwerte aus den feuchtekorrigierten Messwerten (ohne Luftfeuchte aus den Rohwerten). Der Luftqualitätsindex folgt dem Umweltbundesamt (24-Stunden-Mittel), die Ampel fasst ihn zusammen: grün = sehr gut/gut, gelb = mäßig, rot = schlecht/sehr schlecht. Der SDS011 ist ein preiswerter optischer Sensor; die Werte eignen sich für Tendenz und Ampel, nicht als Nachweis von Grenzwerten." UIHint="Information" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="WHO-Leitlinie 2021: Tagesmittel PM2,5 15, PM10 45 µg/m³ (höchstens 3-4 Tage im Jahr darüber), Jahresmittel PM2,5 5, PM10 15 µg/m³. EU-Grenzwerte ab 2030: Tagesmittel PM2,5 25, PM10 45 µg/m³ (höchstens 18 Tage), Jahresmittel PM2,5 10, PM10 20 µg/m³." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00683_R-%TT%0068301" IndentLevel="1" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM2,5" UIHint="Headline" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00249_R-%TT%0024901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00249_R-%TT%0024901">
@@ -2831,6 +2978,175 @@
                         <ParameterRefRef RefId="%AID%_UP-%TT%00263_R-%TT%0026301" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00264_R-%TT%0026401" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00038_R-%TT%0003801" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 Mittel 1 Stunde" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gleitendes Mittel der letzten Stunde." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00684_R-%TT%0068401" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00684_R-%TT%0068401">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00685_R-%TT%0068501" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00686_R-%TT%0068601" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00687_R-%TT%0068701" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00174_R-%TT%0017401" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 Mittel 1 Stunde" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gleitendes Mittel der letzten Stunde." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00688_R-%TT%0068801" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00688_R-%TT%0068801">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00689_R-%TT%0068901" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00690_R-%TT%0069001" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00691_R-%TT%0069101" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00175_R-%TT%0017501" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 Mittel 24 Stunden" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gleitendes Mittel der letzten 24 Stundenmittel; gültig, sobald 18 Stunden mit Messwerten vorliegen. Grundlage für WHO-Richtwert und Luftqualitätsindex." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00692_R-%TT%0069201" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00692_R-%TT%0069201">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00693_R-%TT%0069301" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00694_R-%TT%0069401" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00695_R-%TT%0069501" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00176_R-%TT%0017601" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 Mittel 24 Stunden" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Gleitendes Mittel der letzten 24 Stundenmittel; gültig, sobald 18 Stunden mit Messwerten vorliegen." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00696_R-%TT%0069601" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00696_R-%TT%0069601">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00697_R-%TT%0069701" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00698_R-%TT%0069801" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00699_R-%TT%0069901" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00177_R-%TT%0017701" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 Tagesmittel gestern" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mittel des Vortags (0-24 Uhr Ortszeit); ungültig, wenn die Station über Mitternacht aus war." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00700_R-%TT%0070001" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00700_R-%TT%0070001">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00701_R-%TT%0070101" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00702_R-%TT%0070201" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00703_R-%TT%0070301" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00178_R-%TT%0017801" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 Tagesmittel gestern" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mittel des Vortags (0-24 Uhr Ortszeit); ungültig, wenn die Station über Mitternacht aus war." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00704_R-%TT%0070401" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00704_R-%TT%0070401">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00705_R-%TT%0070501" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00706_R-%TT%0070601" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00707_R-%TT%0070701" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00179_R-%TT%0017901" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 Jahresmittel (laufendes Jahr)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mittel der Tagesmittel seit 1. Januar. WHO-Leitwert 5 µg/m³, EU-Grenzwert 25 µg/m³ (ab 2030: 10)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00708_R-%TT%0070801" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00708_R-%TT%0070801">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00709_R-%TT%0070901" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00710_R-%TT%0071001" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00711_R-%TT%0071101" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00180_R-%TT%0018001" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 Jahresmittel (laufendes Jahr)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Mittel der Tagesmittel seit 1. Januar. WHO-Leitwert 15 µg/m³, EU-Grenzwert 40 µg/m³ (ab 2030: 20)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00712_R-%TT%0071201" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00712_R-%TT%0071201">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00713_R-%TT%0071301" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00714_R-%TT%0071401" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00715_R-%TT%0071501" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00181_R-%TT%0018101" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 über WHO-Richtwert (24 h)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, solange das 24-Stunden-Mittel über 15 µg/m³ liegt (WHO 2021)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00716_R-%TT%0071601" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00716_R-%TT%0071601">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00717_R-%TT%0071701" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00182_R-%TT%0018201" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 über WHO-Richtwert (24 h)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, solange das 24-Stunden-Mittel über 45 µg/m³ liegt (WHO 2021)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00718_R-%TT%0071801" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00718_R-%TT%0071801">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00719_R-%TT%0071901" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00183_R-%TT%0018301" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM2,5 Überschreitungstage (laufendes Jahr)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Tage seit 1. Januar mit Tagesmittel über der eingestellten Schwelle (unten auf dieser Seite)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00720_R-%TT%0072001" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00720_R-%TT%0072001">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00721_R-%TT%0072101" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00184_R-%TT%0018401" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="PM10 Überschreitungstage (laufendes Jahr)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Tage seit 1. Januar mit Tagesmittel über der eingestellten Schwelle (unten auf dieser Seite)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00722_R-%TT%0072201" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00722_R-%TT%0072201">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00723_R-%TT%0072301" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00185_R-%TT%0018501" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftqualitätsindex PM2,5 (1-5)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Umweltbundesamt, 24-Stunden-Mittel: 1 sehr gut (bis 10), 2 gut (bis 20), 3 mäßig (bis 25), 4 schlecht (bis 50), 5 sehr schlecht." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00724_R-%TT%0072401" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00724_R-%TT%0072401">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00725_R-%TT%0072501" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00186_R-%TT%0018601" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftqualitätsindex PM10 (1-5)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Umweltbundesamt, 24-Stunden-Mittel: 1 sehr gut (bis 20), 2 gut (bis 35), 3 mäßig (bis 50), 4 schlecht (bis 100), 5 sehr schlecht." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00726_R-%TT%0072601" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00726_R-%TT%0072601">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00727_R-%TT%0072701" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00187_R-%TT%0018701" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftqualitätsindex Feinstaub (1-5)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Schlechterer Wert aus PM2,5 und PM10." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00728_R-%TT%0072801" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00728_R-%TT%0072801">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00729_R-%TT%0072901" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00188_R-%TT%0018801" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftqualität Feinstaub (Text)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="„sehr gut“, „gut“, „mäßig“, „schlecht“ oder „sehr schlecht“." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00730_R-%TT%0073001" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00730_R-%TT%0073001">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00731_R-%TT%0073101" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00189_R-%TT%0018901" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="0 grün (Index sehr gut oder gut), 1 gelb (mäßig), 2 rot (schlecht oder sehr schlecht)." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00732_R-%TT%0073201" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00732_R-%TT%0073201">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00733_R-%TT%0073301" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00190_R-%TT%0019001" />
                       </when>
                     </choose>
                   </ParameterBlock>

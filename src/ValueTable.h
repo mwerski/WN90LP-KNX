@@ -168,6 +168,23 @@ enum class WxId : uint8_t
     RainWeek,
     RainMonth,
     RainYear,
+    Pm25Mean1h,
+    Pm10Mean1h,
+    Pm25Mean24h,
+    Pm10Mean24h,
+    Pm25Yesterday,
+    Pm10Yesterday,
+    Pm25YearMean,
+    Pm10YearMean,
+    Pm25WhoExceeded,
+    Pm10WhoExceeded,
+    Pm25ExceedDays,
+    Pm10ExceedDays,
+    AqiPm25,
+    AqiPm10,
+    Aqi,
+    AqiText,
+    PmTrafficLight,
     Count
 };
 
@@ -188,7 +205,8 @@ enum class WxFmt : uint8_t
     MoonPhase, // 0..7
     MoonText,  // 0..7, Text
     WarnText,  // Kategorie * 10 + Stufe, Text
-    DwdText    // Aenderungszaehler, Text aus dem DWD-Abruf
+    DwdText,   // Aenderungszaehler, Text aus dem DWD-Abruf
+    AqiText    // Luftqualitaetsindex 1..5, Text
 };
 
 struct WxDptOption
@@ -220,7 +238,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 163
+#define WX_VALUE_COUNT 180
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -389,5 +407,22 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Regenmenge diese Woche", "Regenmenge diese Woche", "Regen", "mm", "rain_week", "raincounter_week", "mm", WX_RainWeekActive, WX_KoRainWeek, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
     {"Regenmenge dieser Monat", "Regenmenge dieser Monat", "Regen", "mm", "rain_month", "raincounter_month", "mm", WX_RainMonthActive, WX_KoRainMonth, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
     {"Regenmenge dieses Jahr", "Regenmenge dieses Jahr", "Regen", "mm", "rain_year", "raincounter_year", "mm", WX_RainYearActive, WX_KoRainYear, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "precipitation", "mm", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"PM2,5 Mittel 1 Stunde", "PM2,5 Mittel 1 Stunde", "Feinstaub", "\u00b5g/m\u00b3", "pm25_1h", "pm25_1h", "ug/m3", WX_Pm25Mean1hActive, WX_KoPm25Mean1h, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM10 Mittel 1 Stunde", "PM10 Mittel 1 Stunde", "Feinstaub", "\u00b5g/m\u00b3", "pm10_1h", "pm10_1h", "ug/m3", WX_Pm10Mean1hActive, WX_KoPm10Mean1h, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM2,5 Mittel 24 Stunden", "PM2,5 Mittel 24 Stunden", "Feinstaub", "\u00b5g/m\u00b3", "pm25_24h", "pm25_24h", "ug/m3", WX_Pm25Mean24hActive, WX_KoPm25Mean24h, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM10 Mittel 24 Stunden", "PM10 Mittel 24 Stunden", "Feinstaub", "\u00b5g/m\u00b3", "pm10_24h", "pm10_24h", "ug/m3", WX_Pm10Mean24hActive, WX_KoPm10Mean24h, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM2,5 Tagesmittel gestern", "PM2,5 Tagesmittel gestern", "Feinstaub", "\u00b5g/m\u00b3", "pm25_yesterday", "pm25_yesterday", "ug/m3", WX_Pm25YesterdayActive, WX_KoPm25Yesterday, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM10 Tagesmittel gestern", "PM10 Tagesmittel gestern", "Feinstaub", "\u00b5g/m\u00b3", "pm10_yesterday", "pm10_yesterday", "ug/m3", WX_Pm10YesterdayActive, WX_KoPm10Yesterday, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM2,5 Jahresmittel (laufendes Jahr)", "PM2,5 Jahresmittel (laufendes Jahr)", "Feinstaub", "\u00b5g/m\u00b3", "pm25_year", "pm25_year", "ug/m3", WX_Pm25YearMeanActive, WX_KoPm25YearMean, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM10 Jahresmittel (laufendes Jahr)", "PM10 Jahresmittel (laufendes Jahr)", "Feinstaub", "\u00b5g/m\u00b3", "pm10_year", "pm10_year", "ug/m3", WX_Pm10YearMeanActive, WX_KoPm10YearMean, WxSensor::Sds, 0xFFFF, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"PM2,5 ueber WHO-Richtwert (24 h)", "PM2,5 \u00fcber WHO-Richtwert (24 h)", "Feinstaub", "", "pm25_who_exceeded", "pm25_who_exceeded", "", WX_Pm25WhoExceededActive, WX_KoPm25WhoExceeded, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
+    {"PM10 ueber WHO-Richtwert (24 h)", "PM10 \u00fcber WHO-Richtwert (24 h)", "Feinstaub", "", "pm10_who_exceeded", "pm10_who_exceeded", "", WX_Pm10WhoExceededActive, WX_KoPm10WhoExceeded, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 5, 1.0f}}},
+    {"PM2,5 Ueberschreitungstage (laufendes Jahr)", "PM2,5 \u00dcberschreitungstage (laufendes Jahr)", "Feinstaub", "", "pm25_exceed_days", "pm25_exceed_days", "", WX_Pm25ExceedDaysActive, WX_KoPm25ExceedDays, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{7, 1, 1.0f}}},
+    {"PM10 Ueberschreitungstage (laufendes Jahr)", "PM10 \u00dcberschreitungstage (laufendes Jahr)", "Feinstaub", "", "pm10_exceed_days", "pm10_exceed_days", "", WX_Pm10ExceedDaysActive, WX_KoPm10ExceedDays, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{7, 1, 1.0f}}},
+    {"Luftqualitaetsindex PM2,5 (1-5)", "Luftqualit\u00e4tsindex PM2,5 (1-5)", "Feinstaub", "", "aqi_pm25", "aqi_pm25", "", WX_AqiPm25Active, WX_KoAqiPm25, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Luftqualitaetsindex PM10 (1-5)", "Luftqualit\u00e4tsindex PM10 (1-5)", "Feinstaub", "", "aqi_pm10", "aqi_pm10", "", WX_AqiPm10Active, WX_KoAqiPm10, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Luftqualitaetsindex Feinstaub (1-5)", "Luftqualit\u00e4tsindex Feinstaub (1-5)", "Feinstaub", "", "aqi", "aqi", "", WX_AqiActive, WX_KoAqi, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Luftqualitaet Feinstaub (Text)", "Luftqualit\u00e4t Feinstaub (Text)", "Feinstaub", "", "aqi_text", nullptr, "", WX_AqiTextActive, WX_KoAqiText, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::AqiText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"Feinstaub-Ampel (0 gruen, 1 gelb, 2 rot)", "Feinstaub-Ampel (0 gr\u00fcn, 1 gelb, 2 rot)", "Feinstaub", "", "pm_traffic_light", "pm_traffic_light", "", WX_PmTrafficLightActive, WX_KoPmTrafficLight, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
 };
 
