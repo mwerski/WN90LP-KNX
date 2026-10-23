@@ -100,6 +100,9 @@ void DwdWarnings::fetch(int64_t nowUtc)
     client.setCACert(DWD_ROOT_CA);
     client.setTimeout(10);
     HTTPClient http;
+    // HTTP/1.0: ohne "Transfer-Encoding: chunked". getStream() liefert den rohen Datenstrom; bei chunked
+    // las ArduinoJson die erste Laengenangabe (z. B. "263") als gueltiges Dokument - "ok", aber keine Warnungen.
+    http.useHTTP10(true);
     http.setConnectTimeout(8000);
     http.setTimeout(10000);
 
@@ -121,7 +124,8 @@ void DwdWarnings::fetch(int64_t nowUtc)
                 props[k] = true;
             JsonDocument doc;
             const DeserializationError err = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
-            if (err)
+            // Antwort muss ein Objekt mit features sein, sonst als Fehler werten
+            if (err || !doc["features"].is<JsonArray>())
                 code = -100;
             else
             {
