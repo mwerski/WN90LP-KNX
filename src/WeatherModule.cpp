@@ -318,7 +318,7 @@ void WeatherModule::loop(bool configured)
         }
         Diag::stage(Diag::WebStatus);
         if (_web.due())
-            _web.update(buildStatusJson());
+            _web.update(buildStatusSnapshot());
         Diag::stage(Diag::Influx);
         if (_influx.due())
             _influx.submit(buildInfluxBody());
@@ -1273,8 +1273,10 @@ std::string WeatherModule::buildInfluxBody()
     return body;
 }
 
-std::string WeatherModule::buildStatusJson()
+std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
 {
+    static constexpr size_t PART_SIZE = 1536;
+    auto snap = std::make_shared<WebStatus::Snapshot>();
     JsonDocument doc;
     doc["fw"] = WX_FIRMWARE_VERSION;
     doc["up"] = millis() / 1000;
@@ -1298,7 +1300,13 @@ std::string WeatherModule::buildStatusJson()
     if (_influx.enabled())
         doc["influx"] = _influx.lastCode() == 204 ? "ok" : (_influx.okCount() + _influx.errorCount() == 0 ? "wartet" : "Fehler");
 
-    JsonArray values = doc["values"].to<JsonArray>();
+    // Kopfdaten ohne schliessende Klammer, danach das Werte-Array
+    snap->emplace_back();
+    snap->back().reserve(PART_SIZE + 512);
+    serializeJson(doc, snap->back());
+    snap->back().pop_back();
+    snap->back() += ",\"values\":[";
+    bool first = true;
     for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
     {
         const WxValueDef &def = WX_VALUES[i];
@@ -1310,7 +1318,7 @@ std::string WeatherModule::buildStatusJson()
             continue;
         if (def.condParam != 0xFFFF && !v.active())
             continue;
-        JsonObject o = values.add<JsonObject>();
+        JsonDocument o;
         o["n"] = def.label;
         o["g"] = def.group;
         o["k"] = def.mqttKey;
@@ -1336,12 +1344,20 @@ std::string WeatherModule::buildStatusJson()
             if (v.sent())
                 o["ts"] = MeasuredValue::format(v.lastSent(), &def, false, true);
         }
+        // Je Wert einzeln serialisieren und in Stuecke packen (kein grosser zusammenhaengender Puffer)
+        if (snap->back().size() > PART_SIZE)
+        {
+            snap->emplace_back();
+            snap->back().reserve(PART_SIZE + 512);
+        }
+        std::string &part = snap->back();
+        if (!first)
+            part += ',';
+        first = false;
+        serializeJson(o, part);
     }
-
-    std::string json;
-    if (!serializeJsonSafe(doc, json))
-        json.clear();
-    return json;
+    snap->back() += "]}";
+    return snap;
 }
 
 // ---------------------------------------------------------------------------

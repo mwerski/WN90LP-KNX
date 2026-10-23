@@ -1,11 +1,45 @@
 #include "WebStatus.h"
 #include "OpenKNX.h"
+#include <new>
 
 #ifdef OPENKNX_WEBSERVER
     #include "NetworkModule.h"
 using OpenKNX::Network::WEB_GET;
 using OpenKNX::Network::WebRequest;
 using OpenKNX::Network::WebResponse;
+
+// Lesezustand einer Antwort: Position im Schnappschuss (laeuft in der httpd-Task)
+struct Reader
+{
+    std::shared_ptr<const WebStatus::Snapshot> snapshot;
+    size_t part = 0;
+    size_t pos = 0;
+};
+
+static size_t readChunk(void *ctx, uint8_t *buf, size_t maxLen)
+{
+    Reader *r = static_cast<Reader *>(ctx);
+    size_t n = 0;
+    while (n < maxLen && r->part < r->snapshot->size())
+    {
+        const std::string &p = (*r->snapshot)[r->part];
+        const size_t take = min(maxLen - n, p.size() - r->pos);
+        memcpy(buf + n, p.data() + r->pos, take);
+        n += take;
+        r->pos += take;
+        if (r->pos >= p.size())
+        {
+            r->part++;
+            r->pos = 0;
+        }
+    }
+    return n;
+}
+
+static void freeReader(void *ctx)
+{
+    delete static_cast<Reader *>(ctx);
+}
 
 // Seite im OpenKNX-Layout; Texte als HTML-Entities, damit der Quelltext ASCII bleibt.
 // Die Werte rendert das Skript aus /weather.json (nur textContent, kein innerHTML mit Daten).
@@ -101,9 +135,21 @@ void WebStatus::setup()
     openknxNetwork.webserver.addRoute(WEB_GET, "/weather.json", [this](WebRequest &, WebResponse &res) {
         _demandUntil = millis() + 15000;
         res.setContentType("application/json");
-        // Direkt aus dem Schnappschuss senden (send kopiert selbst), keine weitere Kopie im Speicher
-        std::lock_guard<std::mutex> guard(_lock);
-        res.send(_json.c_str());
+        // Der Leser haelt den Schnappschuss fest, bis alles gesendet ist; die Hauptschleife kann
+        // derweil schon einen neuen erstellen
+        Reader *reader = new (std::nothrow) Reader;
+        if (reader)
+        {
+            std::lock_guard<std::mutex> guard(_lock);
+            reader->snapshot = _snapshot;
+        }
+        if (!reader || !reader->snapshot)
+        {
+            delete reader;
+            res.sendStatic("{}");
+            return;
+        }
+        res.sendStream(0, readChunk, freeReader, reader);
     });
 }
 
@@ -118,19 +164,18 @@ bool WebStatus::due()
     return true;
 }
 
-void WebStatus::update(std::string &&json)
+void WebStatus::update(std::shared_ptr<const Snapshot> snapshot)
 {
-    // Leer bei Speichermangel: alten Schnappschuss behalten
-    if (json.empty())
+    if (!snapshot)
         return;
     std::lock_guard<std::mutex> guard(_lock);
-    _json = std::move(json);
+    _snapshot = std::move(snapshot);
 }
 
 #else
 
 void WebStatus::setup() {}
 bool WebStatus::due() { return false; }
-void WebStatus::update(std::string &&) {}
+void WebStatus::update(std::shared_ptr<const Snapshot>) {}
 
 #endif
