@@ -40,10 +40,45 @@ void loop()
     // die ETS laeuft dann in Zeitueberschreitungen. Gilt unabhaengig vom
     // Konfigurationszustand, damit auch die erste ETS-Programmierung gelingt.
     static bool wlanSparmodusAus = false;
-    if (!wlanSparmodusAus && openknxNetwork.established())
+    const bool online = openknxNetwork.established();
+    if (!wlanSparmodusAus && online)
     {
         WiFi.setSleep(false);
         wlanSparmodusAus = true;
         logInfo("Main", "WLAN-Energiesparmodus deaktiviert");
+    }
+
+    // WLAN-Waechter: Der automatische Reconnect des Arduino-Kerns gab nach einer Trennung mitunter auf
+    // (Station 30 min offline, "net reset" half sofort). Erst nach der ersten Verbindung scharf, damit die
+    // Einrichtung per Konsole nicht gestoert wird. 5 min offline: Adapter neu initialisieren (alle 5 min
+    // wiederholen), 30 min offline: Neustart (Daten werden vorher gespeichert).
+    static constexpr uint32_t RESET_AFTER_MS = 5 * 60000UL;
+    static constexpr uint32_t RESTART_AFTER_MS = 30 * 60000UL;
+    static bool armed = false;
+    static uint32_t offlineSince = 0;
+    static uint32_t lastReset = 0;
+    if (online)
+    {
+        armed = true;
+        offlineSince = 0;
+        lastReset = 0;
+    }
+    else if (armed)
+    {
+        // Nach einer Neuinitialisierung muss der Energiesparmodus erneut abgeschaltet werden
+        wlanSparmodusAus = false;
+        if (offlineSince == 0)
+            offlineSince = max<uint32_t>(millis(), 1);
+        else if (delayCheck(offlineSince, RESTART_AFTER_MS))
+        {
+            logError("Main", "WLAN seit 30 min getrennt - Neustart");
+            openknx.restart();
+        }
+        else if (delayCheck(offlineSince, RESET_AFTER_MS) && (lastReset == 0 || delayCheck(lastReset, RESET_AFTER_MS)))
+        {
+            logError("Main", "WLAN seit %lu min getrennt - Netzwerkadapter wird neu initialisiert", (millis() - offlineSince) / 60000);
+            lastReset = max<uint32_t>(millis(), 1);
+            openknxNetwork.resetNetwork();
+        }
     }
 }

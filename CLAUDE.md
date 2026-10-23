@@ -53,6 +53,8 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
   Bei Layoutänderung `FLASH_VERSION` in `WeatherModule.cpp`/`RainStatistics.h` erhöhen.
 - **WLAN:** `main.cpp` setzt Scan aller Kanäle/stärkster AP vor `openknx.init` und `WiFi.setSleep(false)`
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
+  WLAN-Wächter in `main.cpp`: nach 5 min ohne Netz `openknxNetwork.resetNetwork()` (alle 5 min), nach 30 min Neustart;
+  scharf erst nach der ersten Verbindung (der Auto-Reconnect des Arduino-Kerns gab nach einer Trennung auf).
 - **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
 - **InfluxDB** (`InfluxWriter.*`): HTTP-POST in eigener FreeRTOS-Task (6 KB Stack), Daten per Mutex übergeben, kein Logging aus der Task (Fehlertext wird gespeichert, die Hauptschleife loggt). Schema und Feldnamen (`influx=` in generate_ets.py) entsprechen dem früheren Node-RED-Flow; immer Float-Felder.
 - **Allgemeine Parameter** reichen inzwischen bis Byte 367 (InfluxDB ab 160).
