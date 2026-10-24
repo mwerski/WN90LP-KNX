@@ -1,6 +1,7 @@
 #include "MeasuredValue.h"
 #include "Diag.h"
 #include "Astro.h"
+#include "Comfort.h"
 #include "DwdWarnings.h"
 #include "Forecast.h"
 #include "ParticleStats.h"
@@ -151,6 +152,12 @@ KNXValue MeasuredValue::busValue() const
                 return KNXValue(Warnings::text((uint8_t)lroundf(bus), false));
             if (_def->fmt == WxFmt::AqiText)
                 return KNXValue(ParticleStats::indexText((uint8_t)lroundf(bus), false));
+            if (_def->fmt == WxFmt::ComfortText)
+            {
+                static std::string comfort; // KNXValue haelt nur den Zeiger
+                comfort = Comfort::text((uint8_t)lroundf(bus));
+                return KNXValue(comfort.c_str());
+            }
             return KNXValue(Forecast::text((uint8_t)lroundf(bus), false));
         case 10:
         {
@@ -276,6 +283,8 @@ std::string MeasuredValue::format(float value, const WxValueDef *def, bool withU
             return DwdWarnings::eventText(true);
         case WxFmt::AqiText:
             return ParticleStats::indexText((uint8_t)lroundf(value), true);
+        case WxFmt::ComfortText:
+            return full ? Comfort::longText((uint8_t)lroundf(value)) : Comfort::text((uint8_t)lroundf(value));
         case WxFmt::MoonText:
         case WxFmt::MoonPhase:
             return full ? Astro::moonPhaseLongText((uint8_t)lroundf(value)) : Astro::moonPhaseText((uint8_t)lroundf(value), true);

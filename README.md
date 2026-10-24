@@ -17,7 +17,7 @@ und optional per MQTT bereit.
 ## Funktionen
 
 - Messwerte der WN90LP: Temperatur, Luftfeuchte, Wind, Böe, Windrichtung, Luftdruck, Helligkeit, UV-Index, Regen
-- Berechnet: absolute Feuchte, Taupunkt, Frostpunkt, Humidex, Hitzeindex, Windchill (mit 10-min-Windmittel), gefühlte Temperatur, Discomfort-Index,
+- Berechnet: absolute Feuchte, Taupunkt, Frostpunkt, Humidex, Hitzeindex, Windchill (mit 10-min-Windmittel), gefühlte Temperatur, Discomfort-Index, Behaglichkeit je Raum (Frank),
   Beaufort, Luftdruck auf Meereshöhe, Luftdrucktendenz 1 h / 3 h
 - Regen: Gesamtmenge, Intensität (mm/h), Mengen der letzten 5 min / 1 h / 6 h / 24 h / 48 h / 72 h, heute,
   gestern, diese Woche (ab Montag), dieser Monat, dieses Jahr (remanent, Ortszeit),

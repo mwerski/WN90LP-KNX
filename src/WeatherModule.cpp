@@ -3,6 +3,7 @@
 #include "Diag.h"
 #include "OtaGuard.h"
 #include "WeatherCalc.h"
+#include "Comfort.h"
 #include "Forecast.h"
 #include "Solar.h"
 #include "JsonUtil.h"
@@ -846,6 +847,9 @@ void WeatherModule::updateAstro()
 
 void WeatherModule::updateVentilation()
 {
+    static constexpr uint8_t COMFORT_VALUES = (uint8_t)WxId::Room2Comfort - (uint8_t)WxId::Room1Comfort;
+    static_assert(COMFORT_VALUES == 7 && (uint8_t)WxId::Room3Comfort - (uint8_t)WxId::Room2Comfort == COMFORT_VALUES,
+                  "Reihenfolge der Behaglichkeitswerte in generate_ets.py");
     static constexpr uint32_t MAX_AGE = 2 * 3600000UL; // Raumwerte gelten 2 h
     const MeasuredValue &outAbs = val(WxId::AbsHumidity);
     const MeasuredValue &outTemp = val(WxId::Temp);
@@ -854,6 +858,8 @@ void WeatherModule::updateVentilation()
     {
         Room &r = _rooms[i];
         const WxId base = (WxId)((uint8_t)WxId::Room1Vent + i * 4); // je Raum: Vent, AbsHum, DewPoint, Diff
+        // Behaglichkeit je Raum: Comfort, ComfortText, ComfortDev, TooHumid, TooDry, TooCold, TooWarm
+        const WxId comfort = (WxId)((uint8_t)WxId::Room1Comfort + i * COMFORT_VALUES);
         if (!r.active)
             continue;
         const bool fresh = !isnan(r.temp) && !isnan(r.hum) && millis() - r.tempTime < MAX_AGE && millis() - r.humTime < MAX_AGE;
@@ -861,9 +867,19 @@ void WeatherModule::updateVentilation()
         {
             for (uint8_t k = 0; k < 4; k++)
                 val((WxId)((uint8_t)base + k)).invalidate();
+            for (uint8_t k = 0; k < COMFORT_VALUES; k++)
+                val((WxId)((uint8_t)comfort + k)).invalidate();
             r.vent = false;
             continue;
         }
+        const Comfort::Result c = Comfort::evaluate(r.temp, r.hum);
+        set(comfort, c.level);
+        set((WxId)((uint8_t)comfort + 1), c.code());
+        set((WxId)((uint8_t)comfort + 2), c.deviation);
+        set((WxId)((uint8_t)comfort + 3), (c.reasons & Comfort::Humid) != 0);
+        set((WxId)((uint8_t)comfort + 4), (c.reasons & Comfort::Dry) != 0);
+        set((WxId)((uint8_t)comfort + 5), (c.reasons & Comfort::Cold) != 0);
+        set((WxId)((uint8_t)comfort + 6), (c.reasons & Comfort::Warm) != 0);
         const float absIn = absoluteHumidity(r.temp, r.hum);
         set((WxId)((uint8_t)base + 1), absIn);
         set((WxId)((uint8_t)base + 2), dewPoint(r.temp, r.hum));
@@ -1176,11 +1192,11 @@ void WeatherModule::publishMqtt()
             continue;
         const WxFmt fmt = WX_VALUES[i].fmt;
         if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::DwdText || fmt == WxFmt::AqiText ||
-            fmt == WxFmt::Time || fmt == WxFmt::Date)
+            fmt == WxFmt::ComfortText || fmt == WxFmt::Time || fmt == WxFmt::Date)
         {
             doc[WX_VALUES[i].mqttKey] = MeasuredValue::format(v.value(), &WX_VALUES[i], false);
             // Texte zusaetzlich ungekuerzt als <feld>_long (das Feld selbst bleibt der 14-Zeichen-Text wie am KO)
-            if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText)
+            if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::ComfortText)
                 doc[std::string(WX_VALUES[i].mqttKey) + "_long"] = MeasuredValue::format(v.value(), &WX_VALUES[i], false, true);
             int64_t unix;
             if (MeasuredValue::toUnix(v.value(), &WX_VALUES[i], unix))
@@ -1767,6 +1783,11 @@ void WeatherModule::showClimate()
         logInfoP("Raum %u: %.1f C / %.0f %% (vor %lu s / %lu s), abs. %.2f g/m3, Unterschied %.2f g/m3 -> %s", i + 1, r.temp, r.hum,
                  (millis() - r.tempTime) / 1000, (millis() - r.humTime) / 1000, val((WxId)((uint8_t)base + 1)).value(),
                  val((WxId)((uint8_t)base + 3)).value(), r.vent ? "LUEFTEN" : "nicht lueften");
+        if (!isnan(r.temp) && !isnan(r.hum))
+        {
+            const Comfort::Result c = Comfort::evaluate(r.temp, r.hum);
+            logInfoP("Raum %u: Behaglichkeit nach Frank: %s, Abweichung %.1f", i + 1, Comfort::longText(c.code()).c_str(), c.deviation);
+        }
     }
     logInfoP("Bewaesserung: ET0 heute %.2f mm (aktuell %.2f mm/h), gestern %.2f mm, Bilanz %.1f mm -> %s", _irrigation.et0Today(),
              _irrigation.rate(), _irrigation.et0Yesterday(), _irrigation.balance(), _irrigation.irrigate() ? "BEWAESSERN" : "kein Bedarf");

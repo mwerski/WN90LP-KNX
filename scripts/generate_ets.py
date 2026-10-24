@@ -67,6 +67,7 @@ DATE = [("DPT 11.001 (3 Byte, Datum)", "DPST-11-1", "3 Bytes", 11, 1, 1.0), DATE
 DURATION = [("DPT 13.100 (4 Byte, s)", "DPST-13-100", "4 Bytes", 13, 100, 1.0),
             ("DPT 7.006 (2 Byte, min)", "DPST-7-6", "2 Bytes", 7, 1, 1.0 / 60)]
 HOURS = [("DPT 9 (2 Byte, h)", "DPT-9", "2 Bytes", 9, 1, 1.0), T14(None, "DPT 14 (4 Byte, h)")]
+NUMBER = [("DPT 9 (2 Byte)", "DPT-9", "2 Bytes", 9, 1, 1.0)]
 PERCENT = [("DPT 5.001 (1 Byte, %)", "DPST-5-1", "1 Byte", 5, 1, 1.0)]
 COUNT = [("DPT 7.001 (2 Byte, Anzahl)", "DPST-7-1", "2 Bytes", 7, 1, 1.0)]
 ENERGY = [("DPT 13.010 (4 Byte, Wh)", "DPST-13-10", "4 Bytes", 13, 10, 1000.0), T14(None, "DPT 14 (4 Byte, kWh)")]
@@ -494,6 +495,29 @@ VALUES = [
     V("FeelsLike", "Comfort", "Gefühlte Temperatur", "°C", TEMP, 600, 1, 0, mqtt="feels_like",
       info="Wie in Wetter-Apps: bis 10 °C der Windchill, ab 27 °C der Hitzeindex, dazwischen die Lufttemperatur."),
 ]
+
+# Behaglichkeitsfeld nach Frank je Raum (hinten angefuegt, damit bestehende KO-Nummern bleiben)
+for _n in range(1, ROOMS + 1):
+    _c = f"Room{_n}Active"
+    VALUES += [
+        V(f"Room{_n}Comfort", "Ventilation", f"Behaglichkeit Raum {_n} (0 behaglich, 1 noch, 2 unbehaglich)", "", BFT, 1800, 0, 0, True,
+          thresholds=False, decimals=0, mqtt=f"room{_n}_comfort", cond=_c,
+          info="Behaglichkeitsfeld nach Frank (1975) aus Raumtemperatur und relativer Raumfeuchte."),
+        V(f"Room{_n}ComfortText", "Ventilation", f"Behaglichkeit Raum {_n} (Text)", "", TEXT, 1800, 0, 0, True, thresholds=False,
+          decimals=0, mqtt=f"room{_n}_comfort_text", influx="", fmt="comforttext", cond=_c,
+          info="„behaglich“, sonst der Grund, z. B. „zu trocken“ oder „kalt, feucht“."),
+        V(f"Room{_n}ComfortDev", "Ventilation", f"Abweichung vom Behaglichkeitsoptimum Raum {_n}", "", NUMBER, 1800, 0.5, 0,
+          decimals=1, mqtt=f"room{_n}_comfort_deviation", cond=_c,
+          info="Abstand zu 21 °C / 55 %: 1 entspricht 1 K oder 5 % relativer Feuchte."),
+        V(f"Room{_n}TooHumid", "Ventilation", f"Raum {_n} zu feucht (über 65 %)", "", BOOL, 1800, 0, 0, thresholds=False, decimals=0,
+          mqtt=f"room{_n}_too_humid", cond=_c),
+        V(f"Room{_n}TooDry", "Ventilation", f"Raum {_n} zu trocken (unter 30 %)", "", BOOL, 1800, 0, 0, thresholds=False, decimals=0,
+          mqtt=f"room{_n}_too_dry", cond=_c),
+        V(f"Room{_n}TooCold", "Ventilation", f"Raum {_n} zu kalt", "", BOOL, 1800, 0, 0, thresholds=False, decimals=0,
+          mqtt=f"room{_n}_too_cold", cond=_c, info="Außerhalb des behaglichen Feldes und unter 18,9 °C."),
+        V(f"Room{_n}TooWarm", "Ventilation", f"Raum {_n} zu warm", "", BOOL, 1800, 0, 0, thresholds=False, decimals=0,
+          mqtt=f"room{_n}_too_warm", cond=_c, info="Außerhalb des behaglichen Feldes und über 22 °C."),
+    ]
 
 # Stoerungs-KOs vor den Messwerten
 FAULTS = [
@@ -1285,7 +1309,8 @@ def build():
     h.append("    MoonText,  // 0..7, Text")
     h.append("    WarnText,  // Kategorie * 10 + Stufe, Text")
     h.append("    DwdText,   // Aenderungszaehler, Text aus dem DWD-Abruf")
-    h.append("    AqiText    // Luftqualitaetsindex 1..5, Text")
+    h.append("    AqiText,   // Luftqualitaetsindex 1..5, Text")
+    h.append("    ComfortText // Behaglichkeit: Stufe * 16 + Gruende (Comfort.h), Text")
     h.append("};")
     h.append("")
     h.append("struct WxDptOption")
@@ -1334,7 +1359,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")

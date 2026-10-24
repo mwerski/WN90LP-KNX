@@ -186,6 +186,27 @@ enum class WxId : uint8_t
     AqiText,
     PmTrafficLight,
     FeelsLike,
+    Room1Comfort,
+    Room1ComfortText,
+    Room1ComfortDev,
+    Room1TooHumid,
+    Room1TooDry,
+    Room1TooCold,
+    Room1TooWarm,
+    Room2Comfort,
+    Room2ComfortText,
+    Room2ComfortDev,
+    Room2TooHumid,
+    Room2TooDry,
+    Room2TooCold,
+    Room2TooWarm,
+    Room3Comfort,
+    Room3ComfortText,
+    Room3ComfortDev,
+    Room3TooHumid,
+    Room3TooDry,
+    Room3TooCold,
+    Room3TooWarm,
     Count
 };
 
@@ -207,7 +228,8 @@ enum class WxFmt : uint8_t
     MoonText,  // 0..7, Text
     WarnText,  // Kategorie * 10 + Stufe, Text
     DwdText,   // Aenderungszaehler, Text aus dem DWD-Abruf
-    AqiText    // Luftqualitaetsindex 1..5, Text
+    AqiText,   // Luftqualitaetsindex 1..5, Text
+    ComfortText // Behaglichkeit: Stufe * 16 + Gruende (Comfort.h), Text
 };
 
 struct WxDptOption
@@ -239,7 +261,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 181
+#define WX_VALUE_COUNT 202
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -426,5 +448,26 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Luftqualitaet Feinstaub (Text)", "Luftqualit\u00e4t Feinstaub (Text)", "Feinstaub", "", "aqi_text", nullptr, "", WX_AqiTextActive, WX_KoAqiText, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::AqiText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
     {"Feinstaub-Ampel (0 gruen, 1 gelb, 2 rot)", "Feinstaub-Ampel (0 gr\u00fcn, 1 gelb, 2 rot)", "Feinstaub", "", "pm_traffic_light", "pm_traffic_light", "", WX_PmTrafficLightActive, WX_KoPmTrafficLight, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
     {"Gefuehlte Temperatur", "Gef\u00fchlte Temperatur", "Behaglichkeit", "\u00b0C", "feels_like", "feels_like", "C", WX_FeelsLikeActive, WX_KoFeelsLike, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
+    {"Behaglichkeit Raum 1 (0 behaglich, 1 noch, 2 unbehaglich)", "Behaglichkeit Raum 1 (0 behaglich, 1 noch, 2 unbehaglich)", "L\u00fcftungsempfehlung", "", "room1_comfort", "room1_comfort", "", WX_Room1ComfortActive, WX_KoRoom1Comfort, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Behaglichkeit Raum 1 (Text)", "Behaglichkeit Raum 1 (Text)", "L\u00fcftungsempfehlung", "", "room1_comfort_text", nullptr, "", WX_Room1ComfortTextActive, WX_KoRoom1ComfortText, WxSensor::None, WX_Room1Active, false, 0, WxFmt::ComfortText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"Abweichung vom Behaglichkeitsoptimum Raum 1", "Abweichung vom Behaglichkeitsoptimum Raum 1", "L\u00fcftungsempfehlung", "", "room1_comfort_deviation", "room1_comfort_deviation", "", WX_Room1ComfortDevActive, WX_KoRoom1ComfortDev, WxSensor::None, WX_Room1Active, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"Raum 1 zu feucht (ueber 65 %)", "Raum 1 zu feucht (\u00fcber 65 %)", "L\u00fcftungsempfehlung", "", "room1_too_humid", "room1_too_humid", "", WX_Room1TooHumidActive, WX_KoRoom1TooHumid, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 1 zu trocken (unter 30 %)", "Raum 1 zu trocken (unter 30 %)", "L\u00fcftungsempfehlung", "", "room1_too_dry", "room1_too_dry", "", WX_Room1TooDryActive, WX_KoRoom1TooDry, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 1 zu kalt", "Raum 1 zu kalt", "L\u00fcftungsempfehlung", "", "room1_too_cold", "room1_too_cold", "", WX_Room1TooColdActive, WX_KoRoom1TooCold, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 1 zu warm", "Raum 1 zu warm", "L\u00fcftungsempfehlung", "", "room1_too_warm", "room1_too_warm", "", WX_Room1TooWarmActive, WX_KoRoom1TooWarm, WxSensor::None, WX_Room1Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Behaglichkeit Raum 2 (0 behaglich, 1 noch, 2 unbehaglich)", "Behaglichkeit Raum 2 (0 behaglich, 1 noch, 2 unbehaglich)", "L\u00fcftungsempfehlung", "", "room2_comfort", "room2_comfort", "", WX_Room2ComfortActive, WX_KoRoom2Comfort, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Behaglichkeit Raum 2 (Text)", "Behaglichkeit Raum 2 (Text)", "L\u00fcftungsempfehlung", "", "room2_comfort_text", nullptr, "", WX_Room2ComfortTextActive, WX_KoRoom2ComfortText, WxSensor::None, WX_Room2Active, false, 0, WxFmt::ComfortText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"Abweichung vom Behaglichkeitsoptimum Raum 2", "Abweichung vom Behaglichkeitsoptimum Raum 2", "L\u00fcftungsempfehlung", "", "room2_comfort_deviation", "room2_comfort_deviation", "", WX_Room2ComfortDevActive, WX_KoRoom2ComfortDev, WxSensor::None, WX_Room2Active, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"Raum 2 zu feucht (ueber 65 %)", "Raum 2 zu feucht (\u00fcber 65 %)", "L\u00fcftungsempfehlung", "", "room2_too_humid", "room2_too_humid", "", WX_Room2TooHumidActive, WX_KoRoom2TooHumid, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 2 zu trocken (unter 30 %)", "Raum 2 zu trocken (unter 30 %)", "L\u00fcftungsempfehlung", "", "room2_too_dry", "room2_too_dry", "", WX_Room2TooDryActive, WX_KoRoom2TooDry, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 2 zu kalt", "Raum 2 zu kalt", "L\u00fcftungsempfehlung", "", "room2_too_cold", "room2_too_cold", "", WX_Room2TooColdActive, WX_KoRoom2TooCold, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 2 zu warm", "Raum 2 zu warm", "L\u00fcftungsempfehlung", "", "room2_too_warm", "room2_too_warm", "", WX_Room2TooWarmActive, WX_KoRoom2TooWarm, WxSensor::None, WX_Room2Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Behaglichkeit Raum 3 (0 behaglich, 1 noch, 2 unbehaglich)", "Behaglichkeit Raum 3 (0 behaglich, 1 noch, 2 unbehaglich)", "L\u00fcftungsempfehlung", "", "room3_comfort", "room3_comfort", "", WX_Room3ComfortActive, WX_KoRoom3Comfort, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Behaglichkeit Raum 3 (Text)", "Behaglichkeit Raum 3 (Text)", "L\u00fcftungsempfehlung", "", "room3_comfort_text", nullptr, "", WX_Room3ComfortTextActive, WX_KoRoom3ComfortText, WxSensor::None, WX_Room3Active, false, 0, WxFmt::ComfortText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
+    {"Abweichung vom Behaglichkeitsoptimum Raum 3", "Abweichung vom Behaglichkeitsoptimum Raum 3", "L\u00fcftungsempfehlung", "", "room3_comfort_deviation", "room3_comfort_deviation", "", WX_Room3ComfortDevActive, WX_KoRoom3ComfortDev, WxSensor::None, WX_Room3Active, true, 1, WxFmt::Number, nullptr, nullptr, 1, {{9, 1, 1.0f}}},
+    {"Raum 3 zu feucht (ueber 65 %)", "Raum 3 zu feucht (\u00fcber 65 %)", "L\u00fcftungsempfehlung", "", "room3_too_humid", "room3_too_humid", "", WX_Room3TooHumidActive, WX_KoRoom3TooHumid, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 3 zu trocken (unter 30 %)", "Raum 3 zu trocken (unter 30 %)", "L\u00fcftungsempfehlung", "", "room3_too_dry", "room3_too_dry", "", WX_Room3TooDryActive, WX_KoRoom3TooDry, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 3 zu kalt", "Raum 3 zu kalt", "L\u00fcftungsempfehlung", "", "room3_too_cold", "room3_too_cold", "", WX_Room3TooColdActive, WX_KoRoom3TooCold, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
+    {"Raum 3 zu warm", "Raum 3 zu warm", "L\u00fcftungsempfehlung", "", "room3_too_warm", "room3_too_warm", "", WX_Room3TooWarmActive, WX_KoRoom3TooWarm, WxSensor::None, WX_Room3Active, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{1, 2, 1.0f}}},
 };
 

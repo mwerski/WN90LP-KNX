@@ -273,7 +273,7 @@
               </ParameterType>
             </ParameterTypes>
             <Parameters>
-              <Union SizeInBit="19512">
+              <Union SizeInBit="21360">
                 <Memory CodeSegment="%MID%" Offset="0" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00001" Name="SdsPresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="0" Text="Feinstaubsensor SDS011 vorhanden" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00002" Name="OneWirePresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="1" Text="Temperatursensor 1-Wire (DS18B20) vorhanden" Value="0" />
@@ -1013,6 +1013,54 @@
                 <Parameter Id="%AID%_UP-%TT%00736" Name="FeelsLikeCycle" ParameterType="%AID%_PT-WxCycle" Offset="2429" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00737" Name="FeelsLikeAbs" ParameterType="%AID%_PT-WxAbs" Offset="2431" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
                 <Parameter Id="%AID%_UP-%TT%00738" Name="FeelsLikeRel" ParameterType="%AID%_PT-WxRel" Offset="2435" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00739" Name="Room1ComfortActive" ParameterType="%AID%_PT-CheckBox" Offset="2439" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00740" Name="Room1ComfortCycle" ParameterType="%AID%_PT-WxCycle" Offset="2440" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00741" Name="Room1ComfortTextActive" ParameterType="%AID%_PT-CheckBox" Offset="2450" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00742" Name="Room1ComfortTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="2451" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00743" Name="Room1ComfortDevActive" ParameterType="%AID%_PT-CheckBox" Offset="2461" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00744" Name="Room1ComfortDevCycle" ParameterType="%AID%_PT-WxCycle" Offset="2462" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00745" Name="Room1ComfortDevAbs" ParameterType="%AID%_PT-WxAbs" Offset="2464" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" />
+                <Parameter Id="%AID%_UP-%TT%00746" Name="Room1ComfortDevRel" ParameterType="%AID%_PT-WxRel" Offset="2468" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00747" Name="Room1TooHumidActive" ParameterType="%AID%_PT-CheckBox" Offset="2472" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00748" Name="Room1TooHumidCycle" ParameterType="%AID%_PT-WxCycle" Offset="2473" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00749" Name="Room1TooDryActive" ParameterType="%AID%_PT-CheckBox" Offset="2483" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00750" Name="Room1TooDryCycle" ParameterType="%AID%_PT-WxCycle" Offset="2484" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00751" Name="Room1TooColdActive" ParameterType="%AID%_PT-CheckBox" Offset="2494" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00752" Name="Room1TooColdCycle" ParameterType="%AID%_PT-WxCycle" Offset="2495" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00753" Name="Room1TooWarmActive" ParameterType="%AID%_PT-CheckBox" Offset="2505" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00754" Name="Room1TooWarmCycle" ParameterType="%AID%_PT-WxCycle" Offset="2506" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00755" Name="Room2ComfortActive" ParameterType="%AID%_PT-CheckBox" Offset="2516" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00756" Name="Room2ComfortCycle" ParameterType="%AID%_PT-WxCycle" Offset="2517" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00757" Name="Room2ComfortTextActive" ParameterType="%AID%_PT-CheckBox" Offset="2527" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00758" Name="Room2ComfortTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="2528" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00759" Name="Room2ComfortDevActive" ParameterType="%AID%_PT-CheckBox" Offset="2538" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00760" Name="Room2ComfortDevCycle" ParameterType="%AID%_PT-WxCycle" Offset="2539" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00761" Name="Room2ComfortDevAbs" ParameterType="%AID%_PT-WxAbs" Offset="2541" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" />
+                <Parameter Id="%AID%_UP-%TT%00762" Name="Room2ComfortDevRel" ParameterType="%AID%_PT-WxRel" Offset="2545" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00763" Name="Room2TooHumidActive" ParameterType="%AID%_PT-CheckBox" Offset="2549" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00764" Name="Room2TooHumidCycle" ParameterType="%AID%_PT-WxCycle" Offset="2550" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00765" Name="Room2TooDryActive" ParameterType="%AID%_PT-CheckBox" Offset="2560" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00766" Name="Room2TooDryCycle" ParameterType="%AID%_PT-WxCycle" Offset="2561" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00767" Name="Room2TooColdActive" ParameterType="%AID%_PT-CheckBox" Offset="2571" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00768" Name="Room2TooColdCycle" ParameterType="%AID%_PT-WxCycle" Offset="2572" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00769" Name="Room2TooWarmActive" ParameterType="%AID%_PT-CheckBox" Offset="2582" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00770" Name="Room2TooWarmCycle" ParameterType="%AID%_PT-WxCycle" Offset="2583" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00771" Name="Room3ComfortActive" ParameterType="%AID%_PT-CheckBox" Offset="2593" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00772" Name="Room3ComfortCycle" ParameterType="%AID%_PT-WxCycle" Offset="2594" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00773" Name="Room3ComfortTextActive" ParameterType="%AID%_PT-CheckBox" Offset="2604" BitOffset="7" Text="Aktiv" Value="1" />
+                <Parameter Id="%AID%_UP-%TT%00774" Name="Room3ComfortTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="2605" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00775" Name="Room3ComfortDevActive" ParameterType="%AID%_PT-CheckBox" Offset="2615" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00776" Name="Room3ComfortDevCycle" ParameterType="%AID%_PT-WxCycle" Offset="2616" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00777" Name="Room3ComfortDevAbs" ParameterType="%AID%_PT-WxAbs" Offset="2618" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="0.5" />
+                <Parameter Id="%AID%_UP-%TT%00778" Name="Room3ComfortDevRel" ParameterType="%AID%_PT-WxRel" Offset="2622" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
+                <Parameter Id="%AID%_UP-%TT%00779" Name="Room3TooHumidActive" ParameterType="%AID%_PT-CheckBox" Offset="2626" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00780" Name="Room3TooHumidCycle" ParameterType="%AID%_PT-WxCycle" Offset="2627" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00781" Name="Room3TooDryActive" ParameterType="%AID%_PT-CheckBox" Offset="2637" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00782" Name="Room3TooDryCycle" ParameterType="%AID%_PT-WxCycle" Offset="2638" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00783" Name="Room3TooColdActive" ParameterType="%AID%_PT-CheckBox" Offset="2648" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00784" Name="Room3TooColdCycle" ParameterType="%AID%_PT-WxCycle" Offset="2649" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00785" Name="Room3TooWarmActive" ParameterType="%AID%_PT-CheckBox" Offset="2659" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00786" Name="Room3TooWarmCycle" ParameterType="%AID%_PT-WxCycle" Offset="2660" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="1800" SuffixText="s" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -1754,6 +1802,54 @@
               <ParameterRef Id="%AID%_UP-%TT%00736_R-%TT%0073601" RefId="%AID%_UP-%TT%00736" />
               <ParameterRef Id="%AID%_UP-%TT%00737_R-%TT%0073701" RefId="%AID%_UP-%TT%00737" />
               <ParameterRef Id="%AID%_UP-%TT%00738_R-%TT%0073801" RefId="%AID%_UP-%TT%00738" />
+              <ParameterRef Id="%AID%_UP-%TT%00739_R-%TT%0073901" RefId="%AID%_UP-%TT%00739" />
+              <ParameterRef Id="%AID%_UP-%TT%00740_R-%TT%0074001" RefId="%AID%_UP-%TT%00740" />
+              <ParameterRef Id="%AID%_UP-%TT%00741_R-%TT%0074101" RefId="%AID%_UP-%TT%00741" />
+              <ParameterRef Id="%AID%_UP-%TT%00742_R-%TT%0074201" RefId="%AID%_UP-%TT%00742" />
+              <ParameterRef Id="%AID%_UP-%TT%00743_R-%TT%0074301" RefId="%AID%_UP-%TT%00743" />
+              <ParameterRef Id="%AID%_UP-%TT%00744_R-%TT%0074401" RefId="%AID%_UP-%TT%00744" />
+              <ParameterRef Id="%AID%_UP-%TT%00745_R-%TT%0074501" RefId="%AID%_UP-%TT%00745" />
+              <ParameterRef Id="%AID%_UP-%TT%00746_R-%TT%0074601" RefId="%AID%_UP-%TT%00746" />
+              <ParameterRef Id="%AID%_UP-%TT%00747_R-%TT%0074701" RefId="%AID%_UP-%TT%00747" />
+              <ParameterRef Id="%AID%_UP-%TT%00748_R-%TT%0074801" RefId="%AID%_UP-%TT%00748" />
+              <ParameterRef Id="%AID%_UP-%TT%00749_R-%TT%0074901" RefId="%AID%_UP-%TT%00749" />
+              <ParameterRef Id="%AID%_UP-%TT%00750_R-%TT%0075001" RefId="%AID%_UP-%TT%00750" />
+              <ParameterRef Id="%AID%_UP-%TT%00751_R-%TT%0075101" RefId="%AID%_UP-%TT%00751" />
+              <ParameterRef Id="%AID%_UP-%TT%00752_R-%TT%0075201" RefId="%AID%_UP-%TT%00752" />
+              <ParameterRef Id="%AID%_UP-%TT%00753_R-%TT%0075301" RefId="%AID%_UP-%TT%00753" />
+              <ParameterRef Id="%AID%_UP-%TT%00754_R-%TT%0075401" RefId="%AID%_UP-%TT%00754" />
+              <ParameterRef Id="%AID%_UP-%TT%00755_R-%TT%0075501" RefId="%AID%_UP-%TT%00755" />
+              <ParameterRef Id="%AID%_UP-%TT%00756_R-%TT%0075601" RefId="%AID%_UP-%TT%00756" />
+              <ParameterRef Id="%AID%_UP-%TT%00757_R-%TT%0075701" RefId="%AID%_UP-%TT%00757" />
+              <ParameterRef Id="%AID%_UP-%TT%00758_R-%TT%0075801" RefId="%AID%_UP-%TT%00758" />
+              <ParameterRef Id="%AID%_UP-%TT%00759_R-%TT%0075901" RefId="%AID%_UP-%TT%00759" />
+              <ParameterRef Id="%AID%_UP-%TT%00760_R-%TT%0076001" RefId="%AID%_UP-%TT%00760" />
+              <ParameterRef Id="%AID%_UP-%TT%00761_R-%TT%0076101" RefId="%AID%_UP-%TT%00761" />
+              <ParameterRef Id="%AID%_UP-%TT%00762_R-%TT%0076201" RefId="%AID%_UP-%TT%00762" />
+              <ParameterRef Id="%AID%_UP-%TT%00763_R-%TT%0076301" RefId="%AID%_UP-%TT%00763" />
+              <ParameterRef Id="%AID%_UP-%TT%00764_R-%TT%0076401" RefId="%AID%_UP-%TT%00764" />
+              <ParameterRef Id="%AID%_UP-%TT%00765_R-%TT%0076501" RefId="%AID%_UP-%TT%00765" />
+              <ParameterRef Id="%AID%_UP-%TT%00766_R-%TT%0076601" RefId="%AID%_UP-%TT%00766" />
+              <ParameterRef Id="%AID%_UP-%TT%00767_R-%TT%0076701" RefId="%AID%_UP-%TT%00767" />
+              <ParameterRef Id="%AID%_UP-%TT%00768_R-%TT%0076801" RefId="%AID%_UP-%TT%00768" />
+              <ParameterRef Id="%AID%_UP-%TT%00769_R-%TT%0076901" RefId="%AID%_UP-%TT%00769" />
+              <ParameterRef Id="%AID%_UP-%TT%00770_R-%TT%0077001" RefId="%AID%_UP-%TT%00770" />
+              <ParameterRef Id="%AID%_UP-%TT%00771_R-%TT%0077101" RefId="%AID%_UP-%TT%00771" />
+              <ParameterRef Id="%AID%_UP-%TT%00772_R-%TT%0077201" RefId="%AID%_UP-%TT%00772" />
+              <ParameterRef Id="%AID%_UP-%TT%00773_R-%TT%0077301" RefId="%AID%_UP-%TT%00773" />
+              <ParameterRef Id="%AID%_UP-%TT%00774_R-%TT%0077401" RefId="%AID%_UP-%TT%00774" />
+              <ParameterRef Id="%AID%_UP-%TT%00775_R-%TT%0077501" RefId="%AID%_UP-%TT%00775" />
+              <ParameterRef Id="%AID%_UP-%TT%00776_R-%TT%0077601" RefId="%AID%_UP-%TT%00776" />
+              <ParameterRef Id="%AID%_UP-%TT%00777_R-%TT%0077701" RefId="%AID%_UP-%TT%00777" />
+              <ParameterRef Id="%AID%_UP-%TT%00778_R-%TT%0077801" RefId="%AID%_UP-%TT%00778" />
+              <ParameterRef Id="%AID%_UP-%TT%00779_R-%TT%0077901" RefId="%AID%_UP-%TT%00779" />
+              <ParameterRef Id="%AID%_UP-%TT%00780_R-%TT%0078001" RefId="%AID%_UP-%TT%00780" />
+              <ParameterRef Id="%AID%_UP-%TT%00781_R-%TT%0078101" RefId="%AID%_UP-%TT%00781" />
+              <ParameterRef Id="%AID%_UP-%TT%00782_R-%TT%0078201" RefId="%AID%_UP-%TT%00782" />
+              <ParameterRef Id="%AID%_UP-%TT%00783_R-%TT%0078301" RefId="%AID%_UP-%TT%00783" />
+              <ParameterRef Id="%AID%_UP-%TT%00784_R-%TT%0078401" RefId="%AID%_UP-%TT%00784" />
+              <ParameterRef Id="%AID%_UP-%TT%00785_R-%TT%0078501" RefId="%AID%_UP-%TT%00785" />
+              <ParameterRef Id="%AID%_UP-%TT%00786_R-%TT%0078601" RefId="%AID%_UP-%TT%00786" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -1940,6 +2036,27 @@
               <ComObject Id="%AID%_O-%TT%00189" Name="AqiText" Text="Luftqualität Feinstaub (Text)" Number="189" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
               <ComObject Id="%AID%_O-%TT%00190" Name="PmTrafficLight" Text="Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)" Number="190" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
               <ComObject Id="%AID%_O-%TT%00191" Name="FeelsLike" Text="Gefühlte Temperatur" Number="191" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
+              <ComObject Id="%AID%_O-%TT%00192" Name="Room1Comfort" Text="Behaglichkeit Raum 1 (0 behaglich, 1 noch, 2 unbehaglich)" Number="192" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00193" Name="Room1ComfortText" Text="Behaglichkeit Raum 1 (Text)" Number="193" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
+              <ComObject Id="%AID%_O-%TT%00194" Name="Room1ComfortDev" Text="Abweichung vom Behaglichkeitsoptimum Raum 1" Number="194" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPT-9" />
+              <ComObject Id="%AID%_O-%TT%00195" Name="Room1TooHumid" Text="Raum 1 zu feucht (über 65 %)" Number="195" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00196" Name="Room1TooDry" Text="Raum 1 zu trocken (unter 30 %)" Number="196" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00197" Name="Room1TooCold" Text="Raum 1 zu kalt" Number="197" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00198" Name="Room1TooWarm" Text="Raum 1 zu warm" Number="198" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00199" Name="Room2Comfort" Text="Behaglichkeit Raum 2 (0 behaglich, 1 noch, 2 unbehaglich)" Number="199" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00200" Name="Room2ComfortText" Text="Behaglichkeit Raum 2 (Text)" Number="200" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
+              <ComObject Id="%AID%_O-%TT%00201" Name="Room2ComfortDev" Text="Abweichung vom Behaglichkeitsoptimum Raum 2" Number="201" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPT-9" />
+              <ComObject Id="%AID%_O-%TT%00202" Name="Room2TooHumid" Text="Raum 2 zu feucht (über 65 %)" Number="202" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00203" Name="Room2TooDry" Text="Raum 2 zu trocken (unter 30 %)" Number="203" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00204" Name="Room2TooCold" Text="Raum 2 zu kalt" Number="204" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00205" Name="Room2TooWarm" Text="Raum 2 zu warm" Number="205" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00206" Name="Room3Comfort" Text="Behaglichkeit Raum 3 (0 behaglich, 1 noch, 2 unbehaglich)" Number="206" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00207" Name="Room3ComfortText" Text="Behaglichkeit Raum 3 (Text)" Number="207" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
+              <ComObject Id="%AID%_O-%TT%00208" Name="Room3ComfortDev" Text="Abweichung vom Behaglichkeitsoptimum Raum 3" Number="208" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPT-9" />
+              <ComObject Id="%AID%_O-%TT%00209" Name="Room3TooHumid" Text="Raum 3 zu feucht (über 65 %)" Number="209" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00210" Name="Room3TooDry" Text="Raum 3 zu trocken (unter 30 %)" Number="210" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00211" Name="Room3TooCold" Text="Raum 3 zu kalt" Number="211" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
+              <ComObject Id="%AID%_O-%TT%00212" Name="Room3TooWarm" Text="Raum 3 zu warm" Number="212" FunctionText="Ausgang" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-2" />
               <ComObject Id="%AID%_O-%TT%00148" Name="Room1TempIn" Text="Raumtemperatur Raum 1" Number="148" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
               <ComObject Id="%AID%_O-%TT%00149" Name="Room1HumIn" Text="Raumfeuchte Raum 1" Number="149" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-7" />
               <ComObject Id="%AID%_O-%TT%00150" Name="Room2TempIn" Text="Raumtemperatur Raum 2" Number="150" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
@@ -2214,6 +2331,27 @@
               <ComObjectRef Id="%AID%_O-%TT%00190_R-%TT%0019001" RefId="%AID%_O-%TT%00190" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
               <ComObjectRef Id="%AID%_O-%TT%00191_R-%TT%0019101" RefId="%AID%_O-%TT%00191" ObjectSize="2 Bytes" DatapointType="DPST-9-1" />
               <ComObjectRef Id="%AID%_O-%TT%00191_R-%TT%0019102" RefId="%AID%_O-%TT%00191" ObjectSize="4 Bytes" DatapointType="DPST-14-68" />
+              <ComObjectRef Id="%AID%_O-%TT%00192_R-%TT%0019201" RefId="%AID%_O-%TT%00192" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00193_R-%TT%0019301" RefId="%AID%_O-%TT%00193" ObjectSize="14 Bytes" DatapointType="DPST-16-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00194_R-%TT%0019401" RefId="%AID%_O-%TT%00194" ObjectSize="2 Bytes" DatapointType="DPT-9" />
+              <ComObjectRef Id="%AID%_O-%TT%00195_R-%TT%0019501" RefId="%AID%_O-%TT%00195" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00196_R-%TT%0019601" RefId="%AID%_O-%TT%00196" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00197_R-%TT%0019701" RefId="%AID%_O-%TT%00197" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00198_R-%TT%0019801" RefId="%AID%_O-%TT%00198" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00199_R-%TT%0019901" RefId="%AID%_O-%TT%00199" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00200_R-%TT%0020001" RefId="%AID%_O-%TT%00200" ObjectSize="14 Bytes" DatapointType="DPST-16-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00201_R-%TT%0020101" RefId="%AID%_O-%TT%00201" ObjectSize="2 Bytes" DatapointType="DPT-9" />
+              <ComObjectRef Id="%AID%_O-%TT%00202_R-%TT%0020201" RefId="%AID%_O-%TT%00202" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00203_R-%TT%0020301" RefId="%AID%_O-%TT%00203" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00204_R-%TT%0020401" RefId="%AID%_O-%TT%00204" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00205_R-%TT%0020501" RefId="%AID%_O-%TT%00205" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00206_R-%TT%0020601" RefId="%AID%_O-%TT%00206" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00207_R-%TT%0020701" RefId="%AID%_O-%TT%00207" ObjectSize="14 Bytes" DatapointType="DPST-16-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00208_R-%TT%0020801" RefId="%AID%_O-%TT%00208" ObjectSize="2 Bytes" DatapointType="DPT-9" />
+              <ComObjectRef Id="%AID%_O-%TT%00209_R-%TT%0020901" RefId="%AID%_O-%TT%00209" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00210_R-%TT%0021001" RefId="%AID%_O-%TT%00210" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00211_R-%TT%0021101" RefId="%AID%_O-%TT%00211" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
+              <ComObjectRef Id="%AID%_O-%TT%00212_R-%TT%0021201" RefId="%AID%_O-%TT%00212" ObjectSize="1 Bit" DatapointType="DPST-1-2" />
               <ComObjectRef Id="%AID%_O-%TT%00148_R-%TT%0014801" RefId="%AID%_O-%TT%00148" />
               <ComObjectRef Id="%AID%_O-%TT%00149_R-%TT%0014901" RefId="%AID%_O-%TT%00149" />
               <ComObjectRef Id="%AID%_O-%TT%00150_R-%TT%0015001" RefId="%AID%_O-%TT%00150" />
@@ -4351,6 +4489,69 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%00127_R-%TT%0012701" />
                       </when>
                     </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 1 (0 behaglich, 1 noch, 2 unbehaglich)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeitsfeld nach Frank (1975) aus Raumtemperatur und relativer Raumfeuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00739_R-%TT%0073901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00739_R-%TT%0073901">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00740_R-%TT%0074001" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00192_R-%TT%0019201" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 1 (Text)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="„behaglich“, sonst der Grund, z. B. „zu trocken“ oder „kalt, feucht“." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00741_R-%TT%0074101" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00741_R-%TT%0074101">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00742_R-%TT%0074201" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00193_R-%TT%0019301" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abweichung vom Behaglichkeitsoptimum Raum 1" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abstand zu 21 °C / 55 %: 1 entspricht 1 K oder 5 % relativer Feuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00743_R-%TT%0074301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00743_R-%TT%0074301">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00744_R-%TT%0074401" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00745_R-%TT%0074501" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00746_R-%TT%0074601" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00194_R-%TT%0019401" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00747_R-%TT%0074701" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00747_R-%TT%0074701">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00748_R-%TT%0074801" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00195_R-%TT%0019501" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00749_R-%TT%0074901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00749_R-%TT%0074901">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00750_R-%TT%0075001" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00196_R-%TT%0019601" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu kalt" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und unter 18,9 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00751_R-%TT%0075101" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00751_R-%TT%0075101">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00752_R-%TT%0075201" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00197_R-%TT%0019701" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu warm" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und über 22 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00753_R-%TT%0075301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00753_R-%TT%0075301">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00754_R-%TT%0075401" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00198_R-%TT%0019801" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2" UIHint="Headline" />
@@ -4410,6 +4611,69 @@
                         <ComObjectRefRef RefId="%AID%_O-%TT%00131_R-%TT%0013101" />
                       </when>
                     </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 2 (0 behaglich, 1 noch, 2 unbehaglich)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeitsfeld nach Frank (1975) aus Raumtemperatur und relativer Raumfeuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00755_R-%TT%0075501" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00755_R-%TT%0075501">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00756_R-%TT%0075601" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00199_R-%TT%0019901" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 2 (Text)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="„behaglich“, sonst der Grund, z. B. „zu trocken“ oder „kalt, feucht“." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00757_R-%TT%0075701" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00757_R-%TT%0075701">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00758_R-%TT%0075801" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00200_R-%TT%0020001" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abweichung vom Behaglichkeitsoptimum Raum 2" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abstand zu 21 °C / 55 %: 1 entspricht 1 K oder 5 % relativer Feuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00759_R-%TT%0075901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00759_R-%TT%0075901">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00760_R-%TT%0076001" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00761_R-%TT%0076101" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00762_R-%TT%0076201" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00201_R-%TT%0020101" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00763_R-%TT%0076301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00763_R-%TT%0076301">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00764_R-%TT%0076401" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00202_R-%TT%0020201" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00765_R-%TT%0076501" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00765_R-%TT%0076501">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00766_R-%TT%0076601" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00203_R-%TT%0020301" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu kalt" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und unter 18,9 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00767_R-%TT%0076701" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00767_R-%TT%0076701">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00768_R-%TT%0076801" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00204_R-%TT%0020401" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu warm" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und über 22 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00769_R-%TT%0076901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00769_R-%TT%0076901">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00770_R-%TT%0077001" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00205_R-%TT%0020501" />
+                      </when>
+                    </choose>
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3" UIHint="Headline" />
@@ -4467,6 +4731,69 @@
                         <ParameterRefRef RefId="%AID%_UP-%TT%00587_R-%TT%0058701" IndentLevel="2" />
                         <ParameterRefRef RefId="%AID%_UP-%TT%00588_R-%TT%0058801" IndentLevel="2" />
                         <ComObjectRefRef RefId="%AID%_O-%TT%00135_R-%TT%0013501" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 3 (0 behaglich, 1 noch, 2 unbehaglich)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeitsfeld nach Frank (1975) aus Raumtemperatur und relativer Raumfeuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00771_R-%TT%0077101" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00771_R-%TT%0077101">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00772_R-%TT%0077201" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00206_R-%TT%0020601" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Behaglichkeit Raum 3 (Text)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="„behaglich“, sonst der Grund, z. B. „zu trocken“ oder „kalt, feucht“." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00773_R-%TT%0077301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00773_R-%TT%0077301">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00774_R-%TT%0077401" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00207_R-%TT%0020701" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abweichung vom Behaglichkeitsoptimum Raum 3" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Abstand zu 21 °C / 55 %: 1 entspricht 1 K oder 5 % relativer Feuchte." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00775_R-%TT%0077501" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00775_R-%TT%0077501">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00776_R-%TT%0077601" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00777_R-%TT%0077701" IndentLevel="2" />
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00778_R-%TT%0077801" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00208_R-%TT%0020801" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00779_R-%TT%0077901" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00779_R-%TT%0077901">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00780_R-%TT%0078001" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00209_R-%TT%0020901" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00781_R-%TT%0078101" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00781_R-%TT%0078101">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00782_R-%TT%0078201" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00210_R-%TT%0021001" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu kalt" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und unter 18,9 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00783_R-%TT%0078301" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00783_R-%TT%0078301">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00784_R-%TT%0078401" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00211_R-%TT%0021101" />
+                      </when>
+                    </choose>
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu warm" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Außerhalb des behaglichen Feldes und über 22 °C." UIHint="Information" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00785_R-%TT%0078501" IndentLevel="1" />
+                    <choose ParamRefId="%AID%_UP-%TT%00785_R-%TT%0078501">
+                      <when test="1">
+                        <ParameterRefRef RefId="%AID%_UP-%TT%00786_R-%TT%0078601" IndentLevel="2" />
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00212_R-%TT%0021201" />
                       </when>
                     </choose>
                   </when>

@@ -191,6 +191,27 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 209 | Luftqualität Feinstaub (Text) | Feinstaub | 16.001 |
 | 210 | Feinstaub-Ampel (0 grün, 1 gelb, 2 rot) | Feinstaub | 5.010 |
 | 211 | Gefühlte Temperatur | Behaglichkeit | 9.001, 14.068 |
+| 212 | Behaglichkeit Raum 1 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 213 | Behaglichkeit Raum 1 (Text) | Lüftungsempfehlung | 16.001 |
+| 214 | Abweichung vom Behaglichkeitsoptimum Raum 1 | Lüftungsempfehlung | 9.x |
+| 215 | Raum 1 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 216 | Raum 1 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 217 | Raum 1 zu kalt | Lüftungsempfehlung | 1.002 |
+| 218 | Raum 1 zu warm | Lüftungsempfehlung | 1.002 |
+| 219 | Behaglichkeit Raum 2 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 220 | Behaglichkeit Raum 2 (Text) | Lüftungsempfehlung | 16.001 |
+| 221 | Abweichung vom Behaglichkeitsoptimum Raum 2 | Lüftungsempfehlung | 9.x |
+| 222 | Raum 2 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 223 | Raum 2 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 224 | Raum 2 zu kalt | Lüftungsempfehlung | 1.002 |
+| 225 | Raum 2 zu warm | Lüftungsempfehlung | 1.002 |
+| 226 | Behaglichkeit Raum 3 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 227 | Behaglichkeit Raum 3 (Text) | Lüftungsempfehlung | 16.001 |
+| 228 | Abweichung vom Behaglichkeitsoptimum Raum 3 | Lüftungsempfehlung | 9.x |
+| 229 | Raum 3 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 230 | Raum 3 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 231 | Raum 3 zu kalt | Lüftungsempfehlung | 1.002 |
+| 232 | Raum 3 zu warm | Lüftungsempfehlung | 1.002 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |
