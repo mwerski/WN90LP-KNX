@@ -37,6 +37,15 @@ namespace WeatherCalc
         return heatIndexC(t, rh);
     }
 
+    // Gefuehlte Temperatur wie in Wetter-Apps: Windchill bei Kaelte, Hitzeindex bei Waerme, sonst Lufttemperatur.
+    // Fehlt Wind bzw. Feuchte, gilt der jeweilige Index nicht.
+    inline float feelsLike(float t, float rh, float windMs)
+    {
+        if (t <= 10.0f)
+            return isnan(windMs) ? t : windChill(t, windMs);
+        return isnan(rh) ? t : heatIndex(t, rh);
+    }
+
     // Feuchtekorrektur fuer SDS011-Messwerte (Faktoren nach Zbyszek Kilianski / luftdaten.info)
     inline float normalizePm25(float pm, float rh)
     {

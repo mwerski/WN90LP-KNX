@@ -22,10 +22,10 @@
 // Firmware-Version = ETS-Applikationsversion (Major.Minor) + Revision. Die Revision geht auch an
 // openknx.init() (Versionsanzeige von OpenKNX in Konsole/Web-UI, dort mit Git-Hash) und muss bei
 // einer neuen Applikationsversion wieder bei 0 beginnen (max. 31).
-#define WX_FIRMWARE_REVISION 5
+#define WX_FIRMWARE_REVISION 0
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
-#define WX_FIRMWARE_VERSION "1.2." WX_STR(WX_FIRMWARE_REVISION)
+#define WX_FIRMWARE_VERSION "1.3." WX_STR(WX_FIRMWARE_REVISION)
 
 class WeatherModule : public OpenKNX::Module
 {

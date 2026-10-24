@@ -135,7 +135,7 @@ VALUES = [
     V("HeatIndex", "Comfort", "Hitzeindex", "°C", TEMP, 600, 1, 0, mqtt="heatindex",
       info="Gefühlte Temperatur bei Wärme aus Temperatur und Luftfeuchte."),
     V("WindChill", "Comfort", "Windchill", "°C", TEMP, 600, 1, 0, mqtt="windchill",
-      info="Gefühlte Temperatur bei Kälte und Wind. Gilt nur bis 10 °C und ab 5 km/h, sonst wird die Lufttemperatur gesendet."),
+      info="Gefühlte Temperatur bei Kälte und Wind (10-Minuten-Mittel). Gilt nur bis 10 °C und ab 5 km/h, sonst wird die Lufttemperatur gesendet."),
     V("Discomfort", "Comfort", "Discomfort-Index", "°C", TEMP, 600, 1, 0, mqtt="discomfort",
       info="Unbehaglichkeitsindex nach Thom aus Temperatur und Luftfeuchte."),
     V("WindSpeed", "Wind", "Windgeschwindigkeit", "m/s", SPEED, 60, 1, 0, True, mqtt="windspeed"),
@@ -491,6 +491,8 @@ VALUES = [
     V("PmTrafficLight", "Particles", "Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)", "", BFT, 3600, 0, 0, True, sensor="sds",
       thresholds=False, decimals=0, mqtt="pm_traffic_light",
       info="0 grün (Index sehr gut oder gut), 1 gelb (mäßig), 2 rot (schlecht oder sehr schlecht)."),
+    V("FeelsLike", "Comfort", "Gefühlte Temperatur", "°C", TEMP, 600, 1, 0, mqtt="feels_like",
+      info="Wie in Wetter-Apps: bis 10 °C der Windchill, ab 27 °C der Hitzeindex, dazwischen die Lufttemperatur."),
 ]
 
 # Stoerungs-KOs vor den Messwerten

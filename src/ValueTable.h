@@ -185,6 +185,7 @@ enum class WxId : uint8_t
     Aqi,
     AqiText,
     PmTrafficLight,
+    FeelsLike,
     Count
 };
 
@@ -238,7 +239,7 @@ struct WxValueDef
     WxDptOption dpts[3];
 };
 
-#define WX_VALUE_COUNT 180
+#define WX_VALUE_COUNT 181
 #define WX_KO_FAULT_WN90 (WX_KoFaultWn90)
 #define WX_KO_FAULT_SDS (WX_KoFaultSds)
 #define WX_KO_FAULT_1W (WX_KoFault1W)
@@ -424,5 +425,6 @@ static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {
     {"Luftqualitaetsindex Feinstaub (1-5)", "Luftqualit\u00e4tsindex Feinstaub (1-5)", "Feinstaub", "", "aqi", "aqi", "", WX_AqiActive, WX_KoAqi, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
     {"Luftqualitaet Feinstaub (Text)", "Luftqualit\u00e4t Feinstaub (Text)", "Feinstaub", "", "aqi_text", nullptr, "", WX_AqiTextActive, WX_KoAqiText, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::AqiText, nullptr, nullptr, 1, {{16, 1, 1.0f}}},
     {"Feinstaub-Ampel (0 gruen, 1 gelb, 2 rot)", "Feinstaub-Ampel (0 gr\u00fcn, 1 gelb, 2 rot)", "Feinstaub", "", "pm_traffic_light", "pm_traffic_light", "", WX_PmTrafficLightActive, WX_KoPmTrafficLight, WxSensor::Sds, 0xFFFF, false, 0, WxFmt::Number, nullptr, nullptr, 1, {{5, 10, 1.0f}}},
+    {"Gefuehlte Temperatur", "Gef\u00fchlte Temperatur", "Behaglichkeit", "\u00b0C", "feels_like", "feels_like", "C", WX_FeelsLikeActive, WX_KoFeelsLike, WxSensor::None, 0xFFFF, true, 1, WxFmt::Number, "temperature", "\u00b0C", 2, {{9, 1, 1.0f}, {14, 0, 1.0f}}},
 };
 

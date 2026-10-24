@@ -190,6 +190,7 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 208 | Luftqualitätsindex Feinstaub (1-5) | Feinstaub | 5.010 |
 | 209 | Luftqualität Feinstaub (Text) | Feinstaub | 16.001 |
 | 210 | Feinstaub-Ampel (0 grün, 1 gelb, 2 rot) | Feinstaub | 5.010 |
+| 211 | Gefühlte Temperatur | Behaglichkeit | 9.001, 14.068 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |

@@ -78,7 +78,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Luftdruckverlauf** (`PressureTrend`): Nach einem Neustart werden Lücken bis 3 h linear aufgefüllt, längere Ausfälle beginnen neu.
 - **Feinstaub-Auswertung** (`ParticleStats.*`): feuchtekorrigierte Werte (ohne Luftfeuchte Rohwerte); 1 h aus sechs 10-min-Abschnitten, 24 h aus 24 Stundenmitteln (gültig ab 18), Tagesmittel nach Ortszeit, Jahresmittel aus Tagesmitteln, Überschreitungstage nach ETS-Parameter PmLimit (Byte 446). UBA-Index aus dem 24-h-Mittel, Ampel 0/1/2. WxFmt::AqiText für den Indextext.
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
-- **Windchill** rechnet wie die Wetterdienste mit dem 10-min-Windmittel (`WindAvg10`), nicht mit dem Momentanwind (sonst Zittern an der 5-km/h-Grenze).
+- **Windchill** rechnet wie die Wetterdienste mit dem 10-min-Windmittel (`WindAvg10`), nicht mit dem Momentanwind (sonst Zittern an der 5-km/h-Grenze). **Gefühlte Temperatur** (`FeelsLike`, KO 211): bis 10 °C Windchill, ab 27 °C Hitzeindex, sonst Lufttemperatur.
 - **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=4096` für das große JSON.
 - **Leere UDP-Pakete an `224.0.23.12:3671`** (z. B. Tasmota mit aktivem KNX) machten das Gerät dauerhaft

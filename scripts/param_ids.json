@@ -731,5 +731,10 @@
  "AqiTextActive": 730,
  "AqiTextCycle": 731,
  "PmTrafficLightActive": 732,
- "PmTrafficLightCycle": 733
+ "PmTrafficLightCycle": 733,
+ "FeelsLikeActive": 734,
+ "FeelsLikeDpt": 735,
+ "FeelsLikeCycle": 736,
+ "FeelsLikeAbs": 737,
+ "FeelsLikeRel": 738
 }

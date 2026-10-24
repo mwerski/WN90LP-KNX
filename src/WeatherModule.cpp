@@ -401,6 +401,7 @@ void WeatherModule::processWn90()
     // Windchill wie bei den Wetterdiensten mit dem mittleren Wind (10 min) statt dem Momentanwert:
     // sonst springt er bei boeigem Wind staendig ueber die 5-km/h-Grenze der Formel
     set(WxId::WindChill, (isnan(t) || isnan(windAvg)) ? NAN : WeatherCalc::windChill(t, windAvg));
+    set(WxId::FeelsLike, isnan(t) ? NAN : WeatherCalc::feelsLike(t, hum, windAvg));
     updateMinMax(t, gust);
     _season.feed(t);
 }

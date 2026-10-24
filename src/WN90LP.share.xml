@@ -273,7 +273,7 @@
               </ParameterType>
             </ParameterTypes>
             <Parameters>
-              <Union SizeInBit="19424">
+              <Union SizeInBit="19512">
                 <Memory CodeSegment="%MID%" Offset="0" BitOffset="0" />
                 <Parameter Id="%AID%_UP-%TT%00001" Name="SdsPresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="0" Text="Feinstaubsensor SDS011 vorhanden" Value="0" />
                 <Parameter Id="%AID%_UP-%TT%00002" Name="OneWirePresent" ParameterType="%AID%_PT-OnOffYesNo" Offset="0" BitOffset="1" Text="Temperatursensor 1-Wire (DS18B20) vorhanden" Value="0" />
@@ -1008,6 +1008,11 @@
                 <Parameter Id="%AID%_UP-%TT%00731" Name="AqiTextCycle" ParameterType="%AID%_PT-WxCycle" Offset="2407" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
                 <Parameter Id="%AID%_UP-%TT%00732" Name="PmTrafficLightActive" ParameterType="%AID%_PT-CheckBox" Offset="2417" BitOffset="7" Text="Aktiv" Value="1" />
                 <Parameter Id="%AID%_UP-%TT%00733" Name="PmTrafficLightCycle" ParameterType="%AID%_PT-WxCycle" Offset="2418" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="3600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00734" Name="FeelsLikeActive" ParameterType="%AID%_PT-CheckBox" Offset="2428" BitOffset="7" Text="Aktiv" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00735" Name="FeelsLikeDpt" ParameterType="%AID%_PT-WxDpt1" Offset="2428" BitOffset="5" Text="Datenpunkttyp" Value="0" />
+                <Parameter Id="%AID%_UP-%TT%00736" Name="FeelsLikeCycle" ParameterType="%AID%_PT-WxCycle" Offset="2429" BitOffset="0" Text="Zyklisch senden (0 = nie)" Value="600" SuffixText="s" />
+                <Parameter Id="%AID%_UP-%TT%00737" Name="FeelsLikeAbs" ParameterType="%AID%_PT-WxAbs" Offset="2431" BitOffset="0" Text="Senden bei Änderung um (0 = nie)" Value="1" SuffixText="°C" />
+                <Parameter Id="%AID%_UP-%TT%00738" Name="FeelsLikeRel" ParameterType="%AID%_PT-WxRel" Offset="2435" BitOffset="0" Text="Senden bei relativer Änderung um (0 = nie)" Value="0" SuffixText="%" />
               </Union>
             </Parameters>
             <ParameterRefs>
@@ -1744,6 +1749,11 @@
               <ParameterRef Id="%AID%_UP-%TT%00731_R-%TT%0073101" RefId="%AID%_UP-%TT%00731" />
               <ParameterRef Id="%AID%_UP-%TT%00732_R-%TT%0073201" RefId="%AID%_UP-%TT%00732" />
               <ParameterRef Id="%AID%_UP-%TT%00733_R-%TT%0073301" RefId="%AID%_UP-%TT%00733" />
+              <ParameterRef Id="%AID%_UP-%TT%00734_R-%TT%0073401" RefId="%AID%_UP-%TT%00734" />
+              <ParameterRef Id="%AID%_UP-%TT%00735_R-%TT%0073501" RefId="%AID%_UP-%TT%00735" />
+              <ParameterRef Id="%AID%_UP-%TT%00736_R-%TT%0073601" RefId="%AID%_UP-%TT%00736" />
+              <ParameterRef Id="%AID%_UP-%TT%00737_R-%TT%0073701" RefId="%AID%_UP-%TT%00737" />
+              <ParameterRef Id="%AID%_UP-%TT%00738_R-%TT%0073801" RefId="%AID%_UP-%TT%00738" />
             </ParameterRefs>
             <ComObjectTable>
               <ComObject Id="%AID%_O-%TT%00001" Name="FaultWn90" Text="Störung Wetterstation" Number="1" FunctionText="Alarm" ObjectSize="1 Bit" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-1-5" />
@@ -1929,6 +1939,7 @@
               <ComObject Id="%AID%_O-%TT%00188" Name="Aqi" Text="Luftqualitätsindex Feinstaub (1-5)" Number="188" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
               <ComObject Id="%AID%_O-%TT%00189" Name="AqiText" Text="Luftqualität Feinstaub (Text)" Number="189" FunctionText="Ausgang" ObjectSize="14 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-16-1" />
               <ComObject Id="%AID%_O-%TT%00190" Name="PmTrafficLight" Text="Feinstaub-Ampel (0 grün, 1 gelb, 2 rot)" Number="190" FunctionText="Ausgang" ObjectSize="1 Byte" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-5-10" />
+              <ComObject Id="%AID%_O-%TT%00191" Name="FeelsLike" Text="Gefühlte Temperatur" Number="191" FunctionText="Ausgang" ObjectSize="2 Bytes" ReadFlag="Enabled" WriteFlag="Disabled" CommunicationFlag="Enabled" TransmitFlag="Enabled" UpdateFlag="Disabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
               <ComObject Id="%AID%_O-%TT%00148" Name="Room1TempIn" Text="Raumtemperatur Raum 1" Number="148" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
               <ComObject Id="%AID%_O-%TT%00149" Name="Room1HumIn" Text="Raumfeuchte Raum 1" Number="149" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-7" />
               <ComObject Id="%AID%_O-%TT%00150" Name="Room2TempIn" Text="Raumtemperatur Raum 2" Number="150" FunctionText="Eingang" ObjectSize="2 Bytes" ReadFlag="Disabled" WriteFlag="Enabled" CommunicationFlag="Enabled" TransmitFlag="Disabled" UpdateFlag="Enabled" ReadOnInitFlag="Disabled" DatapointType="DPST-9-1" />
@@ -2201,6 +2212,8 @@
               <ComObjectRef Id="%AID%_O-%TT%00188_R-%TT%0018801" RefId="%AID%_O-%TT%00188" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
               <ComObjectRef Id="%AID%_O-%TT%00189_R-%TT%0018901" RefId="%AID%_O-%TT%00189" ObjectSize="14 Bytes" DatapointType="DPST-16-1" />
               <ComObjectRef Id="%AID%_O-%TT%00190_R-%TT%0019001" RefId="%AID%_O-%TT%00190" ObjectSize="1 Byte" DatapointType="DPST-5-10" />
+              <ComObjectRef Id="%AID%_O-%TT%00191_R-%TT%0019101" RefId="%AID%_O-%TT%00191" ObjectSize="2 Bytes" DatapointType="DPST-9-1" />
+              <ComObjectRef Id="%AID%_O-%TT%00191_R-%TT%0019102" RefId="%AID%_O-%TT%00191" ObjectSize="4 Bytes" DatapointType="DPST-14-68" />
               <ComObjectRef Id="%AID%_O-%TT%00148_R-%TT%0014801" RefId="%AID%_O-%TT%00148" />
               <ComObjectRef Id="%AID%_O-%TT%00149_R-%TT%0014901" RefId="%AID%_O-%TT%00149" />
               <ComObjectRef Id="%AID%_O-%TT%00150_R-%TT%0015001" RefId="%AID%_O-%TT%00150" />
@@ -2439,7 +2452,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windchill" UIHint="Headline" />
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur bei Kälte und Wind. Gilt nur bis 10 °C und ab 5 km/h, sonst wird die Lufttemperatur gesendet." UIHint="Information" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur bei Kälte und Wind (10-Minuten-Mittel). Gilt nur bis 10 °C und ab 5 km/h, sonst wird die Lufttemperatur gesendet." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00148_R-%TT%0014801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00148_R-%TT%0014801">
                   <when test="1">
@@ -2472,6 +2485,25 @@
                       </when>
                       <when test="1">
                         <ComObjectRefRef RefId="%AID%_O-%TT%00013_R-%TT%0001302" />
+                      </when>
+                    </choose>
+                  </when>
+                </choose>
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Gefühlte Temperatur" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wie in Wetter-Apps: bis 10 °C der Windchill, ab 27 °C der Hitzeindex, dazwischen die Lufttemperatur." UIHint="Information" />
+                <ParameterRefRef RefId="%AID%_UP-%TT%00734_R-%TT%0073401" IndentLevel="1" />
+                <choose ParamRefId="%AID%_UP-%TT%00734_R-%TT%0073401">
+                  <when test="1">
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00735_R-%TT%0073501" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00736_R-%TT%0073601" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00737_R-%TT%0073701" IndentLevel="2" />
+                    <ParameterRefRef RefId="%AID%_UP-%TT%00738_R-%TT%0073801" IndentLevel="2" />
+                    <choose ParamRefId="%AID%_UP-%TT%00735_R-%TT%0073501">
+                      <when test="0">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00191_R-%TT%0019101" />
+                      </when>
+                      <when test="1">
+                        <ComObjectRefRef RefId="%AID%_O-%TT%00191_R-%TT%0019102" />
                       </when>
                     </choose>
                   </when>
