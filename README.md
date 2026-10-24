@@ -53,7 +53,7 @@ und optional per MQTT bereit.
 - Mond: Phase (Nummer und Text), Beleuchtung, Alter, Azimut/Elevation, Auf-/Untergang, nächster Voll- und Neumond (DPT 11.001)
 - Zeitpunkte wahlweise als DPT 10.001 bzw. 11.001, DPT 19.001 (Datum und Uhrzeit) oder Unix-Zeit (DPT 12.001);
   in MQTT und InfluxDB zusätzlich immer als `<feld>_unix`
-- Lüftungsempfehlung (Taupunktlüftung) für bis zu 3 Räume: Raumtemperatur/-feuchte als Eingangsobjekte, „Lüften sinnvoll“
+- Lüftungsempfehlung (Taupunktlüftung) und Behaglichkeit nach Frank für bis zu 6 Räume: Raumtemperatur/-feuchte als Eingangsobjekte, „Lüften sinnvoll“
   mit Mindestunterschied, Hysterese und Freigaben (Raumfeuchte, Raum- und Außentemperatur), absolute Feuchte und Taupunkt innen
 - Bewässerung: Referenzverdunstung ET0 (FAO-56 Penman-Monteith), Wasserbilanz mit Pflanzenfaktor und Bodenspeicher,
   „Bewässern“ ab einstellbarem Defizit, Eingang „Bewässerung erfolgt“
