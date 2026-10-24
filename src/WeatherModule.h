@@ -25,7 +25,7 @@
 #define WX_FIRMWARE_REVISION 0
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
-#define WX_FIRMWARE_VERSION "1.3." WX_STR(WX_FIRMWARE_REVISION)
+#define WX_FIRMWARE_VERSION "1.4." WX_STR(WX_FIRMWARE_REVISION)
 
 class WeatherModule : public OpenKNX::Module
 {
