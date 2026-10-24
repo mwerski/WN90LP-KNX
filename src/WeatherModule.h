@@ -25,7 +25,7 @@
 #define WX_FIRMWARE_REVISION 0
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
-#define WX_FIRMWARE_VERSION "1.4." WX_STR(WX_FIRMWARE_REVISION)
+#define WX_FIRMWARE_VERSION "1.5." WX_STR(WX_FIRMWARE_REVISION)
 
 class WeatherModule : public OpenKNX::Module
 {
@@ -199,7 +199,8 @@ class WeatherModule : public OpenKNX::Module
         uint32_t tempTime = 0, humTime = 0;
         bool vent = false;
     };
-    Room _rooms[3];
+    static constexpr uint8_t ROOMS = 6;
+    Room _rooms[ROOMS];
     Irrigation _irrigation;
     DegreeDays _degreeDays;
     uint32_t _irrigationLast = 0;

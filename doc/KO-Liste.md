@@ -142,6 +142,18 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 153 | Absolute Feuchte Raum 3 | Lüftungsempfehlung | 9.029 |
 | 154 | Taupunkt Raum 3 | Lüftungsempfehlung | 9.001, 14.068 |
 | 155 | Feuchteunterschied innen − außen Raum 3 | Lüftungsempfehlung | 9.029 |
+| 233 | Lüften sinnvoll Raum 4 | Lüftungsempfehlung | 1.002 |
+| 234 | Absolute Feuchte Raum 4 | Lüftungsempfehlung | 9.029 |
+| 235 | Taupunkt Raum 4 | Lüftungsempfehlung | 9.001, 14.068 |
+| 236 | Feuchteunterschied innen − außen Raum 4 | Lüftungsempfehlung | 9.029 |
+| 237 | Lüften sinnvoll Raum 5 | Lüftungsempfehlung | 1.002 |
+| 238 | Absolute Feuchte Raum 5 | Lüftungsempfehlung | 9.029 |
+| 239 | Taupunkt Raum 5 | Lüftungsempfehlung | 9.001, 14.068 |
+| 240 | Feuchteunterschied innen − außen Raum 5 | Lüftungsempfehlung | 9.029 |
+| 241 | Lüften sinnvoll Raum 6 | Lüftungsempfehlung | 1.002 |
+| 242 | Absolute Feuchte Raum 6 | Lüftungsempfehlung | 9.029 |
+| 243 | Taupunkt Raum 6 | Lüftungsempfehlung | 9.001, 14.068 |
+| 244 | Feuchteunterschied innen − außen Raum 6 | Lüftungsempfehlung | 9.029 |
 | 156 | Verdunstung heute (ET0) | Bewässerung | 9.026 |
 | 157 | Verdunstung gestern (ET0) | Bewässerung | 9.026 |
 | 158 | Wasserbilanz | Bewässerung | 9.x |
@@ -212,12 +224,39 @@ gewählten DPT-Variante passen, und der Wert erreicht die Logik nur, wenn er ges
 | 230 | Raum 3 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
 | 231 | Raum 3 zu kalt | Lüftungsempfehlung | 1.002 |
 | 232 | Raum 3 zu warm | Lüftungsempfehlung | 1.002 |
+| 245 | Behaglichkeit Raum 4 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 246 | Behaglichkeit Raum 4 (Text) | Lüftungsempfehlung | 16.001 |
+| 247 | Abweichung vom Behaglichkeitsoptimum Raum 4 | Lüftungsempfehlung | 9.x |
+| 248 | Raum 4 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 249 | Raum 4 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 250 | Raum 4 zu kalt | Lüftungsempfehlung | 1.002 |
+| 251 | Raum 4 zu warm | Lüftungsempfehlung | 1.002 |
+| 252 | Behaglichkeit Raum 5 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 253 | Behaglichkeit Raum 5 (Text) | Lüftungsempfehlung | 16.001 |
+| 254 | Abweichung vom Behaglichkeitsoptimum Raum 5 | Lüftungsempfehlung | 9.x |
+| 255 | Raum 5 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 256 | Raum 5 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 257 | Raum 5 zu kalt | Lüftungsempfehlung | 1.002 |
+| 258 | Raum 5 zu warm | Lüftungsempfehlung | 1.002 |
+| 259 | Behaglichkeit Raum 6 (0 behaglich, 1 noch, 2 unbehaglich) | Lüftungsempfehlung | 5.010 |
+| 260 | Behaglichkeit Raum 6 (Text) | Lüftungsempfehlung | 16.001 |
+| 261 | Abweichung vom Behaglichkeitsoptimum Raum 6 | Lüftungsempfehlung | 9.x |
+| 262 | Raum 6 zu feucht (über 65 %) | Lüftungsempfehlung | 1.002 |
+| 263 | Raum 6 zu trocken (unter 30 %) | Lüftungsempfehlung | 1.002 |
+| 264 | Raum 6 zu kalt | Lüftungsempfehlung | 1.002 |
+| 265 | Raum 6 zu warm | Lüftungsempfehlung | 1.002 |
 | 168 | Raumtemperatur Raum 1 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 169 | Raumfeuchte Raum 1 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 170 | Raumtemperatur Raum 2 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 171 | Raumfeuchte Raum 2 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 172 | Raumtemperatur Raum 3 (Eingang) | Lüftungsempfehlung | 9.001 |
 | 173 | Raumfeuchte Raum 3 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 266 | Raumtemperatur Raum 4 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 267 | Raumfeuchte Raum 4 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 268 | Raumtemperatur Raum 5 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 269 | Raumfeuchte Raum 5 (Eingang) | Lüftungsempfehlung | 9.007 |
+| 270 | Raumtemperatur Raum 6 (Eingang) | Lüftungsempfehlung | 9.001 |
+| 271 | Raumfeuchte Raum 6 (Eingang) | Lüftungsempfehlung | 9.007 |
 | 174 | Bewässerung erfolgt (Eingang) | Bewässerung | 1.017 |
 
 Logikmodul: 30 Kanäle, KOs 300–389 (je Kanal Eingang 1, Eingang 2, Ausgang).

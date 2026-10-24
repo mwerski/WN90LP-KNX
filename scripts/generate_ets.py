@@ -101,7 +101,7 @@ GROUPS = [
     ("Warnings2", "Wetterwarnungen (DWD-Kriterien)", "alert-outline", None),
     ("DwdOfficial", "DWD-Warnungen (Internet)", "alert-outline", None),
 ]
-ROOMS = 3
+ROOMS = 6  # Raeume 1-3 ab ETS 0.12, 4-6 ab ETS 1.5
 # Seiten mit Abschnitten, die einzeln aktiviert werden: Seite -> (Anzahl, Praefix, Titel, Parameter je Abschnitt)
 SECTIONS = {
     "Facades": (6, "Facade", "Fassade", ["Azimuth", "Range", "MinElev", "MaxElev", "Threshold", "OnDelay", "OffDelay"]),
@@ -364,34 +364,18 @@ VALUES = [
       influx="", fmt="date"),
     V("NextNewMoon", "Moon", "Nächster Neumond", "", DATE, 0, 0, 0, thresholds=False, decimals=0, mqtt="next_new_moon", influx="",
       fmt="date"),
-    # Ab ETS 0.12: Lueftungsempfehlung, Bewaesserung, Gradtage
-    V("Room1Vent", "Ventilation", "Lüften sinnvoll Raum 1", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
-      mqtt="room1_ventilate", cond="Room1Active"),
-    V("Room1AbsHum", "Ventilation", "Absolute Feuchte Raum 1", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
-      decimals=2, mqtt="room1_humidity_abs", cond="Room1Active"),
-    V("Room1DewPoint", "Ventilation", "Taupunkt Raum 1", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room1_dewpoint",
-      cond="Room1Active"),
-    V("Room1Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 1", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
-      0.5, 0, decimals=2, mqtt="room1_humidity_diff", cond="Room1Active",
-      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
-    V("Room2Vent", "Ventilation", "Lüften sinnvoll Raum 2", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
-      mqtt="room2_ventilate", cond="Room2Active"),
-    V("Room2AbsHum", "Ventilation", "Absolute Feuchte Raum 2", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
-      decimals=2, mqtt="room2_humidity_abs", cond="Room2Active"),
-    V("Room2DewPoint", "Ventilation", "Taupunkt Raum 2", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room2_dewpoint",
-      cond="Room2Active"),
-    V("Room2Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 2", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
-      0.5, 0, decimals=2, mqtt="room2_humidity_diff", cond="Room2Active",
-      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
-    V("Room3Vent", "Ventilation", "Lüften sinnvoll Raum 3", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
-      mqtt="room3_ventilate", cond="Room3Active"),
-    V("Room3AbsHum", "Ventilation", "Absolute Feuchte Raum 3", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5, 0,
-      decimals=2, mqtt="room3_humidity_abs", cond="Room3Active"),
-    V("Room3DewPoint", "Ventilation", "Taupunkt Raum 3", "°C", TEMP, 1800, 0.5, 0, decimals=2, mqtt="room3_dewpoint",
-      cond="Room3Active"),
-    V("Room3Diff", "Ventilation", "Feuchteunterschied innen − außen Raum 3", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800,
-      0.5, 0, decimals=2, mqtt="room3_humidity_diff", cond="Room3Active",
-      info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
+    # Ab ETS 0.12: Lueftungsempfehlung (Raeume in der Schleife unten), Bewaesserung, Gradtage
+    *[v for _n in range(1, ROOMS + 1) for v in (
+        V(f"Room{_n}Vent", "Ventilation", f"Lüften sinnvoll Raum {_n}", "", BOOL, 1800, 0, 0, True, thresholds=False, decimals=0,
+          mqtt=f"room{_n}_ventilate", cond=f"Room{_n}Active"),
+        V(f"Room{_n}AbsHum", "Ventilation", f"Absolute Feuchte Raum {_n}", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")], 1800, 0.5,
+          0, decimals=2, mqtt=f"room{_n}_humidity_abs", cond=f"Room{_n}Active"),
+        V(f"Room{_n}DewPoint", "Ventilation", f"Taupunkt Raum {_n}", "°C", TEMP, 1800, 0.5, 0, decimals=2,
+          mqtt=f"room{_n}_dewpoint", cond=f"Room{_n}Active"),
+        V(f"Room{_n}Diff", "Ventilation", f"Feuchteunterschied innen − außen Raum {_n}", "g/m³", [T9(29, "DPT 9.029 (2 Byte, g/m³)")],
+          1800, 0.5, 0, decimals=2, mqtt=f"room{_n}_humidity_diff", cond=f"Room{_n}Active",
+          info="Positiv: draußen ist die Luft trockener, Lüften senkt die Feuchte im Raum."),
+    )],
     V("Et0Today", "Irrigation", "Verdunstung heute (ET0)", "mm", RAIN9, 3600, 0.5, 0, True, decimals=2, mqtt="et0_today",
       info="Referenzverdunstung nach FAO-56 Penman-Monteith, laufend aus Temperatur, Feuchte, Wind, Strahlung und Luftdruck."),
     V("Et0Yesterday", "Irrigation", "Verdunstung gestern (ET0)", "mm", RAIN9, 3600, 0, 0, thresholds=False, decimals=2,
@@ -539,7 +523,7 @@ INPUTS.append(dict(key="IrrigationDone", text="Bewässerung erfolgt", dpt="DPST-
 SENSOR_PARAM = {"sds": "SdsPresent", "onewire": "OneWirePresent"}
 
 # Allgemeine Parameter: (Name, Typ, Offset, Bit, Text, Default, Suffix)
-GENERAL_SIZE = 448  # frei: 447
+GENERAL_SIZE = 472  # frei: 447; 448-471 Raeume 4-6
 GENERAL = [
     ("SdsPresent", "%AID%_PT-OnOffYesNo", 0, 0, "Feinstaubsensor SDS011 vorhanden", "0", None),
     ("OneWirePresent", "%AID%_PT-OnOffYesNo", 0, 1, "Temperatursensor 1-Wire (DS18B20) vorhanden", "0", None),
@@ -681,7 +665,13 @@ GENERAL = [
     ("LedBrightness", "%AID%_PT-WxLedBrightness", 444, 0, "Helligkeit der Statusanzeige", "10", "%"),
     ("LedHeartbeat", "%AID%_PT-OnOffYesNo", 445, 7, "Lebenszeichen (kurz grün alle 10 s)", "0", None),
     ("PmLimit", "%AID%_PT-WxPmLimit", 446, 0, "Überschreitungstage zählen nach", "0", None),
-]
+] + [p for _n in range(4, ROOMS + 1) for _b in [448 + (_n - 4) * 8] for p in (
+    (f"Room{_n}Active", "%AID%_PT-OnOffYesNo", _b, 7, f"Raum {_n} auswerten", "0", None),
+    (f"Room{_n}MinDiff", "%AID%_PT-WxHumDiff", _b + 1, 0, "Lüften ab einem Feuchteunterschied von", "1", "g/m³"),
+    (f"Room{_n}MinRh", "%AID%_PT-WxPercent0", _b + 5, 0, "nur wenn die Raumfeuchte mindestens beträgt", "50", "%"),
+    (f"Room{_n}MinIndoorT", "%AID%_PT-WxTempLimit", _b + 6, 0, "nur wenn die Raumtemperatur mindestens beträgt", "10", "°C"),
+    (f"Room{_n}MinOutdoorT", "%AID%_PT-WxTempLimit", _b + 7, 0, "nur wenn die Außentemperatur mindestens beträgt", "-5", "°C"),
+)]
 
 # Home Assistant: Geraeteklasse und Einheit je Einheit, Sonderfaelle je Schluessel
 HA_BY_UNIT = {
@@ -691,7 +681,7 @@ HA_BY_UNIT = {
     "kWh/m²": (None, "kWh/m²"), "mm/h": ("precipitation_intensity", "mm/h"), "°": (None, "°"),
 }
 HA_BY_KEY = {
-    "Room1Vent": (None, None), "Room2Vent": (None, None), "Room3Vent": (None, None), "Irrigate": (None, None),
+    **{f"Room{_n}Vent": (None, None) for _n in range(1, ROOMS + 1)}, "Irrigate": (None, None),
     "WaterBalance": (None, "mm"), "Et0Today": (None, "mm"), "Et0Yesterday": (None, "mm"),
     "DayLength": ("duration", "s"), "SunshineToday": ("duration", "h"), "SunshineYesterday": ("duration", "h"),
     "MoonAge": (None, "d"), "MoonIllumination": (None, "%"), "DayProgress": (None, "%"),

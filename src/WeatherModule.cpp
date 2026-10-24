@@ -25,6 +25,10 @@ static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
 // Lichtausbeute des Tageslichts zur Umrechnung Helligkeit -> Strahlung
 static constexpr float LUX_PER_WM2 = 110.0f;
+// Eingangs-KOs je Raum (Temperatur, Feuchte)
+static constexpr uint16_t ROOM_KOS[][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn},
+                                           {WX_KoRoom3TempIn, WX_KoRoom3HumIn}, {WX_KoRoom4TempIn, WX_KoRoom4HumIn},
+                                           {WX_KoRoom5TempIn, WX_KoRoom5HumIn}, {WX_KoRoom6TempIn, WX_KoRoom6HumIn}};
 
 const std::string WeatherModule::name()
 {
@@ -102,8 +106,8 @@ void WeatherModule::setup(bool configured)
         _sunDnElevRise = (float)ParamWX_SunDnElevRise;
         _sunDnElevSet = (float)ParamWX_SunDnElevSet;
         _sunshineThreshold = ParamWX_SunshineThreshold;
-        const uint16_t roomBase[3] = {WX_Room1Active, WX_Room2Active, WX_Room3Active};
-        for (uint8_t i = 0; i < 3; i++)
+        const uint16_t roomBase[ROOMS] = {WX_Room1Active, WX_Room2Active, WX_Room3Active, WX_Room4Active, WX_Room5Active, WX_Room6Active};
+        for (uint8_t i = 0; i < ROOMS; i++)
         {
             // Block je Raum (8 Byte): +0 aktiv, +1 Mindestunterschied (float), +5 min. Feuchte, +6/+7 min. Temperatur innen/aussen
             Room &r = _rooms[i];
@@ -181,10 +185,9 @@ void WeatherModule::processAfterStartupDelay()
     if (_oneWireEnabled && Diag::koExists(WX_KO_FAULT_1W))
         knx.getGroupObject(WX_KO_FAULT_1W).value(_fault1W, DPT_Alarm);
     // Raumwerte fuer die Lueftungsempfehlung abfragen
-    const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < ROOMS; i++)
         if (_rooms[i].active)
-            for (uint16_t ko : roomKos[i])
+            for (uint16_t ko : ROOM_KOS[i])
                 if (Diag::koExists(ko))
                     knx.getGroupObject(ko).requestObjectRead();
 }
@@ -195,18 +198,17 @@ void WeatherModule::processInputKo(GroupObject &ko)
         return;
     Diag::stage(Diag::InputKo);
     const uint16_t asap = ko.asap();
-    const uint16_t roomKos[3][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn}, {WX_KoRoom3TempIn, WX_KoRoom3HumIn}};
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < ROOMS; i++)
     {
         Room &r = _rooms[i];
         if (!r.active)
             continue;
-        if (asap == roomKos[i][0])
+        if (asap == ROOM_KOS[i][0])
         {
             r.temp = (float)(double)ko.value(DPT_Value_Temp);
             r.tempTime = millis();
         }
-        else if (asap == roomKos[i][1])
+        else if (asap == ROOM_KOS[i][1])
         {
             r.hum = (float)(double)ko.value(DPT_Value_Humidity);
             r.humTime = millis();
@@ -848,13 +850,14 @@ void WeatherModule::updateAstro()
 void WeatherModule::updateVentilation()
 {
     static constexpr uint8_t COMFORT_VALUES = (uint8_t)WxId::Room2Comfort - (uint8_t)WxId::Room1Comfort;
-    static_assert(COMFORT_VALUES == 7 && (uint8_t)WxId::Room3Comfort - (uint8_t)WxId::Room2Comfort == COMFORT_VALUES,
+    static_assert(COMFORT_VALUES == 7 && (uint8_t)WxId::Room6Comfort - (uint8_t)WxId::Room1Comfort == 5 * COMFORT_VALUES,
                   "Reihenfolge der Behaglichkeitswerte in generate_ets.py");
+    static_assert((uint8_t)WxId::Room6Vent - (uint8_t)WxId::Room1Vent == 5 * 4, "Reihenfolge der Lueftungswerte in generate_ets.py");
     static constexpr uint32_t MAX_AGE = 2 * 3600000UL; // Raumwerte gelten 2 h
     const MeasuredValue &outAbs = val(WxId::AbsHumidity);
     const MeasuredValue &outTemp = val(WxId::Temp);
     const float tOut = calcTemperature(outTemp.valid() ? outTemp.value() : NAN);
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < ROOMS; i++)
     {
         Room &r = _rooms[i];
         const WxId base = (WxId)((uint8_t)WxId::Room1Vent + i * 4); // je Raum: Vent, AbsHum, DewPoint, Diff
@@ -1774,7 +1777,7 @@ void WeatherModule::showAstro()
 
 void WeatherModule::showClimate()
 {
-    for (uint8_t i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < ROOMS; i++)
     {
         const Room &r = _rooms[i];
         if (!r.active)
