@@ -391,14 +391,16 @@ void WeatherModule::processWn90()
         for (WxId id : {WxId::AbsHumidity, WxId::DewPoint, WxId::FrostPoint, WxId::Humidex, WxId::HeatIndex, WxId::Discomfort})
             val(id).invalidate();
     }
-    set(WxId::WindChill, (isnan(t) || isnan(wind)) ? NAN : WeatherCalc::windChill(t, wind));
-
     if (_wn90.valid(R::RainCounter))
         _rain.feed(_wn90.raw(R::RainCounter));
 
     _windStats.feed(wind, gust);
-    set(WxId::WindAvg10, _windStats.average());
+    const float windAvg = _windStats.average();
+    set(WxId::WindAvg10, windAvg);
     set(WxId::GustMax10, _windStats.maxGust());
+    // Windchill wie bei den Wetterdiensten mit dem mittleren Wind (10 min) statt dem Momentanwert:
+    // sonst springt er bei boeigem Wind staendig ueber die 5-km/h-Grenze der Formel
+    set(WxId::WindChill, (isnan(t) || isnan(windAvg)) ? NAN : WeatherCalc::windChill(t, windAvg));
     updateMinMax(t, gust);
     _season.feed(t);
 }
