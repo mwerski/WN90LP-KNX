@@ -16,12 +16,14 @@ Die Bitnummern folgen der ETS-Zaehlweise (Bit 0 = MSB), die Firmware liest
 die Werte ueber die von OpenKNXproducer erzeugten Makros.
 """
 import pathlib
+import re
 from xml.sax.saxutils import escape
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHARE = ROOT / "src" / "WN90LP.share.xml"
 HEADER = ROOT / "src" / "ValueTable.h"
 KOLIST = ROOT / "doc" / "KO-Liste.md"
+APPDOC = ROOT / "doc" / "Applikationsbeschreibung.md"
 KO_OFFSET = 20  # muss zu KoSingleOffset in src/WN90LP.xml passen
 
 VALUE_SIZE = 11  # Byte je Messwert
@@ -502,6 +504,98 @@ for _n in range(1, ROOMS + 1):
         V(f"Room{_n}TooWarm", "Ventilation", f"Raum {_n} zu warm", "", BOOL, 1800, 0, 0, thresholds=False, decimals=0,
           mqtt=f"room{_n}_too_warm", cond=_c, info="Außerhalb des behaglichen Feldes und über 22 °C."),
     ]
+
+# Hinweistexte fuer Werte ohne eigenen info-Text; Raeume und Fassaden mit N statt der Nummer
+INFO = {
+    "Temp": "Lufttemperatur der WN90LP (Auflösung 0,1 °C) einschließlich der Korrektur auf der Seite Allgemein.",
+    "Temp1W": "Temperatur des DS18B20 am 1-Wire-Anschluss (12 Bit, 0,0625 °C). Unplausible Werte (nicht erreichbar, 85 °C nach dem Einschalten) werden verworfen.",
+    "Humidity": "Relative Luftfeuchte der WN90LP (Auflösung 1 %).",
+    "AbsHumidity": "Wassergehalt der Luft aus Temperatur und relativer Feuchte; Grundlage der Lüftungsempfehlung.",
+    "DewPoint": "Temperatur, bei der die Luft mit Wasserdampf gesättigt ist und Tau entsteht (Magnus-Formel).",
+    "FrostPoint": "Wie der Taupunkt, aber über Eis gerechnet: unter 0 °C bildet sich bei dieser Temperatur Reif.",
+    "WindSpeed": "Momentanwert der WN90LP (Ultraschall), alle 2 s neu. Für Schaltaufgaben besser das 10-Minuten-Mittel oder die Windalarme verwenden.",
+    "GustSpeed": "Böengeschwindigkeit der WN90LP, alle 2 s neu.",
+    "WindBft": "Windgeschwindigkeit (Momentanwert) in der Beaufort-Skala 0–12.",
+    "GustBft": "Böengeschwindigkeit in der Beaufort-Skala 0–12.",
+    "WindDir": "Herkunftsrichtung des Windes: 0° Nord, 90° Ost, 180° Süd, 270° West. Bei schwachem Wind wenig aussagekräftig; Sprünge zwischen 359° und 0° sind normal.",
+    "Pressure": "Luftdruck am Standort (Stationsdruck). Für den Vergleich mit Wetterberichten den Luftdruck auf Meereshöhe verwenden.",
+    "Light": "Beleuchtungsstärke (volle Sonne etwa 100.000 lx). Grundlage für Globalstrahlung, Tag/Nacht und Wettersymbol.",
+    "UvIndex": "UV-Index nach WHO: 0–2 niedrig, 3–5 mäßig, 6–7 hoch, 8–10 sehr hoch, ab 11 extrem.",
+    "Rain5m": "Niederschlag der letzten 5 Minuten (gleitend).",
+    "Rain1h": "Niederschlag der letzten 60 Minuten (gleitend).",
+    "Pm25": "Rohwert des SDS011 für Partikel bis 2,5 µm. Bei hoher Luftfeuchte zeigt der Sensor zu viel an; dann den feuchtekorrigierten Wert verwenden.",
+    "Pm10": "Rohwert des SDS011 für Partikel bis 10 µm. Bei hoher Luftfeuchte zeigt der Sensor zu viel an; dann den feuchtekorrigierten Wert verwenden.",
+    "Pm25Norm": "Rohwert korrigiert um den Einfluss der Luftfeuchte (Faktoren nach luftdaten.info); Grundlage der Mittelwerte und des Luftqualitätsindex.",
+    "Pm10Norm": "Rohwert korrigiert um den Einfluss der Luftfeuchte (Faktoren nach luftdaten.info); Grundlage der Mittelwerte und des Luftqualitätsindex.",
+    "WindAlarm1": "1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter.",
+    "WindAlarm2": "1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter.",
+    "WindAlarm3": "1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter.",
+    "TempMinToday": "Tiefste Temperatur seit 0 Uhr Ortszeit.",
+    "TempMaxToday": "Höchste Temperatur seit 0 Uhr Ortszeit.",
+    "TempMinYesterday": "Tiefste Temperatur des Vortags; ungültig, wenn die Station über Mitternacht aus war.",
+    "TempMaxYesterday": "Höchste Temperatur des Vortags; ungültig, wenn die Station über Mitternacht aus war.",
+    "GustMaxToday": "Stärkste Böe seit 0 Uhr Ortszeit.",
+    "GustMaxYesterday": "Stärkste Böe des Vortags.",
+    "DailyMeanYesterday": "Tagesmittel des Vortags nach dem eingestellten Verfahren (DIN/Mannheimer Stunden oder Mittel aller Messwerte).",
+    "SummerDay": "1, sobald das Tagesmaximum 25 °C erreicht.",
+    "HotDay": "1, sobald das Tagesmaximum 30 °C erreicht.",
+    "FrostDay": "1, sobald das Tagesminimum unter 0 °C fällt.",
+    "RadiationToday": "Summe der geschätzten Globalstrahlung seit 0 Uhr (klarer Sommertag etwa 7–8 kWh/m², trüber Wintertag unter 0,5 kWh/m²).",
+    "RadiationYesterday": "Tagessumme der Einstrahlung des Vortags.",
+    "PvEnergyYesterday": "Geschätzter PV-Ertrag des Vortags.",
+    "FacadeNSun": "1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung.",
+    "FacadeNIrradiance": "Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil.",
+    "Sunrise": "Oberer Sonnenrand am Horizont (Sonnenmitte −0,833° mit Refraktion), Ortszeit. Wird täglich nach Mitternacht neu berechnet; Genauigkeit etwa 1 Minute.",
+    "Sunset": "Oberer Sonnenrand am Horizont (Sonnenmitte −0,833° mit Refraktion), Ortszeit.",
+    "SolarNoon": "Zeitpunkt des höchsten Sonnenstands (wahrer Mittag), Ortszeit.",
+    "CivilDawn": "Sonne steigt über −6°: hell genug für Tätigkeiten im Freien ohne Licht.",
+    "CivilDusk": "Sonne sinkt unter −6°.",
+    "NauticalDawn": "Sonne steigt über −12°: der Horizont wird sichtbar.",
+    "NauticalDusk": "Sonne sinkt unter −12°.",
+    "AstroDawn": "Sonne steigt über −18°: Ende der völligen Dunkelheit.",
+    "AstroDusk": "Sonne sinkt unter −18°: völlige Dunkelheit.",
+    "SunriseAzimuth": "Himmelsrichtung des Sonnenaufgangs (0° Nord, 90° Ost).",
+    "SunsetAzimuth": "Himmelsrichtung des Sonnenuntergangs (0° Nord, 270° West).",
+    "TransitElevation": "Höchste Sonnenhöhe des Tages.",
+    "DayLength": "Zeit zwischen Sonnenaufgang und Sonnenuntergang.",
+    "SunFalling": "0 bis zum Höchststand, 1 danach.",
+    "DayNightCivil": "1 = Nacht, solange die Sonne tiefer als −6° steht.",
+    "DayNightNautical": "1 = Nacht, solange die Sonne tiefer als −12° steht.",
+    "DayNightAstro": "1 = Nacht, solange die Sonne tiefer als −18° steht.",
+    "ClearSkyMax": "Strahlung bei klarem Himmel zum Höchststand (Haurwitz); Vergleichswert für die gemessene Globalstrahlung.",
+    "SunshineYesterday": "Sonnenscheindauer des Vortags.",
+    "MoonPhaseText": "Name der Mondphase, z. B. „Vollmond“; Statusseite und MQTT mit vollem Text.",
+    "MoonIllumination": "Beleuchteter Anteil der Mondscheibe.",
+    "MoonAge": "Tage seit dem letzten Neumond (ein Mondzyklus dauert etwa 29,5 Tage).",
+    "MoonAzimuth": "Himmelsrichtung des Mondes (0° Nord, 90° Ost).",
+    "MoonElevation": "Höhe des Mondes über dem Horizont, negativ unter dem Horizont.",
+    "Moonset": "Leer, wenn der Mond an diesem Tag nicht untergeht.",
+    "NextFullMoon": "Datum des nächsten Vollmonds (Ortszeit).",
+    "NextNewMoon": "Datum des nächsten Neumonds (Ortszeit).",
+    "RoomNVent": "1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³.",
+    "RoomNAbsHum": "Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte.",
+    "RoomNDewPoint": "Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht.",
+    "RoomNTooHumid": "Relative Raumfeuchte über 65 % (Schimmelgefahr).",
+    "RoomNTooDry": "Relative Raumfeuchte unter 30 %.",
+    "Et0Yesterday": "Referenzverdunstung des Vortags.",
+    "HddMonth": "HDD", "HddLastMonth": "HDD", "HddYear": "HDD", "HddLastYear": "HDD",
+    "CddMonth": "CDD", "CddLastMonth": "CDD", "CddYear": "CDD", "CddLastYear": "CDD",
+    "WarnSevere": "1 bei Stufe 3 oder 4 in mindestens einer Kategorie.",
+    "WarnWind": "Stärkste Böe der letzten 10 Minuten: 1 ab 50 km/h, 2 ab 65, 3 ab 105, 4 ab 140 km/h.",
+    "WarnHeavyRain": "2 ab 15 mm in 1 h oder 20 mm in 6 h, 3 ab 25 bzw. 35 mm, 4 ab 40 bzw. 60 mm.",
+    "WarnLongRain": "2 ab 30 mm in 24 h, 40 mm in 48 h oder 60 mm in 72 h; 3 ab 50/60/90 mm; 4 ab 80/90/120 mm.",
+    "WarnFrost": "1 Frost (unter 0 °C) oder Glätte, 2 strenger Frost (unter −10 °C), 3 Glatteis (Regen bei höchstens 0 °C).",
+    "WarnHeat": "Nach dem Hitzeindex: 2 ab 32 °C, 3 ab 38 °C.",
+    "WarnUv": "1 ab UV-Index 8.",
+    "DwdSevere": "1, solange eine amtliche Warnung der Stufe 3 oder 4 gilt.",
+    "DwdCount": "Anzahl der derzeit gültigen amtlichen Warnungen für die Warnzelle.",
+}
+for _v in VALUES:
+    _k = re.sub(r"^(Room|Facade)\d+", r"\1N", _v["key"])
+    if not _v["info"] and _k in INFO:
+        _v["info"] = {"HDD": "Summe aus (Innentemperatur − Tagesmittel) über alle Tage mit Tagesmittel unter der Heizgrenze, in Kelvin·Tagen (Kd), keine Anzahl Tage: 60 Kd entsprechen z. B. 6 Tagen mit 10 °C Tagesmittel.", "CDD": "Summe aus (Tagesmittel − Basistemperatur) über alle Tage mit Tagesmittel über der Basistemperatur, in Kelvin·Tagen (Kd)."}.get(INFO[_k], INFO[_k])
+_missing = [v["key"] for v in VALUES if not v["info"]]
+assert not _missing, f"Hinweistext fehlt: {_missing}"
 
 # Stoerungs-KOs vor den Messwerten
 FAULTS = [
@@ -1376,8 +1470,142 @@ def build():
     KOLIST.parent.mkdir(exist_ok=True)
     KOLIST.write_text("\n".join(md) + "\n", encoding="utf-8")
 
+    write_appdoc(xml)
+
     print(f"{SHARE.relative_to(ROOT)}: {len(VALUES)} Messwerte, {total} Byte Parameter, KO 1-{kono - 1}")
     print(f"{HEADER.relative_to(ROOT)} geschrieben")
+
+
+# Allgemeine Parameter je ETS-Seite fuer die Applikationsbeschreibung (Werte-Parameter kommen ueber "extra",
+# Abschnitte ueber SECTIONS). write_appdoc() prueft, dass jeder Parameter aus GENERAL genau hier auftaucht.
+PAGE_PARAMS = {
+    "General": ["SdsPresent", "SdsDutyCycle", "OneWirePresent", "CalcTempSource", "Altitude", "TempOffset", "RainWindow",
+                "RainMinAmount", "RainStopDelay", "SendSpacing", "LedMode", "LedBrightness", "LedHeartbeat", "MqttInterval",
+                "HaDiscovery"],
+    "Influx": ["InfluxActive", "InfluxServer", "InfluxPort", "InfluxDatabase", "InfluxRp", "InfluxUser", "InfluxPassword",
+               "InfluxInterval", "InfluxMeasurement", "InfluxTagFloor", "InfluxTagRoom", "InfluxTagSensor"],
+    "Forecast": ["SymHeavyRain", "SymStormGust", "SymUvHigh", "SymSunnyRatio"],
+    "Particles": ["PmLimit"],
+    "Irrigation": ["IrrKc", "IrrThreshold", "IrrStorage", "IrrAmount", "StationHeight"],
+    "DegreeDays": ["DdIndoor", "DdHeatLimit", "DdCoolBase"],
+    "Warnings2": ["WarnHold"],
+    "DwdOfficial": ["DwdActive", "DwdCell", "DwdInterval"],
+}
+
+
+def write_appdoc(xml):
+    """Fuellt in doc/Applikationsbeschreibung.md die Bereiche zwischen <!-- GEN:<Seite> --> und <!-- /GEN -->
+    mit Parameter- und KO-Tabellen. Der Text ausserhalb dieser Bereiche wird von Hand gepflegt."""
+    # Aufzaehlungen und Wertebereiche aus den erzeugten Parametertypen
+    enums, ranges = {}, {}
+    for tid, body in re.findall(r'<ParameterType Id="%AID%_PT-(\w+)" Name="\w+">(.*?)</ParameterType>', xml, re.S):
+        for text, value in re.findall(r'<Enumeration Text="([^"]*)" Value="(\d+)"', body):
+            enums[(tid, value)] = text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+        m = re.search(r'minInclusive="([^"]+)" maxInclusive="([^"]+)"', body)
+        if m:
+            ranges[tid] = (m.group(1), m.group(2))
+    general = {g[0]: g for g in GENERAL}
+    used = set()
+
+    def cell(text):
+        return str(text).replace("|", "\\|").replace("\n", " ")
+
+    def num(x):
+        return str(x).replace(".", ",")
+
+    def param_rows(names):
+        rows = []
+        for n in names:
+            name, ptype, _, _, text, default, suffix = general[n]
+            used.add(n)
+            tid = ptype.split("PT-")[1]
+            unit = f" {suffix}" if suffix else ""
+            if (tid, default) in enums:
+                dflt = enums[(tid, default)]
+                rng = " / ".join(v for (t, _), v in enums.items() if t == tid)
+            elif tid == "OnOffYesNo":
+                dflt, rng = ("ja" if default == "1" else "nein"), "ja / nein"
+            else:
+                dflt = (num(default) + unit) if default != "" else "(leer)"
+                rng = f"{num(ranges[tid][0])} … {num(ranges[tid][1])}{unit}" if tid in ranges else ""
+            rows.append(f"| {cell(text)} | {cell(dflt)} | {cell(rng)} |")
+        return rows
+
+    def params_table(names):
+        if not names:
+            return []
+        return ["| Parameter | Standard | Bereich |", "|---|---|---|"] + param_rows(names) + [""]
+
+    def dpt_text(v):
+        return ", ".join(d[0].split(" (")[0].replace("DPT ", "") if d[0].startswith("DPT") else d[0].split(" (")[0]
+                         for d in v["dpts"])
+
+    def values_table(vals):
+        if not vals:
+            return []
+        rows = ["| KO | Wert | DPT | Standard | Beschreibung |", "|---:|---|---|---|---|"]
+        for v in vals:
+            std = ["aktiv" if v["active"] else "inaktiv"]
+            if v["cycle"]:
+                std.append(f"alle {v['cycle']} s")
+            if v["thresholds"] and v["abs"]:
+                std.append(f"±{num(v['abs'])} {v['unit']}".rstrip())
+            if v["thresholds"] and v["rel"]:
+                std.append(f"±{num(v['rel'])} %")
+            if not v["thresholds"]:
+                std.append("bei Änderung")
+            rows.append(f"| {KO_OFFSET + v['ko']} | {cell(v['text'])} | {dpt_text(v)} | {', '.join(std)} | {cell(v['info'] or '')} |")
+        return rows + [""]
+
+    def extras_table(vals):
+        # Zusatzparameter erscheinen in der ETS unter dem jeweiligen Messwert
+        out = []
+        for v in vals:
+            names = [n for n in v["extra"] if n not in used]
+            if names:
+                out += [f"Parameter unter „{v['text']}“:", ""] + params_table(names)
+        return out
+
+    def inputs_table(inps):
+        if not inps:
+            return []
+        rows = ["| KO | Eingang | DPT |", "|---:|---|---|"]
+        for i in inps:
+            d = i["dpt"].split("-")
+            rows.append(f"| {KO_OFFSET + i['ko']} | {cell(i['text'])} | {d[1]}.{int(d[2]):03d} |")
+        return rows + [""]
+
+    blocks = {}
+    gnames = {g[0]: g[1] for g in GROUPS}
+    blocks["General"] = params_table(PAGE_PARAMS["General"]) + [
+        "| KO | Störung | DPT |", "|---:|---|---|"] + [f"| {KO_OFFSET + i + 1} | {t} | 1.005 |" for i, (_, t, _) in enumerate(FAULTS)] + [""]
+    blocks["Influx"] = params_table(PAGE_PARAMS["Influx"])
+    for gkey, _, _, _ in GROUPS:
+        out = params_table(PAGE_PARAMS.get(gkey, []))
+        out += inputs_table([i for i in INPUTS if i["group"] == gkey and not i["cond"]])
+        if gkey in SECTIONS:
+            count, prefix, title, pnames = SECTIONS[gkey]
+            out += [f"Einstellungen je {title} ({title} 1–{count}, hier {title} 1):", ""]
+            out += params_table([f"{prefix}1Active"] + [f"{prefix}1{pn}" for pn in pnames])
+            for n in range(2, count + 1):
+                for pn in ["Active"] + pnames:
+                    used.add(f"{prefix}{n}{pn}")
+            first = [i for i in INPUTS if i["cond"] == f"{prefix}1Active"]
+            vals = [v for v in VALUES if v["cond"] == f"{prefix}1Active"]
+            out += [f"Objekte je {title} (KO-Nummern für {title} 1; alle Nummern in [KO-Liste.md](KO-Liste.md)):", ""]
+            out += inputs_table(first) + values_table(vals)
+        vals = [v for v in VALUES if v["group"] == gkey and not v["cond"]]
+        out += extras_table(vals) + values_table(vals)
+        blocks[gkey] = out
+    missing = [g[0] for g in GENERAL if g[0] not in used and not any(g[0] in v["extra"] for v in VALUES)]
+    assert not missing, f"Parameter ohne Seite in PAGE_PARAMS: {missing}"
+
+    text = APPDOC.read_text(encoding="utf-8")
+    for key, lines in blocks.items():
+        pattern = re.compile(rf"(<!-- GEN:{key} -->\n).*?(<!-- /GEN -->)", re.S)
+        assert pattern.search(text), f"Marke <!-- GEN:{key} --> fehlt in {APPDOC.name} ({gnames.get(key, key)})"
+        text = pattern.sub(lambda m: m.group(1) + "\n".join(lines) + m.group(2), text)
+    APPDOC.write_text(text, encoding="utf-8")
 
 
 if __name__ == "__main__":

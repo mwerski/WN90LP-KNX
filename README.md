@@ -4,6 +4,9 @@ OpenKNX-Firmware für die Wetterstation **Ecowitt WN90LP** am **LilyGO T-RSS3** 
 Das Gerät arbeitet als **KNX-IP-Gerät über WLAN** und stellt die Messwerte als Kommunikationsobjekte
 und optional per MQTT bereit.
 
+Ausführliche Beschreibung aller ETS-Seiten, Parameter und Kommunikationsobjekte: [doc/Applikationsbeschreibung.md](doc/Applikationsbeschreibung.md),
+KO-Nummern: [doc/KO-Liste.md](doc/KO-Liste.md).
+
 ## Hardware
 
 - Ecowitt WN90LP (Modbus RTU, Adresse 0x90, 9600 Baud) an der RS485-Schnittstelle des T-RSS3

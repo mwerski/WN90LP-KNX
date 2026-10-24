@@ -2741,6 +2741,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Temperature" Text="Temperatur" Icon="thermometer">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Lufttemperatur der WN90LP (Auflösung 0,1 °C) einschließlich der Korrektur auf der Seite Allgemein." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00109_R-%TT%0010901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00109_R-%TT%0010901">
                   <when test="1">
@@ -2761,6 +2762,7 @@
                 <choose ParamRefId="%AID%_UP-%TT%00002_R-%TT%0000201">
                   <when test="1">
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur 1-Wire" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur des DS18B20 am 1-Wire-Anschluss (12 Bit, 0,0625 °C). Unplausible Werte (nicht erreichbar, 85 °C nach dem Einschalten) werden verworfen." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00114_R-%TT%0011401" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00114_R-%TT%0011401">
                       <when test="1">
@@ -2783,6 +2785,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Humidity" Text="Luftfeuchte" Icon="water-percent">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Luftfeuchte" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Luftfeuchte der WN90LP (Auflösung 1 %)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00119_R-%TT%0011901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00119_R-%TT%0011901">
                   <when test="1">
@@ -2801,6 +2804,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Luftfeuchte" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Luft aus Temperatur und relativer Feuchte; Grundlage der Lüftungsempfehlung." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00124_R-%TT%0012401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00124_R-%TT%0012401">
                   <when test="1">
@@ -2811,6 +2815,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur, bei der die Luft mit Wasserdampf gesättigt ist und Tau entsteht (Magnus-Formel)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00128_R-%TT%0012801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00128_R-%TT%0012801">
                   <when test="1">
@@ -2829,6 +2834,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Frostpunkt" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Wie der Taupunkt, aber über Eis gerechnet: unter 0 °C bildet sich bei dieser Temperatur Reif." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00133_R-%TT%0013301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00133_R-%TT%0013301">
                   <when test="1">
@@ -2946,6 +2952,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Wind" Text="Wind" Icon="windsock">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windgeschwindigkeit" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Momentanwert der WN90LP (Ultraschall), alle 2 s neu. Für Schaltaufgaben besser das 10-Minuten-Mittel oder die Windalarme verwenden." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00158_R-%TT%0015801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00158_R-%TT%0015801">
                   <when test="1">
@@ -2967,6 +2974,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Böengeschwindigkeit" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Böengeschwindigkeit der WN90LP, alle 2 s neu." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00163_R-%TT%0016301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00163_R-%TT%0016301">
                   <when test="1">
@@ -2988,6 +2996,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windstärke (Beaufort)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Windgeschwindigkeit (Momentanwert) in der Beaufort-Skala 0–12." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00168_R-%TT%0016801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00168_R-%TT%0016801">
                   <when test="1">
@@ -2998,6 +3007,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Böenstärke (Beaufort)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Böengeschwindigkeit in der Beaufort-Skala 0–12." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00172_R-%TT%0017201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00172_R-%TT%0017201">
                   <when test="1">
@@ -3008,6 +3018,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windrichtung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Herkunftsrichtung des Windes: 0° Nord, 90° Ost, 180° Süd, 270° West. Bei schwachem Wind wenig aussagekräftig; Sprünge zwischen 359° und 0° sind normal." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00176_R-%TT%0017601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00176_R-%TT%0017601">
                   <when test="1">
@@ -3073,6 +3084,7 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="WindAlarm" Text="Windalarm" Icon="alert-outline">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Schutz für Markisen und Jalousien: Der Alarm wird ausgelöst, wenn der Wind die Schwelle für die eingestellte Zeit überschreitet, und erst zurückgenommen, wenn er die eingestellte Zeit darunter bleibt. Beaufort 6 ≈ 10,8 m/s, 7 ≈ 13,9 m/s, 8 ≈ 17,2 m/s. Bei einer Störung der Wetterstation wird der Alarm ausgelöst." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windalarm Stufe 1" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00283_R-%TT%0028301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00283_R-%TT%0028301">
                   <when test="1">
@@ -3085,6 +3097,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windalarm Stufe 2" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00285_R-%TT%0028501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00285_R-%TT%0028501">
                   <when test="1">
@@ -3097,6 +3110,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Windalarm Stufe 3" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Alarm. Quelle, Schwelle und Verzögerungen stehen darunter." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00287_R-%TT%0028701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00287_R-%TT%0028701">
                   <when test="1">
@@ -3111,6 +3125,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Pressure" Text="Luftdruck" Icon="gauge">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdruck (absolut)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Luftdruck am Standort (Stationsdruck). Für den Vergleich mit Wetterberichten den Luftdruck auf Meereshöhe verwenden." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00181_R-%TT%0018101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00181_R-%TT%0018101">
                   <when test="1">
@@ -3188,6 +3203,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Light" Text="Helligkeit und UV" Icon="white-balance-sunny">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Helligkeit" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beleuchtungsstärke (volle Sonne etwa 100.000 lx). Grundlage für Globalstrahlung, Tag/Nacht und Wettersymbol." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00201_R-%TT%0020101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00201_R-%TT%0020101">
                   <when test="1">
@@ -3198,6 +3214,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="UV-Index" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="UV-Index nach WHO: 0–2 niedrig, 3–5 mäßig, 6–7 hoch, 8–10 sehr hoch, ab 11 extrem." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00205_R-%TT%0020501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00205_R-%TT%0020501">
                   <when test="1">
@@ -3248,6 +3265,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte 5 Minuten" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Niederschlag der letzten 5 Minuten (gleitend)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00219_R-%TT%0021901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00219_R-%TT%0021901">
                   <when test="1">
@@ -3258,6 +3276,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Regenmenge letzte Stunde" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Niederschlag der letzten 60 Minuten (gleitend)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00223_R-%TT%0022301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00223_R-%TT%0022301">
                   <when test="1">
@@ -3408,6 +3427,7 @@
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="WHO-Leitlinie 2021: Tagesmittel PM2,5 15, PM10 45 µg/m³ (höchstens 3-4 Tage im Jahr darüber), Jahresmittel PM2,5 5, PM10 15 µg/m³. EU-Grenzwerte ab 2030: Tagesmittel PM2,5 25, PM10 45 µg/m³ (höchstens 18 Tage), Jahresmittel PM2,5 10, PM10 20 µg/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00683_R-%TT%0068301" IndentLevel="1" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM2,5" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Rohwert des SDS011 für Partikel bis 2,5 µm. Bei hoher Luftfeuchte zeigt der Sensor zu viel an; dann den feuchtekorrigierten Wert verwenden." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00249_R-%TT%0024901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00249_R-%TT%0024901">
                       <when test="1">
@@ -3418,6 +3438,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM10" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Rohwert des SDS011 für Partikel bis 10 µm. Bei hoher Luftfeuchte zeigt der Sensor zu viel an; dann den feuchtekorrigierten Wert verwenden." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00253_R-%TT%0025301" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00253_R-%TT%0025301">
                       <when test="1">
@@ -3428,6 +3449,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM2,5 (feuchtekorrigiert)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Rohwert korrigiert um den Einfluss der Luftfeuchte (Faktoren nach luftdaten.info); Grundlage der Mittelwerte und des Luftqualitätsindex." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00257_R-%TT%0025701" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00257_R-%TT%0025701">
                       <when test="1">
@@ -3438,6 +3460,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Feinstaub PM10 (feuchtekorrigiert)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Rohwert korrigiert um den Einfluss der Luftfeuchte (Faktoren nach luftdaten.info); Grundlage der Mittelwerte und des Luftqualitätsindex." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00261_R-%TT%0026101" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00261_R-%TT%0026101">
                       <when test="1">
@@ -3702,6 +3725,7 @@
               <ParameterBlock Id="%AID%_PB-nnn" Name="MinMax" Text="Minimum und Maximum" Icon="thermometer">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Werte seit Mitternacht bzw. des Vortags (benötigt gültige Uhrzeit), bleiben über Neustarts erhalten. Temperatur = Temperatur für Berechnungen." UIHint="Information" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur Minimum heute" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tiefste Temperatur seit 0 Uhr Ortszeit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00299_R-%TT%0029901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00299_R-%TT%0029901">
                   <when test="1">
@@ -3718,6 +3742,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur Maximum heute" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Höchste Temperatur seit 0 Uhr Ortszeit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00302_R-%TT%0030201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00302_R-%TT%0030201">
                   <when test="1">
@@ -3734,6 +3759,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur Minimum gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tiefste Temperatur des Vortags; ungültig, wenn die Station über Mitternacht aus war." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00305_R-%TT%0030501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00305_R-%TT%0030501">
                   <when test="1">
@@ -3750,6 +3776,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Temperatur Maximum gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Höchste Temperatur des Vortags; ungültig, wenn die Station über Mitternacht aus war." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00308_R-%TT%0030801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00308_R-%TT%0030801">
                   <when test="1">
@@ -3766,6 +3793,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Stärkste Böe heute" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Stärkste Böe seit 0 Uhr Ortszeit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00311_R-%TT%0031101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00311_R-%TT%0031101">
                   <when test="1">
@@ -3785,6 +3813,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Stärkste Böe gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Stärkste Böe des Vortags." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00314_R-%TT%0031401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00314_R-%TT%0031401">
                   <when test="1">
@@ -3868,6 +3897,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tagesmitteltemperatur gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tagesmittel des Vortags nach dem eingestellten Verfahren (DIN/Mannheimer Stunden oder Mittel aller Messwerte)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00329_R-%TT%0032901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00329_R-%TT%0032901">
                   <when test="1">
@@ -3884,6 +3914,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sommertag (Maximum ab 25 °C)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1, sobald das Tagesmaximum 25 °C erreicht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00332_R-%TT%0033201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00332_R-%TT%0033201">
                   <when test="1">
@@ -3892,6 +3923,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Heißer Tag (Maximum ab 30 °C)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1, sobald das Tagesmaximum 30 °C erreicht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00334_R-%TT%0033401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00334_R-%TT%0033401">
                   <when test="1">
@@ -3900,6 +3932,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Frosttag (Minimum unter 0 °C)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1, sobald das Tagesminimum unter 0 °C fällt." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00336_R-%TT%0033601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00336_R-%TT%0033601">
                   <when test="1">
@@ -3943,6 +3976,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung heute" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe der geschätzten Globalstrahlung seit 0 Uhr (klarer Sommertag etwa 7–8 kWh/m², trüber Wintertag unter 0,5 kWh/m²)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00348_R-%TT%0034801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00348_R-%TT%0034801">
                   <when test="1">
@@ -3953,6 +3987,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tagessumme der Einstrahlung des Vortags." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00352_R-%TT%0035201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00352_R-%TT%0035201">
                   <when test="1">
@@ -3995,6 +4030,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="PV-Ertrag gestern (geschätzt)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzter PV-Ertrag des Vortags." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00363_R-%TT%0036301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00363_R-%TT%0036301">
                   <when test="1">
@@ -4025,6 +4061,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00037_R-%TT%0003701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00038_R-%TT%0003801" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 1" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00366_R-%TT%0036601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00366_R-%TT%0036601">
                       <when test="1">
@@ -4033,6 +4070,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 1 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00368_R-%TT%0036801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00368_R-%TT%0036801">
                       <when test="1">
@@ -4067,6 +4105,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00045_R-%TT%0004501" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00046_R-%TT%0004601" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 2" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00376_R-%TT%0037601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00376_R-%TT%0037601">
                       <when test="1">
@@ -4075,6 +4114,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 2 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00378_R-%TT%0037801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00378_R-%TT%0037801">
                       <when test="1">
@@ -4109,6 +4149,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00053_R-%TT%0005301" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00054_R-%TT%0005401" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 3" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00386_R-%TT%0038601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00386_R-%TT%0038601">
                       <when test="1">
@@ -4117,6 +4158,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 3 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00388_R-%TT%0038801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00388_R-%TT%0038801">
                       <when test="1">
@@ -4151,6 +4193,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00061_R-%TT%0006101" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00062_R-%TT%0006201" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 4" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00396_R-%TT%0039601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00396_R-%TT%0039601">
                       <when test="1">
@@ -4159,6 +4202,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 4 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00398_R-%TT%0039801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00398_R-%TT%0039801">
                       <when test="1">
@@ -4193,6 +4237,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00069_R-%TT%0006901" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00070_R-%TT%0007001" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 5" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00406_R-%TT%0040601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00406_R-%TT%0040601">
                       <when test="1">
@@ -4201,6 +4246,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 5 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00408_R-%TT%0040801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00408_R-%TT%0040801">
                       <when test="1">
@@ -4235,6 +4281,7 @@
                     <ParameterRefRef RefId="%AID%_UP-%TT%00077_R-%TT%0007701" IndentLevel="2" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00078_R-%TT%0007801" IndentLevel="2" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne auf Fassade 6" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1, wenn die Sonne im eingestellten Winkelbereich steht und die Einstrahlung die Schwelle für die Dauer der Meldeverzögerung überschreitet; 0 nach der Rücknahmeverzögerung." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00416_R-%TT%0041601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00416_R-%TT%0041601">
                       <when test="1">
@@ -4243,6 +4290,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Einstrahlung Fassade 6 (geschätzt)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Geschätzte Strahlung auf die senkrechte Fassade: direkter, diffuser und vom Boden reflektierter Anteil." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00418_R-%TT%0041801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00418_R-%TT%0041801">
                       <when test="1">
@@ -4268,6 +4316,7 @@
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="SunTimes" Text="Sonnenzeiten" Icon="white-balance-sunny">
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenaufgang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Oberer Sonnenrand am Horizont (Sonnenmitte −0,833° mit Refraktion), Ortszeit. Wird täglich nach Mitternacht neu berechnet; Genauigkeit etwa 1 Minute." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00426_R-%TT%0042601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00426_R-%TT%0042601">
                   <when test="1">
@@ -4287,6 +4336,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenuntergang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Oberer Sonnenrand am Horizont (Sonnenmitte −0,833° mit Refraktion), Ortszeit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00429_R-%TT%0042901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00429_R-%TT%0042901">
                   <when test="1">
@@ -4306,6 +4356,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenhöchststand (Transit)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeitpunkt des höchsten Sonnenstands (wahrer Mittag), Ortszeit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00432_R-%TT%0043201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00432_R-%TT%0043201">
                   <when test="1">
@@ -4325,6 +4376,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn bürgerliche Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne steigt über −6°: hell genug für Tätigkeiten im Freien ohne Licht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00435_R-%TT%0043501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00435_R-%TT%0043501">
                   <when test="1">
@@ -4344,6 +4396,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende bürgerliche Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne sinkt unter −6°." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00438_R-%TT%0043801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00438_R-%TT%0043801">
                   <when test="1">
@@ -4363,6 +4416,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn nautische Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne steigt über −12°: der Horizont wird sichtbar." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00441_R-%TT%0044101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00441_R-%TT%0044101">
                   <when test="1">
@@ -4382,6 +4436,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende nautische Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne sinkt unter −12°." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00444_R-%TT%0044401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00444_R-%TT%0044401">
                   <when test="1">
@@ -4401,6 +4456,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Beginn astronomische Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne steigt über −18°: Ende der völligen Dunkelheit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00447_R-%TT%0044701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00447_R-%TT%0044701">
                   <when test="1">
@@ -4420,6 +4476,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Ende astronomische Dämmerung" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne sinkt unter −18°: völlige Dunkelheit." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00450_R-%TT%0045001" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00450_R-%TT%0045001">
                   <when test="1">
@@ -4439,6 +4496,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenaufgang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Himmelsrichtung des Sonnenaufgangs (0° Nord, 90° Ost)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00453_R-%TT%0045301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00453_R-%TT%0045301">
                   <when test="1">
@@ -4447,6 +4505,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Azimut bei Sonnenuntergang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Himmelsrichtung des Sonnenuntergangs (0° Nord, 270° West)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00455_R-%TT%0045501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00455_R-%TT%0045501">
                   <when test="1">
@@ -4455,6 +4514,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Elevation beim Höchststand" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Höchste Sonnenhöhe des Tages." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00457_R-%TT%0045701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00457_R-%TT%0045701">
                   <when test="1">
@@ -4463,6 +4523,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tageslänge" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Zeit zwischen Sonnenaufgang und Sonnenuntergang." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00459_R-%TT%0045901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00459_R-%TT%0045901">
                   <when test="1">
@@ -4490,6 +4551,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonne steigt (0) / fällt (1)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="0 bis zum Höchststand, 1 danach." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00466_R-%TT%0046601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00466_R-%TT%0046601">
                   <when test="1">
@@ -4512,6 +4574,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (bürgerliche Dämmerung, -6°)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Nacht, solange die Sonne tiefer als −6° steht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00470_R-%TT%0047001" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00470_R-%TT%0047001">
                   <when test="1">
@@ -4520,6 +4583,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (nautische Dämmerung, -12°)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Nacht, solange die Sonne tiefer als −12° steht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00472_R-%TT%0047201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00472_R-%TT%0047201">
                   <when test="1">
@@ -4528,6 +4592,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Tag/Nacht (astronomische Dämmerung, -18°)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Nacht, solange die Sonne tiefer als −18° steht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00474_R-%TT%0047401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00474_R-%TT%0047401">
                   <when test="1">
@@ -4547,6 +4612,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Globalstrahlung bei klarem Himmel, Tagesmaximum" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Strahlung bei klarem Himmel zum Höchststand (Haurwitz); Vergleichswert für die gemessene Globalstrahlung." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00480_R-%TT%0048001" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00480_R-%TT%0048001">
                   <when test="1">
@@ -4575,6 +4641,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenscheindauer gestern" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Sonnenscheindauer des Vortags." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00487_R-%TT%0048701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00487_R-%TT%0048701">
                   <when test="1">
@@ -4602,6 +4669,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondphase (Text)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Name der Mondphase, z. B. „Vollmond“; Statusseite und MQTT mit vollem Text." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00492_R-%TT%0049201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00492_R-%TT%0049201">
                   <when test="1">
@@ -4610,6 +4678,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond beleuchtet" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Beleuchteter Anteil der Mondscheibe." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00494_R-%TT%0049401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00494_R-%TT%0049401">
                   <when test="1">
@@ -4620,6 +4689,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mondalter (Tage seit Neumond)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tage seit dem letzten Neumond (ein Mondzyklus dauert etwa 29,5 Tage)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00498_R-%TT%0049801" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00498_R-%TT%0049801">
                   <when test="1">
@@ -4630,6 +4700,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond Azimut" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Himmelsrichtung des Mondes (0° Nord, 90° Ost)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00502_R-%TT%0050201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00502_R-%TT%0050201">
                   <when test="1">
@@ -4640,6 +4711,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Mond Elevation" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Höhe des Mondes über dem Horizont, negativ unter dem Horizont." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00506_R-%TT%0050601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00506_R-%TT%0050601">
                   <when test="1">
@@ -4670,6 +4742,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Monduntergang" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Leer, wenn der Mond an diesem Tag nicht untergeht." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00513_R-%TT%0051301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00513_R-%TT%0051301">
                   <when test="1">
@@ -4689,6 +4762,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nächster Vollmond" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Datum des nächsten Vollmonds (Ortszeit)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00516_R-%TT%0051601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00516_R-%TT%0051601">
                   <when test="1">
@@ -4708,6 +4782,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Nächster Neumond" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Datum des nächsten Neumonds (Ortszeit)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00519_R-%TT%0051901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00519_R-%TT%0051901">
                   <when test="1">
@@ -4740,6 +4815,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00148_R-%TT%0014801" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00149_R-%TT%0014901" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 1" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00544_R-%TT%0054401" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00544_R-%TT%0054401">
                       <when test="1">
@@ -4748,6 +4824,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 1" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00546_R-%TT%0054601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00546_R-%TT%0054601">
                       <when test="1">
@@ -4758,6 +4835,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 1" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00550_R-%TT%0055001" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00550_R-%TT%0055001">
                       <when test="1">
@@ -4816,6 +4894,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00747_R-%TT%0074701" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00747_R-%TT%0074701">
                       <when test="1">
@@ -4824,6 +4903,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 1 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00749_R-%TT%0074901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00749_R-%TT%0074901">
                       <when test="1">
@@ -4862,6 +4942,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00150_R-%TT%0015001" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00151_R-%TT%0015101" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 2" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00559_R-%TT%0055901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00559_R-%TT%0055901">
                       <when test="1">
@@ -4870,6 +4951,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 2" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00561_R-%TT%0056101" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00561_R-%TT%0056101">
                       <when test="1">
@@ -4880,6 +4962,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 2" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00565_R-%TT%0056501" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00565_R-%TT%0056501">
                       <when test="1">
@@ -4938,6 +5021,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00763_R-%TT%0076301" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00763_R-%TT%0076301">
                       <when test="1">
@@ -4946,6 +5030,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 2 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00765_R-%TT%0076501" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00765_R-%TT%0076501">
                       <when test="1">
@@ -4984,6 +5069,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00152_R-%TT%0015201" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00153_R-%TT%0015301" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 3" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00574_R-%TT%0057401" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00574_R-%TT%0057401">
                       <when test="1">
@@ -4992,6 +5078,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 3" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00576_R-%TT%0057601" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00576_R-%TT%0057601">
                       <when test="1">
@@ -5002,6 +5089,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 3" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00580_R-%TT%0058001" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00580_R-%TT%0058001">
                       <when test="1">
@@ -5060,6 +5148,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00779_R-%TT%0077901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00779_R-%TT%0077901">
                       <when test="1">
@@ -5068,6 +5157,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 3 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00781_R-%TT%0078101" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00781_R-%TT%0078101">
                       <when test="1">
@@ -5106,6 +5196,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00246_R-%TT%0024601" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00247_R-%TT%0024701" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 4" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00802_R-%TT%0080201" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00802_R-%TT%0080201">
                       <when test="1">
@@ -5114,6 +5205,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 4" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00804_R-%TT%0080401" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00804_R-%TT%0080401">
                       <when test="1">
@@ -5124,6 +5216,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 4" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00808_R-%TT%0080801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00808_R-%TT%0080801">
                       <when test="1">
@@ -5182,6 +5275,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 4 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00855_R-%TT%0085501" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00855_R-%TT%0085501">
                       <when test="1">
@@ -5190,6 +5284,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 4 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00857_R-%TT%0085701" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00857_R-%TT%0085701">
                       <when test="1">
@@ -5228,6 +5323,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00248_R-%TT%0024801" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00249_R-%TT%0024901" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 5" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00817_R-%TT%0081701" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00817_R-%TT%0081701">
                       <when test="1">
@@ -5236,6 +5332,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 5" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00819_R-%TT%0081901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00819_R-%TT%0081901">
                       <when test="1">
@@ -5246,6 +5343,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 5" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00823_R-%TT%0082301" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00823_R-%TT%0082301">
                       <when test="1">
@@ -5304,6 +5402,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 5 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00871_R-%TT%0087101" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00871_R-%TT%0087101">
                       <when test="1">
@@ -5312,6 +5411,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 5 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00873_R-%TT%0087301" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00873_R-%TT%0087301">
                       <when test="1">
@@ -5350,6 +5450,7 @@
                     <ComObjectRefRef RefId="%AID%_O-%TT%00250_R-%TT%0025001" />
                     <ComObjectRefRef RefId="%AID%_O-%TT%00251_R-%TT%0025101" />
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Lüften sinnvoll Raum 6" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="1 = Lüften senkt die Raumfeuchte: Feuchteunterschied mindestens die Schwelle und alle Freigaben erfüllt; 0 unter der Schwelle minus 0,5 g/m³." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00832_R-%TT%0083201" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00832_R-%TT%0083201">
                       <when test="1">
@@ -5358,6 +5459,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Absolute Feuchte Raum 6" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Wassergehalt der Raumluft aus Raumtemperatur und Raumfeuchte." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00834_R-%TT%0083401" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00834_R-%TT%0083401">
                       <when test="1">
@@ -5368,6 +5470,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt Raum 6" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunkt der Raumluft: Flächen, die kälter sind (Fensterlaibung, Außenwandecke), werden feucht." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00838_R-%TT%0083801" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00838_R-%TT%0083801">
                       <when test="1">
@@ -5426,6 +5529,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 6 zu feucht (über 65 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte über 65 % (Schimmelgefahr)." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00887_R-%TT%0088701" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00887_R-%TT%0088701">
                       <when test="1">
@@ -5434,6 +5538,7 @@
                       </when>
                     </choose>
                     <ParameterSeparator Id="%AID%_PS-nnn" Text="Raum 6 zu trocken (unter 30 %)" UIHint="Headline" />
+                    <ParameterSeparator Id="%AID%_PS-nnn" Text="Relative Raumfeuchte unter 30 %." UIHint="Information" />
                     <ParameterRefRef RefId="%AID%_UP-%TT%00889_R-%TT%0088901" IndentLevel="1" />
                     <choose ParamRefId="%AID%_UP-%TT%00889_R-%TT%0088901">
                       <when test="1">
@@ -5482,6 +5587,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Verdunstung gestern (ET0)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Referenzverdunstung des Vortags." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00593_R-%TT%0059301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00593_R-%TT%0059301">
                   <when test="1">
@@ -5516,6 +5622,7 @@
                 <ParameterRefRef RefId="%AID%_UP-%TT%00542_R-%TT%0054201" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00543_R-%TT%0054301" IndentLevel="1" />
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Heizgradtage laufender Monat" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Innentemperatur − Tagesmittel) über alle Tage mit Tagesmittel unter der Heizgrenze, in Kelvin·Tagen (Kd), keine Anzahl Tage: 60 Kd entsprechen z. B. 6 Tagen mit 10 °C Tagesmittel." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00601_R-%TT%0060101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00601_R-%TT%0060101">
                   <when test="1">
@@ -5532,6 +5639,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Heizgradtage Vormonat" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Innentemperatur − Tagesmittel) über alle Tage mit Tagesmittel unter der Heizgrenze, in Kelvin·Tagen (Kd), keine Anzahl Tage: 60 Kd entsprechen z. B. 6 Tagen mit 10 °C Tagesmittel." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00604_R-%TT%0060401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00604_R-%TT%0060401">
                   <when test="1">
@@ -5548,6 +5656,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Heizgradtage laufendes Jahr" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Innentemperatur − Tagesmittel) über alle Tage mit Tagesmittel unter der Heizgrenze, in Kelvin·Tagen (Kd), keine Anzahl Tage: 60 Kd entsprechen z. B. 6 Tagen mit 10 °C Tagesmittel." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00607_R-%TT%0060701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00607_R-%TT%0060701">
                   <when test="1">
@@ -5564,6 +5673,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Heizgradtage Vorjahr" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Innentemperatur − Tagesmittel) über alle Tage mit Tagesmittel unter der Heizgrenze, in Kelvin·Tagen (Kd), keine Anzahl Tage: 60 Kd entsprechen z. B. 6 Tagen mit 10 °C Tagesmittel." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00610_R-%TT%0061001" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00610_R-%TT%0061001">
                   <when test="1">
@@ -5580,6 +5690,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Kühlgradtage laufender Monat" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Tagesmittel − Basistemperatur) über alle Tage mit Tagesmittel über der Basistemperatur, in Kelvin·Tagen (Kd)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00613_R-%TT%0061301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00613_R-%TT%0061301">
                   <when test="1">
@@ -5596,6 +5707,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Kühlgradtage Vormonat" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Tagesmittel − Basistemperatur) über alle Tage mit Tagesmittel über der Basistemperatur, in Kelvin·Tagen (Kd)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00616_R-%TT%0061601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00616_R-%TT%0061601">
                   <when test="1">
@@ -5612,6 +5724,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Kühlgradtage laufendes Jahr" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Tagesmittel − Basistemperatur) über alle Tage mit Tagesmittel über der Basistemperatur, in Kelvin·Tagen (Kd)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00619_R-%TT%0061901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00619_R-%TT%0061901">
                   <when test="1">
@@ -5628,6 +5741,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Kühlgradtage Vorjahr" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Summe aus (Tagesmittel − Basistemperatur) über alle Tage mit Tagesmittel über der Basistemperatur, in Kelvin·Tagen (Kd)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00622_R-%TT%0062201" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00622_R-%TT%0062201">
                   <when test="1">
@@ -5666,6 +5780,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Unwetter (Stufe 3 oder 4)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 bei Stufe 3 oder 4 in mindestens einer Kategorie." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00631_R-%TT%0063101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00631_R-%TT%0063101">
                   <when test="1">
@@ -5674,6 +5789,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe Wind" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Stärkste Böe der letzten 10 Minuten: 1 ab 50 km/h, 2 ab 65, 3 ab 105, 4 ab 140 km/h." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00633_R-%TT%0063301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00633_R-%TT%0063301">
                   <when test="1">
@@ -5682,6 +5798,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe Starkregen" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="2 ab 15 mm in 1 h oder 20 mm in 6 h, 3 ab 25 bzw. 35 mm, 4 ab 40 bzw. 60 mm." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00635_R-%TT%0063501" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00635_R-%TT%0063501">
                   <when test="1">
@@ -5690,6 +5807,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe Dauerregen" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="2 ab 30 mm in 24 h, 40 mm in 48 h oder 60 mm in 72 h; 3 ab 50/60/90 mm; 4 ab 80/90/120 mm." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00637_R-%TT%0063701" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00637_R-%TT%0063701">
                   <when test="1">
@@ -5698,6 +5816,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe Frost/Glätte" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 Frost (unter 0 °C) oder Glätte, 2 strenger Frost (unter −10 °C), 3 Glatteis (Regen bei höchstens 0 °C)." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00639_R-%TT%0063901" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00639_R-%TT%0063901">
                   <when test="1">
@@ -5706,6 +5825,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe Hitze" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Nach dem Hitzeindex: 2 ab 32 °C, 3 ab 38 °C." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00641_R-%TT%0064101" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00641_R-%TT%0064101">
                   <when test="1">
@@ -5714,6 +5834,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Warnstufe UV" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1 ab UV-Index 8." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00643_R-%TT%0064301" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00643_R-%TT%0064301">
                   <when test="1">
@@ -5760,6 +5881,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="DWD-Unwetterwarnung (Stufe 3 oder 4)" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="1, solange eine amtliche Warnung der Stufe 3 oder 4 gilt." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00654_R-%TT%0065401" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00654_R-%TT%0065401">
                   <when test="1">
@@ -5768,6 +5890,7 @@
                   </when>
                 </choose>
                 <ParameterSeparator Id="%AID%_PS-nnn" Text="Anzahl gültiger DWD-Warnungen" UIHint="Headline" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Anzahl der derzeit gültigen amtlichen Warnungen für die Warnzelle." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00656_R-%TT%0065601" IndentLevel="1" />
                 <choose ParamRefId="%AID%_UP-%TT%00656_R-%TT%0065601">
                   <when test="1">
