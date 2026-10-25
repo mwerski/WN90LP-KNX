@@ -91,7 +91,7 @@ function render(j){
     ' \u00b7 WLAN '+j.rssi+' dBm \u00b7 Laufzeit '+Math.floor(j.up/3600)+' h \u00b7 Firmware '+j.fw));
   // Neuen Inhalt vollstaendig aufbauen und in einem Schritt austauschen (kein Flackern)
   var old=document.getElementById('wx-groups'),box=el('div');box.id='wx-groups';
-  if(j.dwd_headline){box.appendChild(el('p','wx-bad',j.dwd_headline));}
+  if(j.dwd_headline){box.appendChild(el('p','wx-bad',(j.dwd_stale?'Letzter bekannter Stand: ':'')+j.dwd_headline));}
   var groups={},order=[];
   j.values.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
   order.forEach(function(g){
@@ -102,8 +102,8 @@ function render(j){
     [['n','Wert'],['v','aktuell'],['s','zuletzt gesendet']].forEach(function(c){h.appendChild(el('th',c[0],c[1]));});
     t.appendChild(h);
     groups[g].forEach(function(x){
-      var r=el('tr',(x.a?'':'off')+(x.v===null?' inv':''));
-      var n=el('td','',x.n+(x.a?'':' (nicht aktiv)'));n.title=n.textContent;r.appendChild(n);
+      var r=el('tr',(x.a?'':'off')+(x.v===null||x.o?' inv':''));
+      var n=el('td','',x.n+(x.a?'':' (nicht aktiv)')+(x.o?' (veraltet)':''));n.title=n.textContent;r.appendChild(n);
       var tx=(x.t!==undefined||x.ts!==undefined)?' txt':'';
       r.appendChild(el('td','v'+tx,fmt(x,x.v,x.t)));
       r.appendChild(el('td','s'+tx,x.a&&x.s!==null?fmt(x,x.s,x.ts):''));

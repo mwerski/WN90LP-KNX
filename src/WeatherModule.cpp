@@ -1312,12 +1312,28 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
         doc["sds"] = _sds.faulty() ? "Stoerung" : "ok";
     if (_oneWireEnabled)
         doc["ow"] = _oneWire.faulty() ? "Stoerung" : "ok";
+    bool dwdStale = false; // DWD-Abruf gestoert, Werte sind der letzte bekannte Stand
     if (dwdWarnings.enabled())
     {
         const DwdWarnings::Result r = dwdWarnings.result();
-        doc["dwd"] = dwdWarnings.faulty() ? "Fehler" : (r.valid ? "ok" : "wartet");
+        if (dwdWarnings.faulty())
+        {
+            // Grund und Alter der Daten nennen; die DWD-Werte unten zeigen dann den letzten bekannten Stand
+            char buf[96];
+            if (r.valid)
+                snprintf(buf, sizeof(buf), "Fehler: %s, Daten von vor %lu min", DwdWarnings::codeText(r.lastCode).c_str(),
+                         (millis() - r.updated) / 60000);
+            else
+                snprintf(buf, sizeof(buf), "Fehler: %s, noch keine Daten", DwdWarnings::codeText(r.lastCode).c_str());
+            doc["dwd"] = buf;
+            dwdStale = r.valid;
+        }
+        else
+            doc["dwd"] = r.valid ? "ok" : "wartet";
         if (r.valid && !r.headline.empty())
             doc["dwd_headline"] = r.headline;
+        if (dwdStale)
+            doc["dwd_stale"] = true;
     }
     if (_influx.enabled())
         doc["influx"] = _influx.lastCode() == 204 ? "ok" : (_influx.okCount() + _influx.errorCount() == 0 ? "wartet" : "Fehler");
@@ -1343,6 +1359,8 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
         JsonDocument o;
         o["n"] = def.label;
         o["g"] = def.group;
+        if (dwdStale && i >= (uint8_t)WxId::DwdLevel && i <= (uint8_t)WxId::DwdCount)
+            o["o"] = true;
         o["k"] = def.mqttKey;
         o["u"] = def.unitUtf8;
         o["d"] = def.decimals;

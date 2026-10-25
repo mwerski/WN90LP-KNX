@@ -31,6 +31,8 @@ class DwdWarnings
     bool faulty();
     // Text fuer DPT 16 (ISO 8859-1, max. 14 Zeichen) bzw. UTF-8; Puffer gilt bis zum naechsten Aufruf
     static const char *eventText(bool utf8);
+    // Kurzbeschreibung eines Ergebniscodes (HTTP-Status, Fehler von HTTPClient oder eigene Codes)
+    static std::string codeText(int code);
 
   private:
     static void taskEntry(void *arg);

@@ -184,6 +184,22 @@ void DwdWarnings::fetch(int64_t nowUtc)
     _result = r;
 }
 
+std::string DwdWarnings::codeText(int code)
+{
+    char buf[48];
+    if (code > 0)
+        snprintf(buf, sizeof(buf), "HTTP %d", code);
+    else if (code == -100)
+        return "Antwort ungueltig";
+    else if (code == -200)
+        return "Speichermangel";
+    else if (code == 0)
+        return "noch kein Abruf";
+    else
+        snprintf(buf, sizeof(buf), "%s (%d)", HTTPClient::errorToString(code).c_str(), code);
+    return buf;
+}
+
 DwdWarnings::Result DwdWarnings::result()
 {
     std::lock_guard<std::mutex> guard(_lock);

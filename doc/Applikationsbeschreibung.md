@@ -531,7 +531,10 @@ Anwendungen:
 - **Überstände und Balkone:** Die Schattentiefe unter einem Überstand ist Überstandstiefe × tan(Profilwinkel). Ein Vordach
   von 1 m wirft bei 49° etwa 1,15 m Schatten an die Wand.
 
-Der Profilwinkel ist nur gültig, solange die Sonne im Bereich der Fassade steht, sonst sendet die Station ihn nicht.
+Der Profilwinkel ist gültig, solange die Sonne geometrisch im Bereich der Fassade steht (seitliche Abweichung, Mindest- und
+Höchsthöhe), unabhängig von Wolken. Außerhalb davon, also auch nachts, sendet die Station ihn nicht und schreibt ihn nicht
+in die InfluxDB. Auf dem Bus bleibt der zuletzt gesendete Wert stehen. Grafana zeichnet die Lücke je nach Abfrage
+(`fill(previous)`) oder Einstellung „Connect null values“ als waagerechte Linie.
 
 ### Grenzen
 
@@ -812,6 +815,8 @@ Die einzige Funktion mit Internetzugang. Die Station ruft die amtlichen Warnunge
 - **Aktuell und angekündigt:** „aktuell“ umfasst nur derzeit gültige Warnungen, „inkl. angekündigter“ auch solche, die
   später beginnen.
 - **Störung:** 1, wenn seit drei Abrufintervallen keine Daten kamen (Internet, DNS oder Server).
+  Die übrigen DWD-Werte behalten dann den letzten bekannten Stand. Die Statusseite kennzeichnet sie als veraltet und nennt
+  in der Kopfzeile den Fehler und das Alter der Daten.
 
 <!-- GEN:DwdOfficial -->
 | Parameter | Standard | Bereich |
