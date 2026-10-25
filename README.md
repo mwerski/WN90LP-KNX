@@ -131,6 +131,8 @@ Deutscher Wetterdienst). Das Zertifikat wird geprüft (Wurzelzertifikate in `src
 - Statusseite: alle Warnungen mit Zeitraum, Beschreibung und Verhaltenshinweisen; bei gestörtem Abruf als letzter
   bekannter Stand gekennzeichnet, Fehlergrund und Alter der Daten in der Kopfzeile
 - Ohne Internet meldet nur das KO „Störung DWD-Abruf“; alle anderen Funktionen arbeiten unverändert
+- Nach einem fehlgeschlagenen Abruf folgen bis zu drei Versuche im Minutenabstand, danach wieder das Intervall; den Grund
+  (DNS, Dauer des Verbindungsversuchs, freier Speicher) zeigen Statusseite, Log und `wx sensors`
 
 ## Logikmodul
 

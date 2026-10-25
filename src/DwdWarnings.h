@@ -21,6 +21,7 @@ class DwdWarnings
         std::string onset, expires; // ISO 8601 (UTC)
         uint32_t updated = 0;      // millis() des letzten Erfolgs
         int lastCode = 0;
+        std::string error = "noch kein Abruf"; // Grund des letzten Fehlschlags (bleibt nach Erfolg stehen)
         uint32_t ok = 0, errors = 0;
     };
 
@@ -59,12 +60,18 @@ class DwdWarnings
     static void taskEntry(void *arg);
     void run();
     void fetch(int64_t nowUtc);
+    void scheduleRetry(bool success);
 
     bool _enabled = false;
     std::string _url;
     uint32_t _intervalMs = 300000;
     uint32_t _timer = 0;
     bool _first = true;
+    // Nach einem Fehler bis zu RETRIES Versuche im Minutenabstand, danach wieder im Intervall
+    static constexpr uint8_t RETRIES = 3;
+    static constexpr uint32_t RETRY_MS = 60000;
+    volatile uint8_t _retries = 0;
+    volatile bool _retry = false;
 
     std::mutex _lock;
     Result _result;

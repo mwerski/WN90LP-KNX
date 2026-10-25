@@ -365,7 +365,8 @@ void WeatherModule::processWn90()
     set(WxId::GustSpeed, gust);
     set(WxId::WindBft, isnan(wind) ? NAN : WeatherCalc::beaufort(wind));
     set(WxId::GustBft, isnan(gust) ? NAN : WeatherCalc::beaufort(gust));
-    set(WxId::WindDir, reg(R::WindDir, 1.0f));
+    const float windDir = reg(R::WindDir, 1.0f);
+    set(WxId::WindDir, windDir);
     set(WxId::Light, reg(R::Light, 10.0f));
     set(WxId::UvIndex, reg(R::Uv, 0.1f));
     set(WxId::Pressure, pressure);
@@ -398,7 +399,7 @@ void WeatherModule::processWn90()
     if (_wn90.valid(R::RainCounter))
         _rain.feed(_wn90.raw(R::RainCounter));
 
-    _windStats.feed(wind, gust);
+    _windStats.feed(wind, gust, windDir);
     const float windAvg = _windStats.average();
     set(WxId::WindAvg10, windAvg);
     set(WxId::GustMax10, _windStats.maxGust());
@@ -964,6 +965,11 @@ void WeatherModule::updateDwd()
         return;
     const DwdWarnings::Result r = dwdWarnings.result();
     set(WxId::DwdFault, dwdWarnings.faulty());
+    if (r.errors != _dwdErrorsLogged)
+    {
+        _dwdErrorsLogged = r.errors;
+        logErrorP("DWD: Abruf fehlgeschlagen: %s", r.error.c_str());
+    }
     if (!r.valid)
         return;
     set(WxId::DwdLevel, r.levelNow);
@@ -1076,10 +1082,9 @@ void WeatherModule::updateForecast()
     set(WxId::Tendency, isnan(trend3h) ? NAN : Forecast::tendency(trend3h));
 
     const MeasuredValue &sea = val(WxId::PressureSea);
-    const MeasuredValue &wind = val(WxId::WindSpeed);
-    const MeasuredValue &dir = val(WxId::WindDir);
-    // Bei Windstille ist die Richtung bedeutungslos
-    const float windDir = (wind.valid() && wind.value() >= 1.0f && dir.valid()) ? dir.value() : NAN;
+    // Mittlere Windrichtung der letzten 10 min, damit die Prognose bei drehendem Wind nicht springt
+    // (NAN bei Windstille oder umlaufendem Wind)
+    const float windDir = _windStats.averageDir();
     const uint8_t month = openknx.time.isValid() ? openknx.time.getLocalTime().month : 0;
     const uint8_t z = Forecast::zambretti(sea.valid() ? sea.value() : NAN, trend3h, windDir, month);
     set(WxId::Forecast, z ? z : NAN);
@@ -1251,7 +1256,7 @@ void WeatherModule::publishDwd()
     JsonDocument doc;
     doc["status"] = faulty ? "error" : "ok";
     if (faulty)
-        doc["error"] = DwdWarnings::codeText(r.lastCode);
+        doc["error"] = r.error;
     if (r.valid && openknx.time.isValid())
     {
         const time_t t = (time_t)openknx.time.getUtcTime().toTime_t() - (millis() - r.updated) / 1000;
@@ -1393,10 +1398,10 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             // Grund und Alter der Daten nennen; die DWD-Werte unten zeigen dann den letzten bekannten Stand
             char buf[96];
             if (r.valid)
-                snprintf(buf, sizeof(buf), "Fehler: %s, Daten von vor %lu min", DwdWarnings::codeText(r.lastCode).c_str(),
+                snprintf(buf, sizeof(buf), "Fehler: %s, Daten von vor %lu min", r.error.c_str(),
                          (millis() - r.updated) / 60000);
             else
-                snprintf(buf, sizeof(buf), "Fehler: %s, noch keine Daten", DwdWarnings::codeText(r.lastCode).c_str());
+                snprintf(buf, sizeof(buf), "Fehler: %s, noch keine Daten", r.error.c_str());
             doc["dwd"] = buf;
             dwdStale = r.valid;
         }
@@ -1763,6 +1768,8 @@ void WeatherModule::showSensors()
         const DwdWarnings::Result r = dwdWarnings.result();
         logInfoP("DWD: %lu ok, %lu Fehler, letzter Code %d, Stufe %u (inkl. angekuendigt %u), %s", r.ok, r.errors, r.lastCode, r.levelNow,
                  r.levelAll, r.headline.empty() ? "keine Warnung" : r.headline.c_str());
+        if (r.errors)
+            logInfoP("DWD: letzter Fehler: %s", r.error.c_str());
     }
     else
         logInfoP("DWD-Warnungen: nicht aktiviert");
@@ -1814,6 +1821,11 @@ void WeatherModule::showForecast()
     const MeasuredValue &sym = val(WxId::WeatherSymbol);
     logInfoP("Luftdruck Meereshoehe %.1f hPa, Tendenz 3 h %.1f hPa (1 h %.1f hPa)", val(WxId::PressureSea).value(), _pressure.trend(3),
              _pressure.trend(1));
+    const float dir = _windStats.averageDir();
+    if (isnan(dir))
+        logInfoP("Windrichtung 10 min: keine (Windstille oder umlaufend), Momentanwert %.0f Grad", val(WxId::WindDir).value());
+    else
+        logInfoP("Windrichtung 10 min: %.0f Grad, Momentanwert %.0f Grad", dir, val(WxId::WindDir).value());
     if (z.valid())
         logInfoP("Zambretti: %c (%u) %s", 'A' + (int)z.value() - 1, (uint8_t)z.value(), Forecast::text((uint8_t)z.value(), true));
     else

@@ -8,6 +8,8 @@
 #include <NetworkClientSecure.h>
 #include <WiFi.h>
 
+#define DWD_HOST "maps.dwd.de"
+
 DwdWarnings dwdWarnings;
 std::string DwdWarnings::s_event;
 
@@ -59,7 +61,7 @@ void DwdWarnings::setup(uint32_t warnCell, uint8_t intervalMin)
     const bool district = warnCell / 100000000 == 1;
     char url[400];
     snprintf(url, sizeof(url),
-             "https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:%s"
+             "https://" DWD_HOST "/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:%s"
              "&propertyName=EVENT,SEVERITY,HEADLINE,DESCRIPTION,INSTRUCTION,ONSET,EXPIRES&CQL_FILTER=%s%%3D%%27%09lu%%27&outputFormat=application/json",
              district ? "Warnungen_Landkreise" : "Warnungen_Gemeinden", district ? "GC_WARNCELLID" : "WARNCELLID", warnCell);
     _url = url;
@@ -73,8 +75,8 @@ void DwdWarnings::loop(int64_t nowUtc)
 {
     if (!_enabled || _busy || !WiFi.isConnected())
         return;
-    // Erster Abruf 30 s nach dem Start, danach im Intervall
-    if (_first ? millis() < 30000 : !delayCheck(_timer, _intervalMs))
+    // Erster Abruf 30 s nach dem Start, danach im Intervall (nach einem Fehler frueher)
+    if (_first ? millis() < 30000 : !delayCheck(_timer, _retry ? RETRY_MS : _intervalMs))
         return;
     _first = false;
     _timer = millis();
@@ -102,7 +104,9 @@ void DwdWarnings::run()
             // Speichermangel (TLS braucht viel): Abruf als Fehler werten, naechstes Intervall erneut
             std::lock_guard<std::mutex> guard(_lock);
             _result.lastCode = -200;
+            _result.error = codeText(-200);
             _result.errors++;
+            scheduleRetry(false);
         }
         _busy = false;
     }
@@ -126,9 +130,24 @@ void DwdWarnings::fetch(int64_t nowUtc)
         std::lock_guard<std::mutex> guard(_lock);
         r = _result; // Zaehler und letzte Daten behalten
     }
-    if (http.begin(client, _url.c_str()))
+    std::string detail;
+    IPAddress ip;
+    // Namensaufloesung vorab pruefen: HTTPClient meldet sonst auch DNS-Fehler als "connection refused"
+    if (!Network.hostByName(DWD_HOST, ip))
+        detail = "DNS-Aufloesung fehlgeschlagen";
+    else if (http.begin(client, _url.c_str()))
     {
+        const uint32_t start = millis();
         code = http.GET();
+        if (code == HTTPC_ERROR_CONNECTION_REFUSED)
+        {
+            // TCP- oder TLS-Aufbau gescheitert; Dauer und groesster freier Block helfen bei der Unterscheidung
+            // (Zeitueberschreitung, Server lehnt ab, Speicher fuer TLS zu knapp)
+            char buf[96];
+            snprintf(buf, sizeof(buf), "nach %lu ms, %s, groesster freier Block %lu KB", millis() - start, ip.toString().c_str(),
+                     (unsigned long)(ESP.getMaxAllocHeap() / 1024));
+            detail = buf;
+        }
         if (code == 200)
         {
             // Nur die benoetigten Felder einlesen (Datenstrom-Filter)
@@ -204,9 +223,24 @@ void DwdWarnings::fetch(int64_t nowUtc)
     if (code == 200)
         r.ok++;
     else
+    {
         r.errors++;
+        r.error = codeText(code);
+        if (!detail.empty())
+            r.error += ", " + detail;
+    }
+    scheduleRetry(code == 200);
     std::lock_guard<std::mutex> guard(_lock);
     _result = r;
+}
+
+void DwdWarnings::scheduleRetry(bool success)
+{
+    if (success)
+        _retries = 0;
+    _retry = !success && _retries < RETRIES;
+    if (_retry)
+        _retries++;
 }
 
 std::string DwdWarnings::codeText(int code)

@@ -347,7 +347,7 @@ Der SDS011 ist ein preiswerter Sensor. Seine Werte eignen sich für Tendenz und 
 ## Prognose und Display
 
 - **Wettertendenz** aus der Luftdruckänderung über 3 Stunden (−2 bis +2).
-- **Zambretti-Prognose** für etwa 12 Stunden aus Luftdruck auf Meereshöhe, Tendenz, Windrichtung und Jahreszeit
+- **Zambretti-Prognose** für etwa 12 Stunden aus Luftdruck auf Meereshöhe, Tendenz, mittlerer Windrichtung der letzten 10 Minuten (bei Windstille oder umlaufendem Wind ohne) und Jahreszeit
   (1 = beständig schön bis 26 = Sturm mit viel Regen). Die Prognose beschreibt die Entwicklung, nicht das aktuelle Wetter:
   Bei hohem, steigendem Druck kann sie auch während eines Schauers „schön“ melden.
 - **Wettersymbol** für Displays, nach Vorrang: Gewitter (Schätzung aus starkem Regen und Böen), starker Regen, Schauer,
