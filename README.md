@@ -197,7 +197,7 @@ Bei aktiven DWD-Warnungen zusätzlich `openknx/<Präfix>/dwd` (retained, nur bei
 
 Gültige Warnungen stehen vor angekündigten (`now` = false), dann nach Stufe. Bei gestörtem Abruf `status` = `error`
 mit `error` (Grund); die Liste bleibt der letzte bekannte Stand. Texte sind auf 600 Byte gekürzt; passt nicht alles in
-eine Nachricht (max. ca. 3,8 KB), entfallen nachrangige Warnungen und `more` nennt ihre Anzahl.
+eine Nachricht (max. ca. 7,9 KB), entfallen nachrangige Warnungen und `more` nennt ihre Anzahl.
 
 Mit „Home Assistant MQTT Discovery“ (ETS, Wetterstation → Allgemein) meldet das Gerät nach jedem Verbinden
 alle aktiven Messwerte unter `homeassistant/sensor|binary_sensor/<Knoten>/<Feld>/config` an (retained).

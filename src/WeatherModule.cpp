@@ -1234,7 +1234,7 @@ void WeatherModule::publishMqtt()
 void WeatherModule::publishDwd()
 {
 #ifdef OPENKNX_MQTT
-    static constexpr size_t MAX_PAYLOAD = 3800; // unter OPENKNX_MQTT_TXBUF_MAX (4096) samt Thema
+    static constexpr size_t MAX_PAYLOAD = OPENKNX_MQTT_TXBUF_MAX - 300; // Platz fuer Thema und Paketkopf
     const bool connected = openknxNetwork.mqtt.connected();
     const bool reconnected = connected && !_dwdMqttConnected;
     _dwdMqttConnected = connected;
