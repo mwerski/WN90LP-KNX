@@ -50,6 +50,8 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Senden:** höchstens ein Telegramm alle 25 ms, reihum; erst nach der Startverzögerung.
 - **Regen:** Register 0x016E (0,01 mm, 16 Bit, läuft über); Differenzen > 50 mm/2 s gelten als Zählerreset.
   Remanent (Flash-Version 1): Gesamt, Mitternachtsstand, Tag, 73 Stundenwerte mit Zeitstempel.
+  Minutenstände (5 min/1 h) mit Unixzeit ab Flash-Version 10: nach dem Laden steht der Ring, bis die Uhrzeit gültig ist, dann wird die Ausfallzeit nachgetragen (> 60 min oder 3 min ohne Uhrzeit: verworfen).
+  Zusätzliches Speichern ab 1 mm Regen seit dem letzten Speichern, höchstens alle 10 min (sonst nur stündlich).
   Bei Layoutänderung `FLASH_VERSION` in `WeatherModule.cpp`/`RainStatistics.h` erhöhen.
 - **WLAN:** `main.cpp` setzt Scan aller Kanäle/stärkster AP vor `openknx.init` und `WiFi.setSleep(false)`
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
@@ -76,7 +78,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Behaglichkeit nach Frank** (`Comfort.h`, Felder aus dem EDOMI-Baustein 0.6): je Raum 7 Werte (Stufe, Text = Stufe·16 + Grund-Bits, Abweichung, zu feucht/trocken/kalt/warm), berechnet in `updateVentilation()` aus den Raumeingängen.
 - **Strahlung:** Helligkeit/110 lx je W/m² × Korrekturfaktor; Erbs-Aufteilung, isotrope Diffusstrahlung, Albedo (`Solar.h`).
 - **DPT-Faktor < 0** bei DPT 1 bedeutet invertiert (Sommer/Winter als 1.100 Heizen/Kühlen).
-- **Flash-Version 9** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38][Luftdruck 58][Regen gestern/Woche/Monat/Jahr 40][Feinstaub 256]; ältere Versionen werden noch gelesen. Grenzen je Version als `FLASH_END_Vn` (kumuliert) in WeatherModule.cpp – neue Blöcke nur hinten anfügen und eine neue Grenze ergänzen. Vor jedem gewollten Neustart (ETS, OTA, Konsole) erzwingt `processBeforeRestart()` das Speichern.
+- **Flash-Version 10** im Modul: [Version][Regen][Min/Max 28][Season][Strahlung/PV 16][Sonnenschein 8][Bewässerung 16][Gradtage 38][Luftdruck 58][Regen gestern/Woche/Monat/Jahr 40][Feinstaub 256][Regen-Minutenstände 250]; ältere Versionen werden noch gelesen. Grenzen je Version als `FLASH_END_Vn` (kumuliert) in WeatherModule.cpp – neue Blöcke nur hinten anfügen und eine neue Grenze ergänzen. Vor jedem gewollten Neustart (ETS, OTA, Konsole) erzwingt `processBeforeRestart()` das Speichern.
 - **Absturzdiagnose ohne USB** (`Diag.cpp`): `set_arduino_panic_handler()` sichert Ursache, Task und bis zu 16 Backtrace-Adressen im RTC-Speicher; nach dem Neustart im Log und bei `wx sensors`. Auswerten mit `xtensa-esp32s3-elf-addr2line -pfiaC -e <firmware.elf> <Adressen>` – dafür die `firmware.elf` jedes ausgelieferten Builds unter `release/<version>.elf` aufheben (nicht versioniert).
 - **Luftdruckverlauf** (`PressureTrend`): Nach einem Neustart werden Lücken bis 3 h linear aufgefüllt, längere Ausfälle beginnen neu.
 - **Feinstaub-Auswertung** (`ParticleStats.*`): feuchtekorrigierte Werte (ohne Luftfeuchte Rohwerte); 1 h aus sechs 10-min-Abschnitten, 24 h aus 24 Stundenmitteln (gültig ab 18), Tagesmittel nach Ortszeit, Jahresmittel aus Tagesmitteln, Überschreitungstage nach ETS-Parameter PmLimit (Byte 446). UBA-Index aus dem 24-h-Mittel, Ampel 0/1/2. WxFmt::AqiText für den Indextext.

@@ -10,6 +10,8 @@ class RainStatistics
     static constexpr uint16_t FLASH_SIZE = 1 + 8 + 8 + 4 + 4 + 1 + 1 + 73 * 4;
     // Kalendersummen (Vortag, Woche, Monat, Jahr), im Modul-Flash hinter den uebrigen Daten
     static constexpr uint16_t PERIOD_FLASH_SIZE = 4 + 3 * (8 + 4);
+    // Minutenstaende (5 min / 1 h), im Modul-Flash hinter den Kalendersummen
+    static constexpr uint16_t MINUTE_FLASH_SIZE = 4 + 1 + 1 + 61 * 4;
 
     // Regen beginnt bei mindestens minAmount mm innerhalb von windowMin Minuten
     // und endet, wenn stopDelayMin Minuten kein Niederschlag gemessen wurde
@@ -38,11 +40,19 @@ class RainStatistics
     void readFlash(const uint8_t *data, uint16_t size);
     void writePeriodFlash();
     void readPeriodFlash();
+    void writeMinuteFlash();
+    void readMinuteFlash();
 
   private:
     static constexpr uint8_t MINUTES = 61; // 60 Minuten + aktueller Stand
     static constexpr uint8_t HOURS = 73;   // 72 Stunden + aktueller Stand
     static constexpr uint8_t FLASH_VERSION = 1;
+    // Zusaetzlich speichern, wenn seit dem letzten Speichern so viel Regen fiel (Absturz verliert sonst bis zu 1 h),
+    // hoechstens alle SAVE_MIN_MS
+    static constexpr double SAVE_RAIN_MM = 1.0;
+    static constexpr uint32_t SAVE_MIN_MS = 10 * 60000UL;
+    // Ohne gueltige Uhrzeit nach dem Start werden die geladenen Minutenstaende verworfen
+    static constexpr uint32_t MINUTE_RESTORE_TIMEOUT_MS = 3 * 60000UL;
 
     struct Period
     {
@@ -53,6 +63,8 @@ class RainStatistics
     void checkDay();
     float period(const Period &p) const { return p.key ? (float)(_total - p.start) : NAN; }
     void pushHour();
+    void restoreMinutes();
+    void resetMinutes();
     float back(const float *ring, uint8_t size, uint8_t head, uint8_t count, uint8_t steps) const;
 
     void updateRaining();
@@ -71,6 +83,8 @@ class RainStatistics
     uint8_t _minuteHead = 0;
     uint8_t _minuteCount = 0;
     uint32_t _minuteTimer = 0;
+    uint32_t _minuteEpoch = 0;         // Unixzeit des Speicherns der Minutenstaende (0 = unbekannt)
+    bool _minuteRestorePending = false; // geladene Minutenstaende warten auf die Uhrzeit (Ring steht so lange)
 
     float _hours[HOURS] = {};
     uint8_t _hourHead = 0;
@@ -86,4 +100,6 @@ class RainStatistics
     Period _year;  // JJJJ
     bool _restoreShiftPending = false;
     bool _saveRequested = false;
+    double _savedTotal = 0;  // Gesamtstand beim letzten Speichern
+    uint32_t _savedAt = 0;   // millis() des letzten Speicherns
 };

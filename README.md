@@ -25,7 +25,8 @@ KO-Nummern: [doc/KO-Liste.md](doc/KO-Liste.md).
 - Regen: Gesamtmenge, Intensität (mm/h), Mengen der letzten 5 min / 1 h / 6 h / 24 h / 48 h / 72 h, heute,
   gestern, diese Woche (ab Montag), dieser Monat, dieses Jahr (remanent, Ortszeit),
   „Regen“ (ja/nein, mit Mindestmenge im Zeitfenster gegen Fehlauslösung).
-  Gesamtmenge, Tageswert und Stundenwerte bleiben über Neustart und Update erhalten.
+  Gesamtmenge, Tageswert, Stunden- und Minutenwerte (5 min / 1 h) bleiben über Neustart und Update erhalten;
+  bei Regen speichert die Station zusätzlich ab 1 mm seit dem letzten Speichern (höchstens alle 10 min).
 - Feinstaub (SDS011): gleitende Mittel 1 h und 24 h, Tagesmittel gestern, Jahresmittel, „über WHO-Richtwert“,
   Überschreitungstage im Jahr (Schwelle WHO 2021 / EU ab 2030 / EU bis 2029), Luftqualitätsindex des
   Umweltbundesamts (1–5, je Schadstoff und gesamt, mit Text) und Ampel (0 grün, 1 gelb, 2 rot); remanent

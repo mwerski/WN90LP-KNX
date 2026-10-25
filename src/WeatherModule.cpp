@@ -19,7 +19,7 @@ static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
     return d.year * 10000UL + d.month * 100UL + d.day;
 }
 
-static constexpr uint8_t FLASH_VERSION = 9; // 9: + Feinstaub-Auswertung; 8: + Regen gestern/Woche/Monat/Jahr; 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
+static constexpr uint8_t FLASH_VERSION = 10; // 10: + Regen-Minutenstaende; 9: + Feinstaub-Auswertung; 8: + Regen gestern/Woche/Monat/Jahr; 7: + Luftdruckverlauf; 1: Regen, 2: + Min/Max, 3: + Sommer/Winter, 4: + Strahlung/PV, 5: + Sonnenschein, 6: + Bewaesserung/Gradtage
 static constexpr uint16_t MINMAX_FLASH_SIZE = 4 + 6 * 4;
 static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
@@ -1526,10 +1526,11 @@ static constexpr uint16_t FLASH_END_V6 = FLASH_END_V5 + Irrigation::FLASH_SIZE +
 static constexpr uint16_t FLASH_END_V7 = FLASH_END_V6 + PressureTrend::FLASH_SIZE;
 static constexpr uint16_t FLASH_END_V8 = FLASH_END_V7 + RainStatistics::PERIOD_FLASH_SIZE;
 static constexpr uint16_t FLASH_END_V9 = FLASH_END_V8 + ParticleStats::FLASH_SIZE;
+static constexpr uint16_t FLASH_END_V10 = FLASH_END_V9 + RainStatistics::MINUTE_FLASH_SIZE;
 
 uint16_t WeatherModule::flashSize()
 {
-    return FLASH_END_V9;
+    return FLASH_END_V10;
 }
 
 void WeatherModule::writeFlash()
@@ -1555,6 +1556,7 @@ void WeatherModule::writeFlash()
     _pressure.writeFlash();
     _rain.writePeriodFlash();
     _pm.writeFlash();
+    _rain.writeMinuteFlash();
 }
 
 void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
@@ -1606,6 +1608,9 @@ void WeatherModule::readFlash(const uint8_t *data, const uint16_t size)
     if (version < 9 || size < FLASH_END_V9)
         return;
     _pm.readFlash();
+    if (version < 10 || size < FLASH_END_V10)
+        return;
+    _rain.readMinuteFlash();
 }
 
 // ---------------------------------------------------------------------------

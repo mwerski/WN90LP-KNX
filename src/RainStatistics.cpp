@@ -21,10 +21,13 @@ void RainStatistics::feed(uint16_t rawCounter)
     {
         _lastRaw = rawCounter;
         _initialized = true;
-        // Startwerte, damit die Zeitfenster sofort (anteilig) Werte liefern
-        _minutes[0] = _total;
-        _minuteHead = 0;
-        _minuteCount = 1;
+        // Startwerte, damit die Zeitfenster sofort (anteilig) Werte liefern; geladene Minutenstaende behalten
+        if (!_minuteRestorePending)
+        {
+            _minutes[0] = _total;
+            _minuteHead = 0;
+            _minuteCount = 1;
+        }
         if (_hourCount == 0)
         {
             _hours[0] = _total;
@@ -46,6 +49,8 @@ void RainStatistics::feed(uint16_t rawCounter)
     _total += delta / 100.0;
     _lastRain = millis();
     _rainSeen = true;
+    if (_total - _savedTotal >= SAVE_RAIN_MM && millis() - _savedAt >= SAVE_MIN_MS)
+        _saveRequested = true;
 }
 
 void RainStatistics::loop()
@@ -53,7 +58,9 @@ void RainStatistics::loop()
     if (!_initialized)
         return;
 
-    if (delayCheck(_minuteTimer, 60000UL))
+    if (_minuteRestorePending)
+        restoreMinutes();
+    if (!_minuteRestorePending && delayCheck(_minuteTimer, 60000UL))
     {
         _minuteTimer += 60000UL;
         _minuteHead = (_minuteHead + 1) % MINUTES;
@@ -93,6 +100,48 @@ void RainStatistics::loop()
         }
         checkDay();
     }
+}
+
+// Geladene Minutenstaende um die Ausfallzeit weiterschieben (in der Zeit wurde nichts gemessen)
+void RainStatistics::restoreMinutes()
+{
+    if (!openknx.time.isValid())
+    {
+        if (millis() > MINUTE_RESTORE_TIMEOUT_MS)
+        {
+            _minuteRestorePending = false;
+            resetMinutes();
+            logInfo("Weather", "Regenstatistik: Minutenstaende verworfen (keine Uhrzeit)");
+        }
+        return;
+    }
+    _minuteRestorePending = false;
+    _minuteTimer = millis();
+    const time_t now = openknx.time.getUtcTime().toTime_t();
+    const uint32_t gap = now > (time_t)_minuteEpoch ? (now - _minuteEpoch) / 60 : 0;
+    if (gap >= MINUTES - 1)
+    {
+        resetMinutes();
+        logInfo("Weather", "Regenstatistik: Minutenstaende verworfen (%u min alt)", gap);
+        return;
+    }
+    const float last = _minutes[_minuteHead];
+    for (uint32_t i = 0; i < gap; i++)
+    {
+        _minuteHead = (_minuteHead + 1) % MINUTES;
+        _minutes[_minuteHead] = last;
+        if (_minuteCount < MINUTES)
+            _minuteCount++;
+    }
+    logInfo("Weather", "Regenstatistik: %u Minutenstaende uebernommen, %u min Ausfallzeit", _minuteCount, gap);
+}
+
+void RainStatistics::resetMinutes()
+{
+    _minutes[0] = _total;
+    _minuteHead = 0;
+    _minuteCount = _initialized ? 1 : 0;
+    _minuteTimer = millis();
 }
 
 void RainStatistics::pushHour()
@@ -225,8 +274,38 @@ bool RainStatistics::saveRequested()
     return r;
 }
 
+void RainStatistics::writeMinuteFlash()
+{
+    // Ohne Uhrzeit laesst sich die Ausfallzeit nicht bestimmen: Staende dann nicht verwenden
+    const bool usable = _initialized && !_minuteRestorePending && openknx.time.isValid();
+    openknx.flash.writeInt(usable ? (uint32_t)openknx.time.getUtcTime().toTime_t() : 0);
+    openknx.flash.writeByte(_minuteHead);
+    openknx.flash.writeByte(usable ? _minuteCount : 0);
+    for (uint8_t i = 0; i < MINUTES; i++)
+        openknx.flash.writeFloat(_minutes[i]);
+}
+
+void RainStatistics::readMinuteFlash()
+{
+    const uint32_t epoch = openknx.flash.readInt();
+    const uint8_t head = openknx.flash.readByte() % MINUTES;
+    const uint8_t count = min<uint8_t>(openknx.flash.readByte(), MINUTES);
+    float minutes[MINUTES];
+    for (uint8_t i = 0; i < MINUTES; i++)
+        minutes[i] = openknx.flash.readFloat();
+    if (epoch == 0 || count == 0 || isnan(minutes[head]) || minutes[head] > _total + 0.001)
+        return;
+    memcpy(_minutes, minutes, sizeof(_minutes));
+    _minuteHead = head;
+    _minuteCount = count;
+    _minuteEpoch = epoch;
+    _minuteRestorePending = true;
+}
+
 void RainStatistics::writeFlash()
 {
+    _savedTotal = _total;
+    _savedAt = millis();
     openknx.flash.writeByte(FLASH_VERSION);
     openknx.flash.writeDouble(_total);
     openknx.flash.writeDouble(_midnightTotal);
@@ -256,6 +335,7 @@ void RainStatistics::readFlash(const uint8_t *data, uint16_t size)
         _midnightTotal = 0;
         _hourCount = 0;
     }
+    _savedTotal = _total;
     _restoreShiftPending = true;
     logInfo("Weather", "Regenstatistik geladen: gesamt %.2f mm, %u Stundenwerte", _total, _hourCount);
 }
