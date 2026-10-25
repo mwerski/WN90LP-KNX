@@ -316,6 +316,7 @@ void WeatherModule::loop(bool configured)
         {
             Diag::stage(Diag::Mqtt);
             publishMqtt();
+            publishDwd();
             Diag::stage(Diag::HaDiscovery);
             _ha.loop(_values, WX_VALUE_COUNT);
         }
@@ -1229,6 +1230,77 @@ void WeatherModule::publishMqtt()
 #endif
 }
 
+// Vollstaendige DWD-Warnungen als eigenes Thema (retained), nur bei Aenderung und nach jedem Verbindungsaufbau
+void WeatherModule::publishDwd()
+{
+#ifdef OPENKNX_MQTT
+    static constexpr size_t MAX_PAYLOAD = 3800; // unter OPENKNX_MQTT_TXBUF_MAX (4096) samt Thema
+    const bool connected = openknxNetwork.mqtt.connected();
+    const bool reconnected = connected && !_dwdMqttConnected;
+    _dwdMqttConnected = connected;
+    if (!connected || !dwdWarnings.enabled())
+        return;
+    const uint32_t seq = dwdWarnings.warningsSeq();
+    const bool faulty = dwdWarnings.faulty();
+    if (!reconnected && seq == _dwdMqttSeq && faulty == _dwdMqttFaulty)
+        return;
+    const DwdWarnings::Result r = dwdWarnings.result();
+    if (!r.valid && !faulty)
+        return; // noch kein Abruf
+
+    JsonDocument doc;
+    doc["status"] = faulty ? "error" : "ok";
+    if (faulty)
+        doc["error"] = DwdWarnings::codeText(r.lastCode);
+    if (r.valid && openknx.time.isValid())
+    {
+        const time_t t = (time_t)openknx.time.getUtcTime().toTime_t() - (millis() - r.updated) / 1000;
+        struct tm tm;
+        gmtime_r(&t, &tm);
+        char iso[24];
+        strftime(iso, sizeof(iso), "%Y-%m-%dT%H:%M:%SZ", &tm);
+        doc["updated"] = iso;
+    }
+    doc["level_now"] = r.levelNow;
+    doc["count_now"] = r.countNow;
+    JsonArray list = doc["warnings"].to<JsonArray>();
+    const std::vector<DwdWarnings::Warning> warnings = dwdWarnings.warnings();
+    uint8_t omitted = 0;
+    for (const DwdWarnings::Warning &w : warnings)
+    {
+        if (omitted)
+        {
+            omitted++;
+            continue;
+        }
+        JsonObject o = list.add<JsonObject>();
+        o["event"] = w.event;
+        o["level"] = w.level;
+        o["now"] = w.now;
+        o["headline"] = w.headline;
+        o["description"] = w.description;
+        o["instruction"] = w.instruction;
+        o["onset"] = w.onset;
+        o["expires"] = w.expires;
+        // Nachrangige Warnungen weglassen, wenn die Nachricht zu gross wuerde
+        if (measureJson(doc) > MAX_PAYLOAD - 16)
+        {
+            list.remove(list.size() - 1);
+            omitted = 1;
+        }
+    }
+    if (omitted)
+        doc["more"] = omitted;
+
+    std::string payload;
+    if (serializeJsonSafe(doc, payload) && openknxNetwork.mqtt.publishP("dwd", payload, 0, true))
+    {
+        _dwdMqttSeq = seq;
+        _dwdMqttFaulty = faulty;
+    }
+#endif
+}
+
 // Line Protocol: Kommas, Leerzeichen und Gleichheitszeichen in Namen und Tags maskieren
 static std::string influxEscape(const std::string &s, bool measurement = false)
 {
@@ -1406,7 +1478,33 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             part += big;
         }
     }
-    snap->back() += "]}";
+    snap->back() += ']';
+    // DWD-Warnungen mit Volltext, je Warnung ein eigenes Stueck
+    if (dwdWarnings.enabled())
+    {
+        snap->back() += ",\"dwd_list\":[";
+        bool firstWarning = true;
+        for (const DwdWarnings::Warning &w : dwdWarnings.warnings())
+        {
+            JsonDocument o;
+            o["e"] = w.event;
+            o["h"] = w.headline;
+            o["d"] = w.description;
+            o["i"] = w.instruction;
+            o["on"] = w.onset;
+            o["ex"] = w.expires;
+            o["l"] = w.level;
+            o["now"] = w.now;
+            std::string part = firstWarning ? "" : ",";
+            firstWarning = false;
+            std::string json;
+            serializeJson(o, json);
+            part += json;
+            snap->push_back(std::move(part));
+        }
+        snap->back() += ']';
+    }
+    snap->back() += '}';
     return snap;
 }
 

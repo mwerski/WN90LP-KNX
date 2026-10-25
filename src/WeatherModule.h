@@ -110,6 +110,7 @@ class WeatherModule : public OpenKNX::Module
     void updateFault(uint16_t ko, bool &state, bool faulty, const char *name);
     void sendValues();
     void publishMqtt();
+    void publishDwd();
     std::shared_ptr<const WebStatus::Snapshot> buildStatusSnapshot();
     std::string buildInfluxBody();
 
@@ -208,6 +209,9 @@ class WeatherModule : public OpenKNX::Module
     Warnings _warnings;
     std::string _dwdEvent;
     float _dwdEventSeq = 0; // Aenderungszaehler fuer das Text-KO
+    uint32_t _dwdMqttSeq = 0; // zuletzt per MQTT gesendeter Stand der DWD-Warnungsliste
+    bool _dwdMqttFaulty = false;
+    bool _dwdMqttConnected = false;
     Season _season;
     HaDiscovery _ha;
     WebStatus _web;

@@ -62,6 +62,11 @@ static const char PAGE[] = R"HTML(<div class='container'>
 #wx-groups tr.off{opacity:.45}
 #wx-groups tr.inv td.v{opacity:.5}
 .wx-bad{color:#c33;font-weight:bold}
+.wx-w{border-left:5px solid #e6c200;padding:.4em .8em;margin:.6em 0;background:#8881}
+.wx-w.l2{border-color:#f08c00}.wx-w.l3{border-color:#d62828}.wx-w.l4{border-color:#7b2cbf}
+.wx-w p{margin:.35em 0;white-space:pre-line}
+.wx-wt{opacity:.7;font-size:.9em}
+.wx-wi{font-style:italic}
 </style>
 <script>
 (function(){
@@ -77,6 +82,7 @@ function fmt(x,v,t){
   if(x.b){var m=BOOL[x.k]||['nein','ja'];return m[v?1:0];}
   return num(v,x.d)+(x.u?' '+x.u:'');
 }
+function iso(s){if(!s)return '';var d=new Date(s);return isNaN(d)?s:d.toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function el(t,c,txt){var e=document.createElement(t);if(c)e.className=c;if(txt!==undefined)e.textContent=txt;return e;}
 function render(j){
   var st=document.getElementById('wx-state');
@@ -91,7 +97,17 @@ function render(j){
     ' \u00b7 WLAN '+j.rssi+' dBm \u00b7 Laufzeit '+Math.floor(j.up/3600)+' h \u00b7 Firmware '+j.fw));
   // Neuen Inhalt vollstaendig aufbauen und in einem Schritt austauschen (kein Flackern)
   var old=document.getElementById('wx-groups'),box=el('div');box.id='wx-groups';
-  if(j.dwd_headline){box.appendChild(el('p','wx-bad',(j.dwd_stale?'Letzter bekannter Stand: ':'')+j.dwd_headline));}
+  if(j.dwd_list&&j.dwd_list.length){
+    if(j.dwd_stale)box.appendChild(el('p','wx-bad','DWD-Abruf gest\u00f6rt, letzter bekannter Stand:'));
+    j.dwd_list.forEach(function(w){
+      var c=el('div','wx-w l'+w.l);
+      c.appendChild(el('strong','',w.h||w.e));
+      c.appendChild(el('div','wx-wt',(w.now?'':'Angek\u00fcndigt: ')+iso(w.on)+' \u2013 '+iso(w.ex)));
+      if(w.d)c.appendChild(el('p','',w.d));
+      if(w.i)c.appendChild(el('p','wx-wi',w.i));
+      box.appendChild(c);
+    });
+  }else if(j.dwd_headline){box.appendChild(el('p','wx-bad',(j.dwd_stale?'Letzter bekannter Stand: ':'')+j.dwd_headline));}
   var groups={},order=[];
   j.values.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
   order.forEach(function(g){

@@ -817,6 +817,8 @@ Die einzige Funktion mit Internetzugang. Die Station ruft die amtlichen Warnunge
 - **Störung:** 1, wenn seit drei Abrufintervallen keine Daten kamen (Internet, DNS oder Server).
   Die übrigen DWD-Werte behalten dann den letzten bekannten Stand. Die Statusseite kennzeichnet sie als veraltet und nennt
   in der Kopfzeile den Fehler und das Alter der Daten.
+- **Volltexte:** Die Statusseite zeigt alle Warnungen mit Zeitraum, Beschreibung und Verhaltenshinweisen. Per MQTT
+  kommen sie unter `openknx/<Präfix>/dwd` (retained, bei Änderung). Das Format beschreibt die README.
 
 <!-- GEN:DwdOfficial -->
 | Parameter | Standard | Bereich |

@@ -3,6 +3,7 @@
 #include "MeasuredValue.h"
 #include "OpenKNX.h"
 #include <ArduinoJson.h>
+#include <algorithm>
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
 #include <WiFi.h>
@@ -17,6 +18,19 @@ static int64_t parseIso(const char *s)
     if (!s || sscanf(s, "%d-%d-%dT%d:%d:%d", &y, &mo, &d, &h, &mi, &se) != 6)
         return 0;
     return (int64_t)MeasuredValue::daysFromCivil(y, mo, d) * 86400 + h * 3600 + mi * 60 + se;
+}
+
+// Auf hoechstens max Bytes kuerzen, ohne ein UTF-8-Zeichen zu zerschneiden
+static std::string clip(const char *s, size_t max)
+{
+    std::string out = s ? s : "";
+    if (out.size() <= max)
+        return out;
+    size_t n = max - 3;
+    while (n > 0 && ((uint8_t)out[n] & 0xC0) == 0x80)
+        n--;
+    out.resize(n);
+    return out + "...";
 }
 
 static uint8_t severityLevel(const char *s)
@@ -46,7 +60,7 @@ void DwdWarnings::setup(uint32_t warnCell, uint8_t intervalMin)
     char url[400];
     snprintf(url, sizeof(url),
              "https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:%s"
-             "&propertyName=EVENT,SEVERITY,HEADLINE,ONSET,EXPIRES&CQL_FILTER=%s%%3D%%27%09lu%%27&outputFormat=application/json",
+             "&propertyName=EVENT,SEVERITY,HEADLINE,DESCRIPTION,INSTRUCTION,ONSET,EXPIRES&CQL_FILTER=%s%%3D%%27%09lu%%27&outputFormat=application/json",
              district ? "Warnungen_Landkreise" : "Warnungen_Gemeinden", district ? "GC_WARNCELLID" : "WARNCELLID", warnCell);
     _url = url;
     _intervalMs = (uint32_t)max<uint8_t>(intervalMin, 2) * 60000UL;
@@ -120,7 +134,7 @@ void DwdWarnings::fetch(int64_t nowUtc)
             // Nur die benoetigten Felder einlesen (Datenstrom-Filter)
             JsonDocument filter;
             JsonObject props = filter["features"][0]["properties"].to<JsonObject>();
-            for (const char *k : {"EVENT", "SEVERITY", "HEADLINE", "ONSET", "EXPIRES"})
+            for (const char *k : {"EVENT", "SEVERITY", "HEADLINE", "DESCRIPTION", "INSTRUCTION", "ONSET", "EXPIRES"})
                 props[k] = true;
             JsonDocument doc;
             const DeserializationError err = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
@@ -129,47 +143,58 @@ void DwdWarnings::fetch(int64_t nowUtc)
                 code = -100;
             else
             {
-                uint8_t levelNow = 0, levelAll = 0, countNow = 0, bestLevel = 0;
-                int64_t bestOnset = INT64_MAX;
-                bool bestIsNow = false, haveBest = false;
-                std::string event, headline, onset, expires;
+                uint8_t levelNow = 0, levelAll = 0, countNow = 0;
+                std::vector<Warning> list;
                 for (JsonObject f : doc["features"].as<JsonArray>())
                 {
                     JsonObject p = f["properties"];
-                    const uint8_t level = severityLevel(p["SEVERITY"]);
+                    Warning w;
+                    w.level = severityLevel(p["SEVERITY"]);
                     const int64_t on = parseIso(p["ONSET"]);
                     const int64_t ex = parseIso(p["EXPIRES"]);
                     // Ohne Uhrzeit gelten alle gelieferten Warnungen als aktuell
-                    const bool now = nowUtc == 0 || ((on == 0 || on <= nowUtc) && (ex == 0 || nowUtc < ex));
-                    levelAll = max(levelAll, level);
-                    if (now)
+                    w.now = nowUtc == 0 || ((on == 0 || on <= nowUtc) && (ex == 0 || nowUtc < ex));
+                    levelAll = max(levelAll, w.level);
+                    if (w.now)
                     {
                         countNow++;
-                        levelNow = max(levelNow, level);
+                        levelNow = max(levelNow, w.level);
                     }
-                    // Massgebliche Warnung: zuerst gueltige vor angekuendigten, dann hoechste Stufe, dann frueherer Beginn
-                    const bool better = !haveBest || (now && !bestIsNow) ||
-                                        (now == bestIsNow && (level > bestLevel || (level == bestLevel && on < bestOnset)));
-                    if (better)
-                    {
-                        haveBest = true;
-                        bestIsNow = now;
-                        bestLevel = level;
-                        bestOnset = on;
-                        event = p["EVENT"] | "";
-                        headline = p["HEADLINE"] | "";
-                        onset = p["ONSET"] | "";
-                        expires = p["EXPIRES"] | "";
-                    }
+                    w.event = p["EVENT"] | "";
+                    w.headline = p["HEADLINE"] | "";
+                    w.description = clip(p["DESCRIPTION"], MAX_TEXT);
+                    w.instruction = clip(p["INSTRUCTION"], MAX_TEXT);
+                    w.onset = p["ONSET"] | "";
+                    w.expires = p["EXPIRES"] | "";
+                    list.push_back(std::move(w));
                 }
+                // Massgebliche Warnung zuerst: gueltige vor angekuendigten, dann hoechste Stufe, dann frueherer Beginn
+                // (ISO-Zeiten in UTC lassen sich als Text vergleichen)
+                std::stable_sort(list.begin(), list.end(), [](const Warning &a, const Warning &b) {
+                    if (a.now != b.now)
+                        return a.now;
+                    if (a.level != b.level)
+                        return a.level > b.level;
+                    return a.onset < b.onset;
+                });
+                if (list.size() > MAX_WARNINGS)
+                    list.resize(MAX_WARNINGS);
                 r.valid = true;
                 r.levelNow = levelNow;
                 r.levelAll = levelAll;
                 r.countNow = countNow;
-                r.event = event;
-                r.headline = headline;
-                r.onset = onset;
-                r.expires = expires;
+                r.event = list.empty() ? "" : list[0].event;
+                r.headline = list.empty() ? "" : list[0].headline;
+                r.onset = list.empty() ? "" : list[0].onset;
+                r.expires = list.empty() ? "" : list[0].expires;
+                {
+                    std::lock_guard<std::mutex> guard(_lock);
+                    if (!(list == _warnings))
+                    {
+                        _warnings = std::move(list);
+                        _warningsSeq++;
+                    }
+                }
                 r.updated = millis();
             }
         }
@@ -198,6 +223,18 @@ std::string DwdWarnings::codeText(int code)
     else
         snprintf(buf, sizeof(buf), "%s (%d)", HTTPClient::errorToString(code).c_str(), code);
     return buf;
+}
+
+std::vector<DwdWarnings::Warning> DwdWarnings::warnings()
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    return _warnings;
+}
+
+uint32_t DwdWarnings::warningsSeq()
+{
+    std::lock_guard<std::mutex> guard(_lock);
+    return _warningsSeq;
 }
 
 DwdWarnings::Result DwdWarnings::result()

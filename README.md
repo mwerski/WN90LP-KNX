@@ -126,7 +126,10 @@ Deutscher Wetterdienst). Das Zertifikat wird geprüft (Wurzelzertifikate in `src
 - ETS: Wetterstation → DWD-Warnungen (Internet): WarnCellID (9-stellig, Gemeinde 8…, Landkreis 1…; Liste beim DWD unter
   „cap_warncellids_csv“), Abrufintervall (Standard 5 min)
 - KOs: Warnstufe aktuell und inkl. angekündigter Warnungen (0–4), Ereignis (DPT 16), Unwetter, Anzahl, Störung des Abrufs
-- MQTT zusätzlich `dwd_headline`, `dwd_onset`, `dwd_expires`; Statusseite zeigt die Überschrift der Warnung
+- MQTT im Status zusätzlich `dwd_headline`, `dwd_onset`, `dwd_expires`; alle Warnungen mit Beschreibung und
+  Verhaltenshinweisen unter `openknx/<Präfix>/dwd` (siehe MQTT)
+- Statusseite: alle Warnungen mit Zeitraum, Beschreibung und Verhaltenshinweisen; bei gestörtem Abruf als letzter
+  bekannter Stand gekennzeichnet, Fehlergrund und Alter der Daten in der Kopfzeile
 - Ohne Internet meldet nur das KO „Störung DWD-Abruf“; alle anderen Funktionen arbeiten unverändert
 
 ## Logikmodul
@@ -182,6 +185,19 @@ Bei aktivem MQTT (ETS, Netzwerkseite) sendet das Gerät im eingestellten Interva
 Texte (Prognose, Mondphase, Warnungen) stehen wie am KO gekürzt auf 14 Zeichen im Feld selbst
 (z. B. `forecast_text`) und ungekürzt in `<feld>_long` (z. B. `forecast_text_long` = „Unbeständig,
 wahrscheinlich Besserung“). Die Statusseite zeigt die Volltexte; DWD-Ereignisse sind immer ungekürzt.
+
+Bei aktiven DWD-Warnungen zusätzlich `openknx/<Präfix>/dwd` (retained, nur bei Änderung und nach jedem Verbinden):
+
+```json
+{"status":"ok","updated":"2026-10-25T13:05:00Z","level_now":2,"count_now":1,"warnings":[
+ {"event":"STURMBÖEN","level":2,"now":true,"headline":"Amtliche WARNUNG vor STURMBÖEN",
+  "description":"Es treten Windböen ...","instruction":"Gefahr durch: ...",
+  "onset":"2026-10-25T10:00:00Z","expires":"2026-10-25T17:00:00Z"}]}
+```
+
+Gültige Warnungen stehen vor angekündigten (`now` = false), dann nach Stufe. Bei gestörtem Abruf `status` = `error`
+mit `error` (Grund); die Liste bleibt der letzte bekannte Stand. Texte sind auf 600 Byte gekürzt; passt nicht alles in
+eine Nachricht (max. ca. 3,8 KB), entfallen nachrangige Warnungen und `more` nennt ihre Anzahl.
 
 Mit „Home Assistant MQTT Discovery“ (ETS, Wetterstation → Allgemein) meldet das Gerät nach jedem Verbinden
 alle aktiven Messwerte unter `homeassistant/sensor|binary_sensor/<Knoten>/<Feld>/config` an (retained).
