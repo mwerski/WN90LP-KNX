@@ -139,15 +139,23 @@ void DwdWarnings::fetch(int64_t nowUtc)
         detail = "DNS-Aufloesung fehlgeschlagen";
     else if (http.begin(client, _url.c_str()))
     {
+        // Speicher vor dem Aufbau: TLS braucht je 16 KB Ein- und Ausgabepuffer als zusammenhaengende Bloecke
+        const uint32_t freeKb = ESP.getFreeHeap() / 1024;
+        const uint32_t blockKb = ESP.getMaxAllocHeap() / 1024;
         const uint32_t start = millis();
         code = http.GET();
         if (code == HTTPC_ERROR_CONNECTION_REFUSED)
         {
-            // TCP- oder TLS-Aufbau gescheitert; Dauer und groesster freier Block helfen bei der Unterscheidung
-            // (Zeitueberschreitung, Server lehnt ab, Speicher fuer TLS zu knapp)
-            char buf[96];
-            snprintf(buf, sizeof(buf), "nach %lu ms, %s, groesster freier Block %lu KB", millis() - start, ip.toString().c_str(),
-                     (unsigned long)(ESP.getMaxAllocHeap() / 1024));
+            // TCP- oder TLS-Aufbau gescheitert. Der Client merkt sich den Rueckgabewert des Aufbaus:
+            // -1 = TCP (Socket, Verbindung, Zeitueberschreitung), sonst mbedTLS-Fehlercode des Handshakes
+            char tls[64];
+            const int tlsCode = client.lastError(tls, sizeof(tls));
+            if (tlsCode == -1)
+                snprintf(tls, sizeof(tls), "TCP-Aufbau gescheitert");
+            char buf[192];
+            snprintf(buf, sizeof(buf), "nach %lu ms, %s, %s (-0x%04X), vorher frei %lu KB, groesster Block %lu KB",
+                     millis() - start, ip.toString().c_str(), tls, (unsigned)-tlsCode, (unsigned long)freeKb,
+                     (unsigned long)blockKb);
             detail = buf;
         }
         if (code == 200)
