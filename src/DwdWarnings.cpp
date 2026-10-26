@@ -75,8 +75,10 @@ void DwdWarnings::loop(int64_t nowUtc)
 {
     if (!_enabled || _busy || !WiFi.isConnected())
         return;
-    // Erster Abruf 30 s nach dem Start, danach im Intervall (nach einem Fehler frueher)
-    if (_first ? millis() < 30000 : !delayCheck(_timer, _retry ? RETRY_MS : _intervalMs))
+    // Erster Abruf 30 s nach dem Start, danach im Intervall (nach einem Fehler frueher).
+    // Wartezeit vorab berechnen: delayCheck ist ein Makro ohne Klammern um die Dauer
+    const uint32_t wait = _retry ? RETRY_MS : _intervalMs;
+    if (_first ? millis() < 30000 : !delayCheck(_timer, wait))
         return;
     _first = false;
     _timer = millis();

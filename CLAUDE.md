@@ -97,6 +97,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 ## Regeln
 
 - Kein `delay()`, alles nicht-blockierend mit `delayCheck()`.
+- `delayCheck(last, dauer)` ist ein Makro (`millis() - last >= dauer`) ohne Klammern: als Dauer nie einen Ausdruck mit `?:`, `|`, `&` o. ä. übergeben, sondern vorher in eine Variable rechnen (1.5.3/1.5.4: DWD-Abruf in Dauerschleife, Speichermangel, Abstürze).
 - Formatierung gemäß `.clang-format` (Allman, 4 Leerzeichen).
 - Keine Zugangsdaten im Quelltext oder in Konfigurationsdateien.
 - Vor Änderungen an OpenKNX-Schnittstellen die Header in `lib/` prüfen (`lib/OGM-Common/AGENTS.md`, `lib/OFM-Network/AGENTS.md`).
