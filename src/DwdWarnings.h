@@ -55,8 +55,16 @@ class DwdWarnings
     static const char *eventText(bool utf8);
     // Kurzbeschreibung eines Ergebniscodes (HTTP-Status, Fehler von HTTPClient oder eigene Codes)
     static std::string codeText(int code);
+    // Speicherreserve fuer TLS vorhanden (sonst konnte sie nach dem letzten Abruf nicht neu angelegt werden)
+    bool reserved() const { return _reserve != nullptr; }
 
   private:
+    // TLS braucht je ca. 17 KB Ein- und Ausgabepuffer am Stueck. Bei zerstueckeltem Speicher scheitert der
+    // Handshake ("Memory allocation failed"), daher wird ein Block beim Start belegt und nur waehrend des Abrufs freigegeben.
+    static constexpr size_t RESERVE_SIZE = 36 * 1024;
+    void reserve();
+    void *volatile _reserve = nullptr;
+
     static void taskEntry(void *arg);
     void run();
     void fetch(int64_t nowUtc);

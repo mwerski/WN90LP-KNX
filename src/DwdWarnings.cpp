@@ -66,6 +66,8 @@ void DwdWarnings::setup(uint32_t warnCell, uint8_t intervalMin)
              district ? "Warnungen_Landkreise" : "Warnungen_Gemeinden", district ? "GC_WARNCELLID" : "WARNCELLID", warnCell);
     _url = url;
     _intervalMs = (uint32_t)max<uint8_t>(intervalMin, 2) * 60000UL;
+    // Speicherreserve frueh belegen, solange der Speicher noch nicht zerstueckelt ist
+    reserve();
     // TLS braucht reichlich Stack
     _enabled = xTaskCreate(taskEntry, "DwdWarnings", 12288, this, 1, &_task) == pdPASS;
     logInfo("Weather", "DWD-Warnungen fuer Warnzelle %lu alle %u min", warnCell, intervalMin);
@@ -110,6 +112,8 @@ void DwdWarnings::run()
             _result.errors++;
             scheduleRetry(false);
         }
+        // TLS-Puffer sind freigegeben: Reserve wieder belegen
+        reserve();
         _busy = false;
     }
 }
@@ -140,6 +144,9 @@ void DwdWarnings::fetch(int64_t nowUtc)
     else if (http.begin(client, _url.c_str()))
     {
         // Speicher vor dem Aufbau: TLS braucht je 16 KB Ein- und Ausgabepuffer als zusammenhaengende Bloecke
+        // (Reserve erst unmittelbar vor dem Aufbau freigeben, damit sie nicht anderweitig belegt wird)
+        heap_caps_free(_reserve);
+        _reserve = nullptr;
         const uint32_t freeKb = ESP.getFreeHeap() / 1024;
         const uint32_t blockKb = ESP.getMaxAllocHeap() / 1024;
         const uint32_t start = millis();
@@ -242,6 +249,13 @@ void DwdWarnings::fetch(int64_t nowUtc)
     scheduleRetry(code == 200);
     std::lock_guard<std::mutex> guard(_lock);
     _result = r;
+}
+
+void DwdWarnings::reserve()
+{
+    // Nur internes RAM: mbedTLS belegt seine Puffer dort
+    if (!_reserve)
+        _reserve = heap_caps_malloc(RESERVE_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 }
 
 void DwdWarnings::scheduleRetry(bool success)

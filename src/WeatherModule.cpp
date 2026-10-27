@@ -1775,6 +1775,8 @@ void WeatherModule::showSensors()
                  r.levelAll, r.headline.empty() ? "keine Warnung" : r.headline.c_str());
         if (r.errors)
             logInfoP("DWD: letzter Fehler: %s", r.error.c_str());
+        logInfoP("DWD: TLS-Speicherreserve %s, frei %lu KB, groesster Block %lu KB", dwdWarnings.reserved() ? "belegt" : "FEHLT",
+                 (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getMaxAllocHeap() / 1024));
     }
     else
         logInfoP("DWD-Warnungen: nicht aktiviert");
