@@ -715,7 +715,7 @@ Objekte je Raum (KO-Nummern für Raum 1; alle Nummern in [KO-Liste.md](KO-Liste.
 
 ## Bewässerung
 
-Tägliche Wasserbilanz für Garten oder Rasen:
+Fortlaufende Wasserbilanz für Garten oder Rasen. Sie beginnt nicht täglich neu, sondern wird wie ein Konto weitergeführt und bleibt über Neustarts erhalten:
 
 - **Verdunstung (ET0):** Referenzverdunstung nach FAO-56 Penman-Monteith aus Temperatur, Feuchte, Wind (auf 2 m Höhe
   umgerechnet), Strahlung und Luftdruck.

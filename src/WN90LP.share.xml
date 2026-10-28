@@ -5568,7 +5568,7 @@
                 </choose>
               </ParameterBlock>
               <ParameterBlock Id="%AID%_PB-nnn" Name="Irrigation" Text="Bewässerung" Icon="weather-pouring">
-                <ParameterSeparator Id="%AID%_PS-nnn" Text="Tägliche Wasserbilanz für Garten/Rasen. Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />
+                <ParameterSeparator Id="%AID%_PS-nnn" Text="Fortlaufende Wasserbilanz für Garten/Rasen (kein täglicher Neubeginn). Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00537_R-%TT%0053701" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00538_R-%TT%0053801" IndentLevel="1" />
                 <ParameterRefRef RefId="%AID%_UP-%TT%00539_R-%TT%0053901" IndentLevel="1" />

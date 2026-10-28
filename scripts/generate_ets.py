@@ -1259,7 +1259,7 @@ def build():
         if gkey == "Ventilation":
             w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Taupunktlüftung: Lüften ist sinnvoll, wenn die Außenluft weniger Wasser enthält als die Raumluft (absolute Feuchte). Raumtemperatur und Raumfeuchte kommen über die Eingangsobjekte vom Bus; ohne Werte seit 2 Stunden wird keine Empfehlung gegeben." UIHint="Information" />')
         if gkey == "Irrigation":
-            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Tägliche Wasserbilanz für Garten/Rasen. Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />')
+            w(f'{q}<ParameterSeparator Id="%AID%_PS-nnn" Text="Fortlaufende Wasserbilanz für Garten/Rasen (kein täglicher Neubeginn). Die Bilanz bleibt über Neustarts erhalten." UIHint="Information" />')
             for n in ("IrrKc", "IrrThreshold", "IrrStorage", "IrrAmount", "StationHeight"):
                 w(f'{q}<ParameterRefRef RefId="{ids.ref(n)}" IndentLevel="1" />')
         if gkey == "Warnings2":
