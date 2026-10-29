@@ -75,7 +75,15 @@ void DwdWarnings::setup(uint32_t warnCell, uint8_t intervalMin)
 
 void DwdWarnings::loop(int64_t nowUtc)
 {
-    if (!_enabled || _busy || !WiFi.isConnected())
+    if (!_enabled || _busy)
+        return;
+    // Fehlende Reserve jede Minute erneut versuchen (nur ausserhalb eines Abrufs)
+    if (reserved() < 2 && delayCheck(_reserveTimer, RETRY_MS))
+    {
+        _reserveTimer = millis();
+        reserve();
+    }
+    if (!WiFi.isConnected())
         return;
     // Erster Abruf 30 s nach dem Start, danach im Intervall (nach einem Fehler frueher).
     // Wartezeit vorab berechnen: delayCheck ist ein Makro ohne Klammern um die Dauer
@@ -145,12 +153,21 @@ void DwdWarnings::fetch(int64_t nowUtc)
     {
         // Speicher vor dem Aufbau: TLS braucht je 16 KB Ein- und Ausgabepuffer als zusammenhaengende Bloecke
         // (Reserve erst unmittelbar vor dem Aufbau freigeben, damit sie nicht anderweitig belegt wird)
-        heap_caps_free(_reserve);
-        _reserve = nullptr;
+        releaseReserve();
         const uint32_t freeKb = ESP.getFreeHeap() / 1024;
         const uint32_t blockKb = ESP.getMaxAllocHeap() / 1024;
         const uint32_t start = millis();
-        code = http.GET();
+        // Ohne ausreichend grossen Block scheitert der Handshake sicher: Aufbau gar nicht erst versuchen
+        if (heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT) < TLS_BLOCK)
+        {
+            char buf[128];
+            snprintf(buf, sizeof(buf), "Speicher fuer TLS zu zerstueckelt, frei %lu KB, groesster Block %lu KB",
+                     (unsigned long)freeKb, (unsigned long)blockKb);
+            detail = buf;
+            code = -201;
+        }
+        else
+            code = http.GET();
         if (code == HTTPC_ERROR_CONNECTION_REFUSED)
         {
             // TCP- oder TLS-Aufbau gescheitert. Der Client merkt sich den Rueckgabewert des Aufbaus:
@@ -254,8 +271,18 @@ void DwdWarnings::fetch(int64_t nowUtc)
 void DwdWarnings::reserve()
 {
     // Nur internes RAM: mbedTLS belegt seine Puffer dort
-    if (!_reserve)
-        _reserve = heap_caps_malloc(RESERVE_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    for (auto &block : _reserve)
+        if (!block)
+            block = heap_caps_malloc(RESERVE_SIZE, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+}
+
+void DwdWarnings::releaseReserve()
+{
+    for (auto &block : _reserve)
+    {
+        heap_caps_free(block);
+        block = nullptr;
+    }
 }
 
 void DwdWarnings::scheduleRetry(bool success)
@@ -276,6 +303,8 @@ std::string DwdWarnings::codeText(int code)
         return "Antwort ungueltig";
     else if (code == -200)
         return "Speichermangel";
+    else if (code == -201)
+        return "Abruf ausgelassen";
     else if (code == 0)
         return "noch kein Abruf";
     else

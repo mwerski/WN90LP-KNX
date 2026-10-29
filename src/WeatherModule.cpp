@@ -1775,7 +1775,7 @@ void WeatherModule::showSensors()
                  r.levelAll, r.headline.empty() ? "keine Warnung" : r.headline.c_str());
         if (r.errors)
             logInfoP("DWD: letzter Fehler: %s", r.error.c_str());
-        logInfoP("DWD: TLS-Speicherreserve %s, frei %lu KB, groesster Block %lu KB", dwdWarnings.reserved() ? "belegt" : "FEHLT",
+        logInfoP("DWD: TLS-Speicherreserve %u von 2 Bloecken, frei %lu KB, groesster Block %lu KB", dwdWarnings.reserved(),
                  (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getMaxAllocHeap() / 1024));
     }
     else
