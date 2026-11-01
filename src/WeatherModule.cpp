@@ -1774,7 +1774,12 @@ void WeatherModule::showSensors()
         logInfoP("DWD: %lu ok, %lu Fehler, letzter Code %d, Stufe %u (inkl. angekuendigt %u), %s", r.ok, r.errors, r.lastCode, r.levelNow,
                  r.levelAll, r.headline.empty() ? "keine Warnung" : r.headline.c_str());
         if (r.errors)
+        {
+            logInfoP("DWD: Fehler nach Ursache: TCP %lu, TLS-Speicher %lu, TLS sonst %lu, ausgelassen %lu, sonstige %lu",
+                     (unsigned long)r.errTcp, (unsigned long)r.errTlsMem, (unsigned long)r.errTls, (unsigned long)r.errSkip,
+                     (unsigned long)r.errOther);
             logInfoP("DWD: letzter Fehler: %s", r.error.c_str());
+        }
         logInfoP("DWD: TLS-Speicherreserve %u von 2 Bloecken, frei %lu KB, groesster Block %lu KB", dwdWarnings.reserved(),
                  (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getMaxAllocHeap() / 1024));
     }

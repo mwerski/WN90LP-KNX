@@ -23,6 +23,9 @@ class DwdWarnings
         int lastCode = 0;
         std::string error = "noch kein Abruf"; // Grund des letzten Fehlschlags (bleibt nach Erfolg stehen)
         uint32_t ok = 0, errors = 0;
+        // Fehler nach Ursache: TCP-Aufbau, TLS-Speichermangel, sonstiger TLS-Fehler, ausgelassen (Speicher zu
+        // zerstueckelt), sonstige (DNS, HTTP-Status, ungueltige Antwort, Abbruch beim Lesen)
+        uint32_t errTcp = 0, errTlsMem = 0, errTls = 0, errSkip = 0, errOther = 0;
     };
 
     // Einzelne Warnung mit Volltexten (fuer MQTT und Statusseite)

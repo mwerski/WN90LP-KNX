@@ -7,6 +7,7 @@
 #include <HTTPClient.h>
 #include <NetworkClientSecure.h>
 #include <WiFi.h>
+#include <mbedtls/ssl.h>
 
 #define DWD_HOST "maps.dwd.de"
 
@@ -118,6 +119,7 @@ void DwdWarnings::run()
             _result.lastCode = -200;
             _result.error = codeText(-200);
             _result.errors++;
+            _result.errOther++;
             scheduleRetry(false);
         }
         // TLS-Puffer sind freigegeben: Reserve wieder belegen
@@ -165,6 +167,7 @@ void DwdWarnings::fetch(int64_t nowUtc)
                      (unsigned long)freeKb, (unsigned long)blockKb);
             detail = buf;
             code = -201;
+            r.errSkip++;
         }
         else
             code = http.GET();
@@ -175,7 +178,14 @@ void DwdWarnings::fetch(int64_t nowUtc)
             char tls[64];
             const int tlsCode = client.lastError(tls, sizeof(tls));
             if (tlsCode == -1)
+            {
                 snprintf(tls, sizeof(tls), "TCP-Aufbau gescheitert");
+                r.errTcp++;
+            }
+            else if (tlsCode == MBEDTLS_ERR_SSL_ALLOC_FAILED)
+                r.errTlsMem++;
+            else
+                r.errTls++;
             char buf[192];
             snprintf(buf, sizeof(buf), "nach %lu ms, %s, %s (-0x%04X), vorher frei %lu KB, groesster Block %lu KB",
                      millis() - start, ip.toString().c_str(), tls, (unsigned)-tlsCode, (unsigned long)freeKb,
@@ -259,6 +269,9 @@ void DwdWarnings::fetch(int64_t nowUtc)
     else
     {
         r.errors++;
+        // Fehler ohne eigene Ursache (DNS, HTTP-Status, Antwort) als sonstige zaehlen
+        if (r.errTcp + r.errTlsMem + r.errTls + r.errSkip + r.errOther < r.errors)
+            r.errOther++;
         r.error = codeText(code);
         if (!detail.empty())
             r.error += ", " + detail;
