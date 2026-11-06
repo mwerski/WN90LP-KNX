@@ -19,6 +19,21 @@ namespace Diag
         uint32_t pc[CRASH_DEPTH];
     };
     RTC_NOINIT_ATTR static CrashInfo s_crash;
+
+    // Speicher und Stack-Reserven, laufend aus der Hauptschleife (ueberstehen den Absturz)
+    static const char *const TASKS[] = {"loopTask", "DwdWarnings", "InfluxWriter", "httpd", "async_tcp"};
+    static constexpr uint8_t TASK_COUNT = sizeof(TASKS) / sizeof(TASKS[0]);
+    struct HeapInfo
+    {
+        uint32_t magic;
+        uint32_t upSec;
+        uint32_t freeHeap, minFree, maxBlock;
+        uint32_t stackMin[TASK_COUNT]; // kleinste gemessene Stack-Reserve in Byte (0xFFFFFFFF = Task fehlt)
+    };
+    RTC_NOINIT_ATTR static HeapInfo s_heap;
+    static HeapInfo s_lastHeap; // Stand vor dem letzten Neustart
+    static bool s_haveHeap = false;
+    static uint32_t s_heapTimer = 0;
     static CrashInfo s_lastCrash; // Kopie fuer die Anzeige
     static bool s_haveCrash = false;
     static void recordCrash(arduino_panic_info_t *info, void *);
@@ -106,6 +121,21 @@ namespace Diag
         s_loops++;
         if (!s_perfStart)
             s_perfStart = millis();
+        // Speicherstand jede Sekunde sichern (getMaxAllocHeap durchsucht den Heap)
+        if (delayCheck(s_heapTimer, 1000))
+        {
+            s_heapTimer = millis();
+            s_heap.upSec = millis() / 1000;
+            s_heap.freeHeap = ESP.getFreeHeap();
+            s_heap.minFree = ESP.getMinFreeHeap();
+            s_heap.maxBlock = ESP.getMaxAllocHeap();
+            for (uint8_t i = 0; i < TASK_COUNT; i++)
+            {
+                TaskHandle_t h = xTaskGetHandle(TASKS[i]);
+                if (h)
+                    s_heap.stackMin[i] = min<uint32_t>(s_heap.stackMin[i], uxTaskGetStackHighWaterMark(h));
+            }
+        }
     }
 
     void perf()
@@ -147,8 +177,27 @@ namespace Diag
             s_haveCrash = true;
         }
         s_crash.magic = 0;
+        if (s_heap.magic == MAGIC)
+        {
+            s_lastHeap = s_heap;
+            s_haveHeap = true;
+        }
+        s_heap = HeapInfo();
+        s_heap.magic = MAGIC;
+        for (uint32_t &v : s_heap.stackMin)
+            v = UINT32_MAX;
         set_arduino_panic_handler(recordCrash, nullptr);
         report();
+    }
+
+    static void stacks(const char *title, const uint32_t *values)
+    {
+        char buf[160];
+        size_t n = snprintf(buf, sizeof(buf), "%s:", title);
+        for (uint8_t i = 0; i < TASK_COUNT && n < sizeof(buf); i++)
+            if (values[i] != UINT32_MAX)
+                n += snprintf(buf + n, sizeof(buf) - n, " %s %lu", TASKS[i], (unsigned long)values[i]);
+        logInfo("Weather", "%s Byte", buf);
     }
 
     void report()
@@ -158,8 +207,21 @@ namespace Diag
             logError("Weather", "Letzter Neustart: %s, zuletzt aktiv: %s", reasonName(s_reason), stageName(s_lastStage));
         else
             logInfo("Weather", "Letzter Neustart: %s", reasonName(s_reason));
+        if (crash && s_haveHeap)
+        {
+            logError("Weather", "Vor dem Absturz (Laufzeit %lu s): frei %lu Byte (min. %lu), groesster Block %lu Byte",
+                     (unsigned long)s_lastHeap.upSec, (unsigned long)s_lastHeap.freeHeap, (unsigned long)s_lastHeap.minFree,
+                     (unsigned long)s_lastHeap.maxBlock);
+            stacks("Stack-Reserven vor dem Absturz", s_lastHeap.stackMin);
+        }
+        stacks("Stack-Reserven seit Start", s_heap.stackMin);
         if (!s_haveCrash)
+        {
+            // Der Kern laeuft den Stack ab, bevor er den Handler ruft; scheitert das, fehlt der Eintrag
+            if (s_reason == ESP_RST_PANIC)
+                logError("Weather", "Kein Backtrace: Panic-Handler nicht erreicht (Stack vermutlich beschaedigt)");
             return;
+        }
         // Backtrace wie im seriellen Absturzprotokoll; mit addr2line und der firmware.elf dieses Builds auswerten
         char bt[CRASH_DEPTH * 11 + 1];
         size_t n = 0;
