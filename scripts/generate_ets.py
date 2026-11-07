@@ -113,21 +113,19 @@ FACADES = 6
 FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
 
-# MQTT-Themen (unter dem Geraetepraefix): jede Gruppe wird vollstaendig als eigenes JSON gesendet.
+# MQTT-Themen (unter dem Geraetepraefix), nach Inhalt: Messwerte, berechnete Werte, Sonne/Mond, Statistik.
+# Jede ETS-Gruppe gehoert vollstaendig zu einem Thema.
 # Thema 0 im Intervall, die uebrigen nur bei Aenderung (und zur Auffrischung alle 15 min).
 MQTT_TOPICS = ["state", "state/calc", "state/astro", "state/stats"]
 GROUP_TOPIC = {
     "Temperature": 0, "Humidity": 0, "Wind": 0, "WindAlarm": 0, "Pressure": 0, "Light": 0, "Rain": 0,
     "Particles": 0, "Warnings": 0,
-    "Comfort": 1, "Forecast": 1, "Sun": 1, "Solar": 1, "Facades": 1, "Ventilation": 1, "Irrigation": 1,
+    "Comfort": 1, "Forecast": 1, "Solar": 1, "Facades": 1, "Ventilation": 1, "Irrigation": 1,
     "Warnings2": 1, "DwdOfficial": 1,
-    "SunTimes": 2, "Moon": 2,
+    "Sun": 2, "SunTimes": 2, "Moon": 2,
     "MinMax": 3, "Season": 3, "DegreeDays": 3,
 }
 assert set(GROUP_TOPIC) == {g[0] for g in GROUPS}, "jede Gruppe braucht ein MQTT-Thema (GROUP_TOPIC)"
-# Einzelne Werte abweichend von ihrer Gruppe: laufend aendernde Positionen zu den berechneten Werten,
-# damit state/astro nur bei echten Aenderungen gesendet wird
-VALUE_TOPIC = {"MoonAzimuth": 1, "MoonElevation": 1}
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
@@ -1463,7 +1461,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {VALUE_TOPIC.get(v["key"], GROUP_TOPIC[v["group"]])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {GROUP_TOPIC[v["group"]]}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")
