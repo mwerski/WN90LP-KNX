@@ -188,12 +188,12 @@ aufgeteilt nach ETS-Seiten auf vier Themen unter `openknx/<Präfix>/`:
 | Thema | Inhalt | Versand |
 |---|---|---|
 | `state` | Temperatur, Feuchte, Wind, Windalarm, Luftdruck, Helligkeit/UV, Regen, Feinstaub, Warnungen der Station, `wifi_rssi`, `uptime`, `fault_*` | im eingestellten Intervall |
-| `state/calc` | Behaglichkeit, Prognose, Sonne/Dämmerung, Strahlung/PV, Fassaden, Lüftung, Bewässerung, DWD-Kriterien, DWD-Status (`dwd_headline` …) | bei Änderung, spätestens alle 15 min |
-| `state/astro` | Sonnenzeiten, Mond | bei Änderung, spätestens alle 15 min |
+| `state/calc` | Behaglichkeit, Prognose, Sonne/Dämmerung, Mondposition, Strahlung/PV, Fassaden, Lüftung, Bewässerung, DWD-Kriterien, DWD-Status (`dwd_headline` …) | bei Änderung, spätestens alle 15 min |
+| `state/astro` | Sonnenzeiten, Mond (ohne Position) | bei Änderung, spätestens alle 15 min |
 | `state/stats` | Minimum/Maximum, Sommer/Winter und Kenntage, Gradtage | bei Änderung, spätestens alle 15 min |
 
 Jedes Thema enthält immer alle gültigen Werte seiner Gruppe (Feldnamen wie `temperature`, `humidity`,
-`windspeed`, `pressure`, `raincounter`, `rain_today`, `pm25` …). Die Zuordnung steht in `MQTT_TOPICS`/`GROUP_TOPIC`
+`windspeed`, `pressure`, `raincounter`, `rain_today`, `pm25` …). Die Zuordnung steht in `MQTT_TOPICS`/`GROUP_TOPIC`/`VALUE_TOPIC`
 in `scripts/generate_ets.py`.
 Texte (Prognose, Mondphase, Warnungen) stehen wie am KO gekürzt auf 14 Zeichen im Feld selbst
 (z. B. `forecast_text`) und ungekürzt in `<feld>_long` (z. B. `forecast_text_long` = „Unbeständig,

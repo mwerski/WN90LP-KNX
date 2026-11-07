@@ -125,6 +125,9 @@ GROUP_TOPIC = {
     "MinMax": 3, "Season": 3, "DegreeDays": 3,
 }
 assert set(GROUP_TOPIC) == {g[0] for g in GROUPS}, "jede Gruppe braucht ein MQTT-Thema (GROUP_TOPIC)"
+# Einzelne Werte abweichend von ihrer Gruppe: laufend aendernde Positionen zu den berechneten Werten,
+# damit state/astro nur bei echten Aenderungen gesendet wird
+VALUE_TOPIC = {"MoonAzimuth": 1, "MoonElevation": 1}
 
 
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
@@ -1460,7 +1463,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {GROUP_TOPIC[v["group"]]}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {VALUE_TOPIC.get(v["key"], GROUP_TOPIC[v["group"]])}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")
