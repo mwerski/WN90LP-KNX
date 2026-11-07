@@ -113,6 +113,20 @@ FACADES = 6
 FACADE_AZIMUTH = [90, 180, 270, 0, 135, 225]
 
 
+# MQTT-Themen (unter dem Geraetepraefix): jede Gruppe wird vollstaendig als eigenes JSON gesendet.
+# Thema 0 im Intervall, die uebrigen nur bei Aenderung (und zur Auffrischung alle 15 min).
+MQTT_TOPICS = ["state", "state/calc", "state/astro", "state/stats"]
+GROUP_TOPIC = {
+    "Temperature": 0, "Humidity": 0, "Wind": 0, "WindAlarm": 0, "Pressure": 0, "Light": 0, "Rain": 0,
+    "Particles": 0, "Warnings": 0,
+    "Comfort": 1, "Forecast": 1, "Sun": 1, "Solar": 1, "Facades": 1, "Ventilation": 1, "Irrigation": 1,
+    "Warnings2": 1, "DwdOfficial": 1,
+    "SunTimes": 2, "Moon": 2,
+    "MinMax": 3, "Season": 3, "DegreeDays": 3,
+}
+assert set(GROUP_TOPIC) == {g[0] for g in GROUPS}, "jede Gruppe braucht ein MQTT-Thema (GROUP_TOPIC)"
+
+
 def V(key, group, text, unit, dpts, cycle, abs_, rel, active=False, sensor=None,
       thresholds=True, decimals=1, mqtt=None, absmax=100000, info=None, dpt=0, extra=None, cond=None, influx=None, fmt="number"):
     return dict(key=key, group=group, text=text, unit=unit, dpts=dpts, cycle=cycle,
@@ -1422,6 +1436,7 @@ def build():
     h.append("    WxFmt fmt;            // Darstellung (Zahl, Uhrzeit, Datum, Dauer, Text)")
     h.append("    const char *haClass;  // Home Assistant device_class (nullptr = keine)")
     h.append("    const char *haUnit;   // Home Assistant unit_of_measurement (nullptr = keine)")
+    h.append("    uint8_t mqttTopic;    // Index in WX_MQTT_TOPICS")
     h.append("    uint8_t dptCount;")
     h.append("    WxDptOption dpts[3];")
     h.append("};")
@@ -1430,6 +1445,8 @@ def build():
     h.append("#define WX_KO_FAULT_WN90 (WX_KoFaultWn90)")
     h.append("#define WX_KO_FAULT_SDS (WX_KoFaultSds)")
     h.append("#define WX_KO_FAULT_1W (WX_KoFault1W)")
+    h.append(f"#define WX_MQTT_TOPIC_COUNT {len(MQTT_TOPICS)}")
+    h.append("static const char *const WX_MQTT_TOPICS[WX_MQTT_TOPIC_COUNT] = {" + ", ".join(f'"{t}"' for t in MQTT_TOPICS) + "};")
     h.append("")
     h.append("static const WxValueDef WX_VALUES[WX_VALUE_COUNT] = {")
     sensors = {None: "WxSensor::None", "sds": "WxSensor::Sds", "onewire": "WxSensor::OneWire"}
@@ -1443,7 +1460,7 @@ def build():
         gtext = next(g[1] for g in GROUPS if g[0] == v["group"])
         h.append(f'    {{"{name}", {cstr(v["text"])}, {cstr(gtext)}, {cstr(v["unit"])}, "{v["mqtt"]}", {"nullptr" if v["influx"] == "" else ('"' + (v["influx"] or v["mqtt"]) + '"')}, "{unit}", WX_{v["key"]}Active, '
                  f'WX_Ko{v["key"]}, {sensors[v["sensor"]]}, {("WX_" + v["cond"]) if v["cond"] else "0xFFFF"}, {"true" if v["thresholds"] else "false"}, '
-                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {len(v["dpts"])}, {{{opts}}}}},')
+                 f'{v["decimals"]}, WxFmt::{ {"number": "Number", "time": "Time", "date": "Date", "duration": "Duration", "forecast": "Forecast", "moonphase": "MoonPhase", "moontext": "MoonText", "warntext": "WarnText", "dwdtext": "DwdText", "aqitext": "AqiText", "comforttext": "ComfortText"}[v["fmt"]] }, {cstr(ha_meta(v)[0])}, {cstr(ha_meta(v)[1])}, {GROUP_TOPIC[v["group"]]}, {len(v["dpts"])}, {{{opts}}}}},')
     h.append("};")
     h.append("")
     HEADER.write_text("\n".join(h) + "\n", encoding="utf-8")

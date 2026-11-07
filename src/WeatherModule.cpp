@@ -27,6 +27,8 @@ static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
 static constexpr float LUX_PER_WM2 = 110.0f;
 // Mindestens freier Speicher fuer das Status-JSON per MQTT (Dokument und Text zusammen ca. 15 KB)
 static constexpr uint32_t MQTT_MIN_FREE_HEAP = 30 * 1024;
+// Unveraenderte MQTT-Themen (ausser "state") spaetestens nach dieser Zeit erneut senden
+static constexpr uint32_t MQTT_REFRESH_MS = 15 * 60000UL;
 // Eingangs-KOs je Raum (Temperatur, Feuchte)
 static constexpr uint16_t ROOM_KOS[][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn},
                                            {WX_KoRoom3TempIn, WX_KoRoom3HumIn}, {WX_KoRoom4TempIn, WX_KoRoom4HumIn},
@@ -1187,11 +1189,26 @@ void WeatherModule::sendValues()
 void WeatherModule::publishMqtt()
 {
 #ifdef OPENKNX_MQTT
-    if (_mqttInterval == 0 || !delayCheck(_mqttTimer, _mqttInterval))
+    // Nach dem (Neu-)Verbinden alle Themen senden
+    const bool connected = openknxNetwork.mqtt.connected();
+    if (connected && !_mqttConnected)
+        for (uint32_t &h : _mqttHash)
+            h = 0;
+    _mqttConnected = connected;
+    if (_mqttInterval == 0 || !connected)
         return;
-    _mqttTimer = millis();
-    if (!openknxNetwork.mqtt.connected())
+    if (delayCheck(_mqttTimer, _mqttInterval))
+    {
+        _mqttTimer = millis();
+        _mqttDue = (1 << WX_MQTT_TOPIC_COUNT) - 1;
+    }
+    // Je Durchlauf hoechstens ein Thema: verteilt Speicherbedarf und Warteschlange
+    uint8_t topic = 0;
+    while (topic < WX_MQTT_TOPIC_COUNT && !(_mqttDue & (1 << topic)))
+        topic++;
+    if (topic >= WX_MQTT_TOPIC_COUNT)
         return;
+    _mqttDue &= ~(1 << topic);
     // Bei knappem Speicher (z. B. Warteschlange voller unversendeter Nachrichten) diese Ausgabe auslassen
     if (ESP.getFreeHeap() < MQTT_MIN_FREE_HEAP)
     {
@@ -1200,12 +1217,15 @@ void WeatherModule::publishMqtt()
     }
 
     JsonDocument doc;
-    doc["wifi_rssi"] = WiFi.RSSI();
-    doc["uptime"] = millis() / 1000;
+    if (topic == 0)
+    {
+        doc["wifi_rssi"] = WiFi.RSSI();
+        doc["uptime"] = millis() / 1000;
+    }
     for (uint8_t i = 0; i < WX_VALUE_COUNT; i++)
     {
         const MeasuredValue &v = _values[i];
-        if (!v.valid())
+        if (WX_VALUES[i].mqttTopic != topic || !v.valid())
             continue;
         const WxFmt fmt = WX_VALUES[i].fmt;
         if (fmt == WxFmt::Forecast || fmt == WxFmt::MoonText || fmt == WxFmt::WarnText || fmt == WxFmt::DwdText || fmt == WxFmt::AqiText ||
@@ -1223,9 +1243,13 @@ void WeatherModule::publishMqtt()
         const float f = powf(10.0f, WX_VALUES[i].decimals);
         doc[WX_VALUES[i].mqttKey] = roundf(v.value() * f) / f;
     }
-    if (_sdsEnabled)
-        doc["fault_sds"] = _faultSds;
-    if (dwdWarnings.enabled())
+    if (topic == 0)
+    {
+        if (_sdsEnabled)
+            doc["fault_sds"] = _faultSds;
+        doc["fault_wn90"] = _faultWn90;
+    }
+    if (topic == 1 && dwdWarnings.enabled())
     {
         const DwdWarnings::Result r = dwdWarnings.result();
         if (r.valid)
@@ -1235,11 +1259,25 @@ void WeatherModule::publishMqtt()
             doc["dwd_expires"] = r.expires;
         }
     }
-    doc["fault_wn90"] = _faultWn90;
+    if (doc.size() == 0)
+        return;
 
     std::string payload;
-    if (serializeJsonSafe(doc, payload))
-        openknxNetwork.mqtt.publishP("state", payload);
+    if (!serializeJsonSafe(doc, payload))
+        return;
+    // Thema 0 immer, die uebrigen nur bei Aenderung oder zur Auffrischung (retained: neue Leser erhalten sofort den Stand)
+    uint32_t hash = 2166136261u; // FNV-1a
+    for (char c : payload)
+        hash = (hash ^ (uint8_t)c) * 16777619u;
+    if (hash == 0)
+        hash = 1;
+    if (topic != 0 && hash == _mqttHash[topic] && !delayCheck(_mqttSent[topic], MQTT_REFRESH_MS))
+        return;
+    if (openknxNetwork.mqtt.publishP(WX_MQTT_TOPICS[topic], payload, 0, true))
+    {
+        _mqttHash[topic] = hash;
+        _mqttSent[topic] = millis();
+    }
 #endif
 }
 

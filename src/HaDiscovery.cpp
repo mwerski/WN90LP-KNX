@@ -6,7 +6,7 @@
 
 #ifdef OPENKNX_MQTT
 
-// Abstand zwischen zwei Discovery-Nachrichten (Sendewarteschlange von OFM-Network: 32 Eintraege)
+// Abstand zwischen zwei Discovery-Nachrichten (Sendewarteschlange von OFM-Network: 8 Eintraege)
 static constexpr uint32_t SPACING = 100;
 
 void HaDiscovery::loop(const MeasuredValue *values, uint8_t count)
@@ -47,7 +47,7 @@ bool HaDiscovery::publish(const MeasuredValue &v)
     doc["name"] = def->name;
     doc["unique_id"] = node + "_" + def->mqttKey;
     doc["object_id"] = node + "_" + def->mqttKey;
-    doc["state_topic"] = prefix + "state";
+    doc["state_topic"] = prefix + WX_MQTT_TOPICS[def->mqttTopic];
     std::string tpl;
     if (binary)
         tpl = std::string("{{ 'ON' if value_json.") + def->mqttKey + " == 1 else 'OFF' }}";

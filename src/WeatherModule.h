@@ -22,7 +22,7 @@
 // Firmware-Version = ETS-Applikationsversion (Major.Minor) + Revision. Die Revision geht auch an
 // openknx.init() (Versionsanzeige von OpenKNX in Konsole/Web-UI, dort mit Git-Hash) und muss bei
 // einer neuen Applikationsversion wieder bei 0 beginnen (max. 31).
-#define WX_FIRMWARE_REVISION 3
+#define WX_FIRMWARE_REVISION 4
 #define WX_STR2(x) #x
 #define WX_STR(x) WX_STR2(x)
 #define WX_FIRMWARE_VERSION "1.6." WX_STR(WX_FIRMWARE_REVISION)
@@ -237,6 +237,11 @@ class WeatherModule : public OpenKNX::Module
     uint32_t _rainTimer = 0;
     uint32_t _mqttInterval = 0;
     uint32_t _mqttTimer = 0;
+    // MQTT-Themen (WX_MQTT_TOPICS): faellige Themen als Bitmaske, Pruefsumme und Zeitpunkt des letzten Versands
+    uint8_t _mqttDue = 0;
+    bool _mqttConnected = false;
+    uint32_t _mqttHash[WX_MQTT_TOPIC_COUNT] = {};
+    uint32_t _mqttSent[WX_MQTT_TOPIC_COUNT] = {};
 };
 
 extern WeatherModule openknxWeatherModule;

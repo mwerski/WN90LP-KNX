@@ -57,7 +57,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
   nach Verbindungsaufbau (sonst Multicast-Probleme bei der ETS-Programmierung).
   WLAN-Wächter in `main.cpp`: nach 5 min ohne Netz `openknxNetwork.resetNetwork()` (alle 5 min), nach 30 min Neustart;
   scharf erst nach der ersten Verbindung (der Auto-Reconnect des Arduino-Kerns gab nach einer Trennung auf).
-- **MQTT-Thema:** `openknx/<Präfix>/state` (Präfix aus den NET-Parametern).
+- **MQTT-Themen:** `openknx/<Präfix>/state` (Messwerte, im Intervall), `state/calc`, `state/astro`, `state/stats` (nur bei Änderung per FNV-Prüfsumme, spätestens alle 15 min), alle retained, je Hauptschleifendurchlauf höchstens ein Thema. Zuordnung der ETS-Gruppen in `MQTT_TOPICS`/`GROUP_TOPIC` (generate_ets.py, neue Gruppen dort eintragen), Feld `mqttTopic` in `WX_VALUES`; HA-Discovery nutzt dasselbe Thema.
 - **InfluxDB** (`InfluxWriter.*`): HTTP-POST in eigener FreeRTOS-Task (6 KB Stack), Daten per Mutex übergeben, kein Logging aus der Task (Fehlertext wird gespeichert, die Hauptschleife loggt). Schema und Feldnamen (`influx=` in generate_ets.py) entsprechen dem früheren Node-RED-Flow; immer Float-Felder.
 - **Allgemeine Parameter** (GENERAL_SIZE 472): InfluxDB ab 160, Räume 1–3 ab 384, Räume 4–6 ab 448 (je 8 Byte); frei nur Byte 447.
 - **Astronomie** (`Astro.*`): Sonne nach NOAA (Zeiten ±1 min), Mond nach gekürzten Meeus-Reihen (Phasen ±10 min, gegen 2026 geprüft). Uhrzeiten als Sekunden seit Mitternacht (WxFmt::Time, DPT 10.001 mit Index 1!), Datum als Tage seit 2000 (WxFmt::Date, DPT 11.001: Jahr vierstellig, Monat 1–12). DPT 7.006 wird über die 7.001-Kodierung gesendet.

@@ -75,8 +75,9 @@ Sensoren, Standort, Regenerkennung, Senderate, Status-LED und MQTT.
 - **Status-LED:** Rot im Programmiermodus. Je nach Einstellung zusätzlich, nach Vorrang: OTA-Update (violett pulsierend),
   WLAN getrennt (blau blinkend), Sensorstörung (gelb blinkend), bei „alle Zustände“ auch ausgelöster Windalarm (orange)
   und das Lebenszeichen (kurz grün alle 10 s).
-- **MQTT:** Broker und Themenpräfix stehen auf der Seite Netzwerk. Die Station sendet ein JSON-Objekt an
-  `openknx/<Präfix>/state`. Gekürzte Texte (Prognose, Mond, Warnung, Behaglichkeit) kommen zusätzlich ungekürzt als `<feld>_long`. Mit Home Assistant Discovery legt Home Assistant
+- **MQTT:** Broker und Themenpräfix stehen auf der Seite Netzwerk. Die Station sendet die Werte als JSON-Objekte
+  (retained) an `openknx/<Präfix>/state` (Messwerte, im Intervall) sowie `state/calc` (berechnete Werte),
+  `state/astro` (Sonnenzeiten, Mond) und `state/stats` (Statistik); diese drei nur bei Änderung, spätestens alle 15 min. Gekürzte Texte (Prognose, Mond, Warnung, Behaglichkeit) kommen zusätzlich ungekürzt als `<feld>_long`. Mit Home Assistant Discovery legt Home Assistant
   alle aktiven Werte automatisch als Sensoren an.
 
 Störungs-KOs: 1 = Sensor antwortet nicht. Der Windalarm wird bei einer Störung der WN90LP ausgelöst (fail-safe).

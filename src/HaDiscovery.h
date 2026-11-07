@@ -2,7 +2,7 @@
 #include "MeasuredValue.h"
 
 // Home Assistant MQTT Discovery: meldet alle aktiven Messwerte einzeln (retained) an.
-// Die Werte selbst stehen im JSON-Objekt <Geraetepraefix>state.
+// Die Werte selbst stehen in den JSON-Objekten <Geraetepraefix>state, state/calc, state/astro und state/stats.
 class HaDiscovery
 {
   public:
