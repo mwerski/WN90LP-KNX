@@ -21,7 +21,7 @@ namespace Diag
     RTC_NOINIT_ATTR static CrashInfo s_crash;
 
     // Speicher und Stack-Reserven, laufend aus der Hauptschleife (ueberstehen den Absturz)
-    static const char *const TASKS[] = {"loopTask", "DwdWarnings", "InfluxWriter", "httpd", "async_tcp"};
+    static const char *const TASKS[] = {"loopTask", "mqtt", "DwdWarnings", "InfluxWriter", "httpd"};
     static constexpr uint8_t TASK_COUNT = sizeof(TASKS) / sizeof(TASKS[0]);
     struct HeapInfo
     {

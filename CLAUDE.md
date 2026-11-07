@@ -85,7 +85,8 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **Windalarm** ist fail-safe: bei Störung der WN90LP ausgelöst.
 - **Zambretti** nutzt die mittlere Windrichtung über 10 min (`WindStats::averageDir()`, Einheitsvektoren, NAN bei Windstille < 1 m/s oder Vektorlänge < 0,3).
 - **Windchill** rechnet wie die Wetterdienste mit dem 10-min-Windmittel (`WindAvg10`), nicht mit dem Momentanwind (sonst Zittern an der 5-km/h-Grenze). **Gefühlte Temperatur** (`FeelsLike`, KO 211): bis 10 °C Windchill, ab 27 °C Hitzeindex, sonst Lufttemperatur.
-- **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (MQTT-Warteschlange max. 32),
+- **MQTT-Warteschlange** auf 8 begrenzt (`OPENKNX_MQTT_MAX_QUEUE`): bei stockender Verbindung behält der Client jede unversendete Nachricht; 32 Status-JSON à ca. 5 KB brauchten den Speicher auf (1.6.1/1.6.2: Abstürze bei 10 KB frei). Das Status-JSON entfällt unter 30 KB freiem Speicher (`MQTT_MIN_FREE_HEAP`).
+- **HA Discovery** (`HaDiscovery.*`): eine Nachricht je aktivem Wert alle 100 ms (bei voller Warteschlange erneut versucht),
   erneut nach jedem Verbindungsaufbau; `OPENKNX_MQTT_TXBUF_MAX=8192` für das große JSON (Status mit allen Werten lag bei 1.5.1 schon bei 3,8 KB; zu große Nachrichten verwirft der Client mit „message too large“).
 - **Leere UDP-Pakete an `224.0.23.12:3671`** (z. B. Tasmota mit aktivem KNX) machten das Gerät dauerhaft
   taub: Senden geht, Empfang und ETS-Programmierung nicht, auch nicht nach Neustart. Ursache:

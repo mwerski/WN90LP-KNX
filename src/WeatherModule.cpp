@@ -25,6 +25,8 @@ static constexpr uint16_t SOLAR_FLASH_SIZE = 4 * 4;
 static constexpr uint16_t SUNSHINE_FLASH_SIZE = 2 * 4;
 // Lichtausbeute des Tageslichts zur Umrechnung Helligkeit -> Strahlung
 static constexpr float LUX_PER_WM2 = 110.0f;
+// Mindestens freier Speicher fuer das Status-JSON per MQTT (Dokument und Text zusammen ca. 15 KB)
+static constexpr uint32_t MQTT_MIN_FREE_HEAP = 30 * 1024;
 // Eingangs-KOs je Raum (Temperatur, Feuchte)
 static constexpr uint16_t ROOM_KOS[][2] = {{WX_KoRoom1TempIn, WX_KoRoom1HumIn}, {WX_KoRoom2TempIn, WX_KoRoom2HumIn},
                                            {WX_KoRoom3TempIn, WX_KoRoom3HumIn}, {WX_KoRoom4TempIn, WX_KoRoom4HumIn},
@@ -1190,6 +1192,12 @@ void WeatherModule::publishMqtt()
     _mqttTimer = millis();
     if (!openknxNetwork.mqtt.connected())
         return;
+    // Bei knappem Speicher (z. B. Warteschlange voller unversendeter Nachrichten) diese Ausgabe auslassen
+    if (ESP.getFreeHeap() < MQTT_MIN_FREE_HEAP)
+    {
+        Diag::noMemory();
+        return;
+    }
 
     JsonDocument doc;
     doc["wifi_rssi"] = WiFi.RSSI();
