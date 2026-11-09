@@ -12,6 +12,9 @@
 #include <Update.h>
 #include <ArduinoJson.h>
 
+// Feste Angaben eines Werts fuer die Statusseite (siehe unten)
+static size_t writeValueMeta(uint16_t i, char *buf, size_t size);
+
 WeatherModule openknxWeatherModule;
 
 static uint32_t dayKeyOf(const OpenKNX::DateTime &d)
@@ -164,7 +167,7 @@ void WeatherModule::setup(bool configured)
         _values[i].init(def, configured && sensorOk && condOk);
     }
 
-    _web.setup();
+    _web.setup(writeValueMeta);
     _wn90.setup();
     _rain.setup(rainWindow, rainMinAmount, rainStopDelay);
     if (_sdsEnabled)
@@ -1419,6 +1422,18 @@ std::string WeatherModule::buildInfluxBody()
     return body;
 }
 
+// Feste Angaben eines Werts fuer /weather-meta.json (httpd-Task, nur konstante Daten)
+static size_t writeValueMeta(uint16_t i, char *buf, size_t size)
+{
+    if (i >= WX_VALUE_COUNT)
+        return 0;
+    const WxValueDef &def = WX_VALUES[i];
+    const int n = snprintf(buf, size, "{\"n\":\"%s\",\"g\":\"%s\",\"k\":\"%s\",\"u\":\"%s\",\"d\":%u,\"f\":%u%s}",
+                           def.label, def.group, def.mqttKey, def.unitUtf8, def.decimals, (unsigned)def.fmt,
+                           def.dpts[0].main == 1 ? ",\"b\":true" : "");
+    return n > 0 && (size_t)n < size ? n : 0;
+}
+
 std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
 {
     static constexpr size_t PART_SIZE = 1536;
@@ -1464,7 +1479,7 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
 
     // Kopfdaten ohne schliessende Klammer, danach das Werte-Array
     snap->emplace_back();
-    snap->back().reserve(PART_SIZE + 512);
+    snap->back().reserve(PART_SIZE + 384);
     serializeJson(doc, snap->back());
     snap->back().pop_back();
     snap->back() += ",\"values\":[";
@@ -1480,17 +1495,12 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             continue;
         if (def.condParam != 0xFFFF && !v.active())
             continue;
+        // Nur Index und aktuelle Daten; die festen Angaben liefert /weather-meta.json
         JsonDocument o;
-        o["n"] = def.label;
-        o["g"] = def.group;
+        o["i"] = i;
         if (dwdStale && i >= (uint8_t)WxId::DwdLevel && i <= (uint8_t)WxId::DwdCount)
             o["o"] = true;
-        o["k"] = def.mqttKey;
-        o["u"] = def.unitUtf8;
-        o["d"] = def.decimals;
         o["a"] = v.active();
-        if (def.dpts[0].main == 1)
-            o["b"] = true;
         const float f = powf(10.0f, def.decimals);
         if (v.valid())
             o["v"] = roundf(v.value() * f) / f;
@@ -1500,7 +1510,6 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             o["s"] = roundf(v.lastSent() * f) / f;
         else
             o["s"] = nullptr;
-        o["f"] = (uint8_t)def.fmt;
         if (def.fmt != WxFmt::Number && def.fmt != WxFmt::Duration)
         {
             if (v.valid())
@@ -1511,8 +1520,10 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
         // Je Wert einzeln serialisieren und in Stuecke packen (kein grosser zusammenhaengender Puffer)
         if (snap->back().size() > PART_SIZE)
         {
+            // Fertiges Stueck auf die tatsaechliche Groesse kuerzen (Reserve nicht dauerhaft halten)
+            snap->back().shrink_to_fit();
             snap->emplace_back();
-            snap->back().reserve(PART_SIZE + 512);
+            snap->back().reserve(PART_SIZE + 384);
         }
         // serializeJson() ersetzt den Inhalt eines std::string (ArduinoJson 7), daher ueber einen Zwischenpuffer
         std::string &part = snap->back();
@@ -1557,6 +1568,8 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
         snap->back() += ']';
     }
     snap->back() += '}';
+    snap->back().shrink_to_fit();
+    snap->shrink_to_fit();
     return snap;
 }
 

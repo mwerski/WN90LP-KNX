@@ -37,6 +37,66 @@ static size_t readChunk(void *ctx, uint8_t *buf, size_t maxLen)
     return n;
 }
 
+// Feste Angaben: werden beim Senden Wert fuer Wert erzeugt, nichts im RAM gehalten
+struct MetaReader
+{
+    WebStatus::MetaWriter fn;
+    uint16_t index = 0;
+    uint8_t state = 0; // 0 = "[" senden, 1 = Werte, 2 = fertig
+    size_t len = 0;
+    size_t pos = 0;
+    char buf[400];
+};
+
+static size_t readMeta(void *ctx, uint8_t *out, size_t maxLen)
+{
+    MetaReader *r = static_cast<MetaReader *>(ctx);
+    size_t n = 0;
+    while (n < maxLen)
+    {
+        if (r->pos >= r->len)
+        {
+            r->pos = 0;
+            r->len = 0;
+            if (r->state == 0)
+            {
+                r->buf[0] = '[';
+                r->len = 1;
+                r->state = 1;
+            }
+            else if (r->state == 1)
+            {
+                const size_t off = r->index ? 1 : 0;
+                r->buf[0] = ',';
+                const size_t l = r->fn(r->index, r->buf + off, sizeof(r->buf) - off);
+                if (l)
+                {
+                    r->len = off + l;
+                    r->index++;
+                }
+                else
+                {
+                    r->buf[0] = ']';
+                    r->len = 1;
+                    r->state = 2;
+                }
+            }
+            else
+                break;
+        }
+        const size_t take = min(maxLen - n, r->len - r->pos);
+        memcpy(out + n, r->buf + r->pos, take);
+        n += take;
+        r->pos += take;
+    }
+    return n;
+}
+
+static void freeMeta(void *ctx)
+{
+    delete static_cast<MetaReader *>(ctx);
+}
+
 // Laufende Downloads; solange einer den Schnappschuss liest, wird kein neuer erstellt
 static std::atomic<int> s_readers{0};
 
@@ -89,9 +149,12 @@ function fmt(x,v,t){
 }
 function iso(s){if(!s)return '';var d=new Date(s);return isNaN(d)?s:d.toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
 function el(t,c,txt){var e=document.createElement(t);if(c)e.className=c;if(txt!==undefined)e.textContent=txt;return e;}
+var META=null;
 function render(j){
   var st=document.getElementById('wx-state');
   if(!j.values){st.textContent='Warte auf Daten\u2026';return false;}
+  // Feste Angaben (Bezeichnung, Gruppe, Einheit, Format) aus /weather-meta.json ergaenzen
+  var vals=j.values.map(function(e){var x={},m=META[e.i]||{},k;for(k in m)x[k]=m[k];for(k in e)x[k]=e[k];return x;});
   st.textContent='';
   var parts=[['WN90LP',j.wn90],['SDS011',j.sds],['1-Wire',j.ow],['InfluxDB',j.influx],['DWD',j.dwd]];
   parts.forEach(function(p){
@@ -114,7 +177,7 @@ function render(j){
     });
   }else if(j.dwd_headline){box.appendChild(el('p','wx-bad',(j.dwd_stale?'Letzter bekannter Stand: ':'')+j.dwd_headline));}
   var groups={},order=[];
-  j.values.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
+  vals.forEach(function(x){if(!groups[x.g]){groups[x.g]=[];order.push(x.g);}groups[x.g].push(x);});
   order.forEach(function(g){
     box.appendChild(el('h3','',g));
     var t=el('table'),cg=el('colgroup'),h=el('tr');
@@ -140,18 +203,34 @@ function poll(){
   .then(function(j){setTimeout(poll,render(j)?5000:1000);})
   .catch(function(){document.getElementById('wx-state').textContent='Keine Verbindung';setTimeout(poll,5000);});
 }
-poll();
+function loadMeta(){
+  fetch('/weather-meta.json').then(function(r){return r.json();})
+  .then(function(m){META=m;poll();})
+  .catch(function(){document.getElementById('wx-state').textContent='Keine Verbindung';setTimeout(loadMeta,5000);});
+}
+loadMeta();
 })();
 </script>
 </div>)HTML";
 
-void WebStatus::setup()
+void WebStatus::setup(MetaWriter meta)
 {
     openknxNetwork.webserver.addMenuItem("Wetter", "/weather", 10);
     openknxNetwork.webserver.addRoute(WEB_GET, "/weather", [](WebRequest &, WebResponse &res) {
         res.setContentType("text/html");
         res.setLayout(true);
         res.sendStatic(PAGE);
+    });
+    openknxNetwork.webserver.addRoute(WEB_GET, "/weather-meta.json", [meta](WebRequest &, WebResponse &res) {
+        res.setContentType("application/json");
+        MetaReader *reader = new (std::nothrow) MetaReader;
+        if (!reader)
+        {
+            res.sendStatic("[]");
+            return;
+        }
+        reader->fn = meta;
+        res.sendStream(0, readMeta, freeMeta, reader);
     });
     openknxNetwork.webserver.addRoute(WEB_GET, "/weather.json", [this](WebRequest &, WebResponse &res) {
         _demandUntil = millis() + 15000;
@@ -213,7 +292,7 @@ void WebStatus::update(std::shared_ptr<const Snapshot> snapshot)
 
 #else
 
-void WebStatus::setup() {}
+void WebStatus::setup(MetaWriter) {}
 bool WebStatus::due(bool) { return false; }
 void WebStatus::update(std::shared_ptr<const Snapshot>) {}
 

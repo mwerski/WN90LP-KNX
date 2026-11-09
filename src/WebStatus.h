@@ -16,8 +16,13 @@ class WebStatus
 {
   public:
     using Snapshot = std::vector<std::string>;
+    // Schreibt die festen Angaben (Bezeichnung, Gruppe, Einheit, Format) eines Werts als JSON-Objekt
+    // nach buf; 0 = kein Wert mit diesem Index mehr. Laeuft in der httpd-Task: nur konstante Daten lesen.
+    using MetaWriter = size_t (*)(uint16_t index, char *buf, size_t size);
 
-    void setup();
+    // Die festen Angaben liefert /weather-meta.json direkt aus dem Flash (kein Schnappschuss),
+    // /weather.json enthaelt je Wert nur Index und aktuelle Daten
+    void setup(MetaWriter meta);
     // true, wenn ein neuer Schnappschuss erstellt werden soll; allowBuild = false (z. B. waehrend
     // des DWD-Abrufs) verschiebt das Erstellen, die Freigabe ohne Abfragen laeuft trotzdem
     bool due(bool allowBuild);

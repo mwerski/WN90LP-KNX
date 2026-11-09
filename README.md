@@ -156,7 +156,7 @@ Zustand und Fehler zeigen `wx sensors` und die Statusseite.
 
 Bei aktivem Webserver (ETS, Netzwerkseite) zeigt `http://<IP>/weather` (Menüpunkt „Wetter“) alle Messwerte
 gruppiert nach ETS-Seiten mit aktuellem und zuletzt gesendetem Wert sowie den Zustand der Sensoren, der Uhrzeit
-und von MQTT. Die Seite aktualisiert sich alle 5 Sekunden; die Rohdaten liefert `/weather.json`.
+und von MQTT. Die Seite aktualisiert sich alle 5 Sekunden; die Rohdaten liefert `/weather.json` (aktuelle Werte je Index), die festen Angaben dazu `/weather-meta.json`.
 
 ## Konsole
 
