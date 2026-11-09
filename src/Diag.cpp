@@ -1,5 +1,7 @@
 #include "Diag.h"
 #include "OpenKNX.h"
+#include <atomic>
+#include <esp_heap_caps.h>
 #include <esp_system.h>
 
 namespace Diag
@@ -89,10 +91,68 @@ namespace Diag
     static uint32_t s_loopStart = 0;
     static uint32_t s_maxLoopUs = 0;
     static uint32_t s_noMemory = 0;
+    static uint32_t s_noMemoryBy[Count] = {};
+    static uint32_t s_noMemoryLast = 0; // Laufzeit in s
+
+    // Speichertiefstwert: Zeitpunkt, laufende Stufe der Hauptschleife und aktive Hintergrundaufgaben
+    static std::atomic<uint8_t> s_activity{0};
+    static uint32_t s_lowFree = UINT32_MAX;
+    static uint32_t s_lowSec = 0;
+    static uint8_t s_lowStage = None;
+    static uint8_t s_lowActivity = 0;
+
+    // Fehlgeschlagene Speicheranforderungen (Callback aus beliebiger Task, nur Variablen schreiben)
+    static volatile uint32_t s_allocFails = 0;
+    static volatile uint32_t s_allocFailSize = 0;
+    static volatile uint32_t s_allocFailSec = 0;
+    static char s_allocFailTask[16] = "";
+
+    static void allocFailed(size_t size, uint32_t caps, const char *function)
+    {
+        s_allocFails = s_allocFails + 1;
+        s_allocFailSize = size;
+        s_allocFailSec = millis() / 1000;
+        const char *name = pcTaskGetName(NULL);
+        size_t i = 0;
+        if (name)
+            for (; i + 1 < sizeof(s_allocFailTask) && name[i]; i++)
+                s_allocFailTask[i] = name[i];
+        s_allocFailTask[i] = 0;
+    }
 
     void noMemory()
     {
         s_noMemory++;
+        s_noMemoryBy[s_current]++;
+        s_noMemoryLast = millis() / 1000;
+    }
+
+    void activity(Activity a, bool on)
+    {
+        if (on)
+            s_activity.fetch_or(a);
+        else
+            s_activity.fetch_and(~a);
+    }
+
+    static void activityText(uint8_t act, char *buf, size_t size)
+    {
+        snprintf(buf, size, "%s%s%s", act ? "" : "keine", act & ActDwd ? "DWD-Abruf " : "", act & ActInflux ? "InfluxDB " : "");
+    }
+
+    static void lowReport()
+    {
+        if (s_lowFree != UINT32_MAX)
+        {
+            char act[40];
+            activityText(s_lowActivity, act, sizeof(act));
+            logInfo("Weather", "Speichertiefstwert %lu Byte nach %lu s (vor %lu s), Hauptschleife in \"%s\", Hintergrund: %s",
+                    (unsigned long)s_lowFree, (unsigned long)s_lowSec, (unsigned long)(millis() / 1000 - s_lowSec), stageName(s_lowStage), act);
+        }
+        if (s_allocFails)
+            logError("Weather", "Fehlgeschlagene Speicheranforderungen: %lu, zuletzt %lu Byte in Task \"%s\" vor %lu s",
+                     (unsigned long)s_allocFails, (unsigned long)s_allocFailSize, s_allocFailTask,
+                     (unsigned long)(millis() / 1000 - s_allocFailSec));
     }
 
     void stage(Stage s)
@@ -119,6 +179,15 @@ namespace Diag
             s_maxLoopUs = now - s_loopStart;
         s_loopStart = now;
         s_loops++;
+        // Neuer Tiefstwert des freien Speichers: Umstaende festhalten (Abfrage ist billig, kein Heap-Durchlauf)
+        const uint32_t minFree = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+        if (minFree < s_lowFree)
+        {
+            s_lowFree = minFree;
+            s_lowSec = millis() / 1000;
+            s_lowStage = s_current;
+            s_lowActivity = s_activity.load();
+        }
         if (!s_perfStart)
             s_perfStart = millis();
         // Speicherstand jede Sekunde sichern (getMaxAllocHeap durchsucht den Heap)
@@ -145,7 +214,16 @@ namespace Diag
                 s_loops / secs, s_maxLoopUs / 1000.0f, ESP.getFreeHeap(), ESP.getMinFreeHeap(), ESP.getMaxAllocHeap());
         logIndentUp();
         if (s_noMemory)
-            logInfo("Weather", "Wegen Speichermangel ausgelassene Ausgaben seit Start: %lu", s_noMemory);
+        {
+            logInfo("Weather", "Wegen Speichermangel ausgelassene Ausgaben seit Start: %lu, zuletzt vor %lu s", s_noMemory,
+                    (unsigned long)(millis() / 1000 - s_noMemoryLast));
+            logIndentUp();
+            for (uint8_t i = 0; i < Count; i++)
+                if (s_noMemoryBy[i])
+                    logInfo("Weather", "%-30s %lu", stageName(i), (unsigned long)s_noMemoryBy[i]);
+            logIndentDown();
+        }
+        lowReport();
         for (uint8_t i = 0; i < Count; i++)
         {
             const Timing &t = s_timing[i];
@@ -187,6 +265,7 @@ namespace Diag
         for (uint32_t &v : s_heap.stackMin)
             v = UINT32_MAX;
         set_arduino_panic_handler(recordCrash, nullptr);
+        heap_caps_register_failed_alloc_callback(allocFailed);
         report();
     }
 
@@ -215,6 +294,7 @@ namespace Diag
             stacks("Stack-Reserven vor dem Absturz", s_lastHeap.stackMin);
         }
         stacks("Stack-Reserven seit Start", s_heap.stackMin);
+        lowReport();
         if (!s_haveCrash)
         {
             // Der Kern laeuft den Stack ab, bevor er den Handler ruft; scheitert das, fehlt der Eintrag

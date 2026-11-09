@@ -1,3 +1,4 @@
+#include "Diag.h"
 #include "DwdWarnings.h"
 #include "DwdRootCa.h"
 #include "MeasuredValue.h"
@@ -95,6 +96,7 @@ void DwdWarnings::loop(int64_t nowUtc)
     _timer = millis();
     _requestNow = nowUtc;
     _busy = true;
+    Diag::activity(Diag::ActDwd, true);
     xTaskNotifyGive(_task);
 }
 
@@ -124,6 +126,7 @@ void DwdWarnings::run()
         }
         // TLS-Puffer sind freigegeben: Reserve wieder belegen
         reserve();
+        Diag::activity(Diag::ActDwd, false);
         _busy = false;
     }
 }

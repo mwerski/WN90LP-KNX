@@ -1,3 +1,4 @@
+#include "Diag.h"
 #include "InfluxWriter.h"
 #include "OpenKNX.h"
 #include <HTTPClient.h>
@@ -59,6 +60,7 @@ void InfluxWriter::submit(std::string &&body)
         _body = std::move(body);
     }
     _busy = true;
+    Diag::activity(Diag::ActInflux, true);
     xTaskNotifyGive(_task);
 }
 
@@ -122,6 +124,7 @@ void InfluxWriter::run()
                 _failStreak = _failStreak + 1;
             _waitMs = min<uint32_t>(_waitMs * 2, 300000UL);
         }
+        Diag::activity(Diag::ActInflux, false);
         _busy = false;
     }
 }

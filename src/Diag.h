@@ -39,7 +39,14 @@ namespace Diag
     void report();         // fuer "wx sensors"
     void perf();           // fuer "wx perf": Laufzeiten je Programmteil, Schleifenrate, Speicher
     void loopTick();       // einmal je Hauptschleife
-    void noMemory();       // Ausgabe wegen Speichermangel ausgelassen
+    void noMemory();       // Ausgabe wegen Speichermangel ausgelassen (wird der laufenden Stufe zugerechnet)
+    // Hintergrundaufgaben, die beim Speichertiefstwert mit festgehalten werden
+    enum Activity : uint8_t
+    {
+        ActDwd = 1,
+        ActInflux = 2,
+    };
+    void activity(Activity a, bool on);
     // true, wenn das KO in der vom ETS geladenen Gruppenobjekt-Tabelle existiert
     bool koExists(uint16_t ko);
 } // namespace Diag
