@@ -46,6 +46,7 @@ class DwdWarnings
 
     void setup(uint32_t warnCell, uint8_t intervalMin);
     bool enabled() const { return _enabled; }
+    bool busy() const { return _busy; }
     // Aufruf aus der Hauptschleife; startet bei Bedarf einen Abruf (now: Unixzeit, 0 = unbekannt)
     void loop(int64_t nowUtc);
     Result result();

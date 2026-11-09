@@ -325,7 +325,8 @@ void WeatherModule::loop(bool configured)
             _ha.loop(_values, WX_VALUE_COUNT);
         }
         Diag::stage(Diag::WebStatus);
-        if (_web.due())
+        // Waehrend des DWD-Abrufs (TLS braucht den Speicher) keinen neuen Schnappschuss erstellen
+        if (_web.due(!dwdWarnings.busy()))
             _web.update(buildStatusSnapshot());
         Diag::stage(Diag::Influx);
         if (_influx.due())

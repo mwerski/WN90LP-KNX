@@ -1,5 +1,6 @@
 #include "WebStatus.h"
 #include "OpenKNX.h"
+#include <atomic>
 #include <new>
 
 #ifdef OPENKNX_WEBSERVER
@@ -36,9 +37,13 @@ static size_t readChunk(void *ctx, uint8_t *buf, size_t maxLen)
     return n;
 }
 
+// Laufende Downloads; solange einer den Schnappschuss liest, wird kein neuer erstellt
+static std::atomic<int> s_readers{0};
+
 static void freeReader(void *ctx)
 {
     delete static_cast<Reader *>(ctx);
+    s_readers.fetch_sub(1);
 }
 
 // Seite im OpenKNX-Layout; Texte als HTML-Entities, damit der Quelltext ASCII bleibt.
@@ -165,18 +170,35 @@ void WebStatus::setup()
             res.sendStatic("{}");
             return;
         }
+        s_readers.fetch_add(1);
         res.sendStream(0, readChunk, freeReader, reader);
     });
 }
 
-bool WebStatus::due()
+bool WebStatus::due(bool allowBuild)
 {
-    // Nur solange die Seite abgefragt wird (15 s nach der letzten Anfrage), dann alle 2 s
+    // Nur solange die Seite abgefragt wird (15 s nach der letzten Anfrage), sonst Speicher freigeben
     if (_demandUntil == 0 || (int32_t)(_demandUntil - millis()) <= 0)
+    {
+        if (_haveSnapshot)
+        {
+            std::lock_guard<std::mutex> guard(_lock);
+            _snapshot.reset();
+            _haveSnapshot = false;
+        }
         return false;
-    if (!delayCheck(_lastBuild, 2000))
+    }
+    // Ohne Schnappschuss sofort, sonst alle 10 s und nur, wenn niemand mehr den alten liest
+    if (!allowBuild || s_readers.load() > 0)
+        return false;
+    if (_haveSnapshot && !delayCheck(_lastBuild, 10000))
         return false;
     _lastBuild = millis();
+    // Alten Stand vor dem Erstellen freigeben (nie zwei im Speicher); Anfragen in dieser Zeit
+    // erhalten "{}", die Seite fragt dann nach 1 s erneut
+    std::lock_guard<std::mutex> guard(_lock);
+    _snapshot.reset();
+    _haveSnapshot = false;
     return true;
 }
 
@@ -186,12 +208,13 @@ void WebStatus::update(std::shared_ptr<const Snapshot> snapshot)
         return;
     std::lock_guard<std::mutex> guard(_lock);
     _snapshot = std::move(snapshot);
+    _haveSnapshot = true;
 }
 
 #else
 
 void WebStatus::setup() {}
-bool WebStatus::due() { return false; }
+bool WebStatus::due(bool) { return false; }
 void WebStatus::update(std::shared_ptr<const Snapshot>) {}
 
 #endif
