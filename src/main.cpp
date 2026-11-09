@@ -1,4 +1,6 @@
-#include "Logic.h"
+#ifndef WX_NO_LOGIC
+    #include "Logic.h"
+#endif
 #include "NetworkModule.h"
 #include "OpenKNX.h"
 #include "WeatherModule.h"
@@ -19,7 +21,9 @@ void setup()
     openknx.leds.addLed(progLed, OpenKNX::Led::LED_TYPE_PROG);
     openknx.init(WX_FIRMWARE_REVISION);
     openknx.addModule(1, openknxWeatherModule);
+#ifndef WX_NO_LOGIC
     openknx.addModule(3, openknxLogic);
+#endif
     openknx.addModule(7, openknxNetwork);
     openknx.setup();
     // Das Logikmodul hat in setup() GPIO 1 (A0) analog gelesen, die LED braucht den Pin zurueck
