@@ -20,3 +20,7 @@ include/webassets.h
 **/*.debug.xml
 src/*.baggages
 release/*
+
+# Lokale Einstellungen (Claude Code, VS Code)
+.claude/
+.vscode/settings.json
