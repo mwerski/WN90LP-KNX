@@ -279,7 +279,8 @@ UV-Index richtet sich nach der WHO-Skala.
 ## Regen
 
 Grundlage ist der Regenzähler der WN90LP (0,01 mm). Zeitfenster laufen gleitend, Kalenderwerte (heute, gestern, Woche,
-Monat, Jahr) richten sich nach der Ortszeit. Ein Zählerreset der WN90LP wird erkannt und nicht als Regen gewertet.
+Monat, Jahr) richten sich nach der Ortszeit. Ein Zählerreset der WN90LP wird erkannt und nicht als Regen gewertet. Springt der Zähler bei Regen zwischen benachbarten
+Ständen hin und her, zählt nur der Anstieg über den höchsten bisher gesehenen Stand (ab Firmware 1.6.10).
 Nach der ersten Inbetriebnahme enthalten lange Fenster nur die Zeit seit dem Start, 72 Stunden zum Beispiel erst nach drei
 Tagen.
 

@@ -156,7 +156,7 @@ Zustand und Fehler zeigen `wx sensors` und die Statusseite.
 
 Bei aktivem Webserver (ETS, Netzwerkseite) zeigt `http://<IP>/weather` (Menüpunkt „Wetter“) alle Messwerte
 gruppiert nach ETS-Seiten mit aktuellem und zuletzt gesendetem Wert sowie den Zustand der Sensoren, der Uhrzeit
-und von MQTT. Die Seite aktualisiert sich alle 5 Sekunden; die Rohdaten liefert `/weather.json` (aktuelle Werte je Index), die festen Angaben dazu `/weather-meta.json`.
+und von MQTT. Die Seite fragt alle 5 Sekunden ab, die Werte erneuert das Gerät alle 10 Sekunden (nur solange die Seite offen ist); die Rohdaten liefert `/weather.json` (aktuelle Werte je Index), die festen Angaben dazu `/weather-meta.json`.
 
 ## Konsole
 
@@ -165,7 +165,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | Befehl | Ausgabe |
 |---|---|
 | `wx values` | alle Messwerte, aktiv in der ETS, zuletzt gesendeter Wert |
-| `wx sensors` | Zustand WN90LP (Modbus), SDS011, 1-Wire, Uhrzeit |
+| `wx sensors` | Zustand WN90LP (Modbus), SDS011, 1-Wire, Uhrzeit, DWD, InfluxDB, Speicher- und Absturzdiagnose |
 | `wx raw` | Rohwerte der Modbus-Register 0x0165–0x016E |
 | `wx rain` | Regenstatistik |
 | `wx pm` | Feinstaub: Mittelwerte, Index, Überschreitungstage |
@@ -177,6 +177,7 @@ Die Befehle funktionieren seriell und in der Web-Konsole (`http://<IP>/console`)
 | `wx astro` | Sonnenzeiten, Dämmerung und Mond |
 | `wx climate` | Lüftungsempfehlung, Bewässerung, Gradtage |
 | `wx 1w scan` | 1-Wire-Bus durchsuchen |
+| `wx perf` | Laufzeiten je Programmteil, freier Speicher, Speichertiefstwert, ausgelassene Ausgaben |
 
 Über das Diagnose-KO: `wx t`, `wx h`, `wx w`, `wx p`, `wx r`.
 
