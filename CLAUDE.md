@@ -48,7 +48,7 @@ src/WeatherCalc.h                         Formeln (Frostpunkt, Windchill, Beaufo
 - **KO-Zugriff nur für aktive Messwerte:** Die ETS kürzt die GO-Tabelle hinter dem höchsten sichtbaren KO.
   Zugriff auf ausgeblendete KOs führt zum Absturz (siehe Fix vor dem Meilenstein).
 - **Senden:** höchstens ein Telegramm alle 25 ms, reihum; erst nach der Startverzögerung.
-- **Regen:** Register 0x016E (0,01 mm, 16 Bit, läuft über); Differenzen > 50 mm/2 s gelten als Zählerreset.
+- **Regen:** Register 0x016E (0,01 mm, 16 Bit, läuft über); Differenzen > 50 mm/2 s gelten als Zählerreset. Die WN90LP springt bei Regen zwischen benachbarten Ständen (z. B. 57974/57975): gezählt wird nur über den höchsten gesehenen Stand hinaus, Rückschritte bis 0,2 mm werden ignoriert (bis 1.6.9 zählte jedes Hin und Her 0,01 mm und meldete „zurückgesetzt“).
   Remanent (Flash-Version 1): Gesamt, Mitternachtsstand, Tag, 73 Stundenwerte mit Zeitstempel.
   Minutenstände (5 min/1 h) mit Unixzeit ab Flash-Version 10: nach dem Laden steht der Ring, bis die Uhrzeit gültig ist, dann wird die Ausfallzeit nachgetragen (> 60 min oder 3 min ohne Uhrzeit: verworfen).
   Zusätzliches Speichern ab 1 mm Regen seit dem letzten Speichern, höchstens alle 10 min (sonst nur stündlich).

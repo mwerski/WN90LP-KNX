@@ -4,7 +4,11 @@
 #include <utility>
 
 // Sprung von mehr als 50 mm zwischen zwei Abfragen (2 s): Zaehler der Wetterstation wurde zurueckgesetzt
-static constexpr uint16_t MAX_PLAUSIBLE_DELTA = 5000;
+static constexpr int16_t MAX_PLAUSIBLE_DELTA = 5000;
+// Die WN90LP springt bei Regen mitunter zwischen zwei benachbarten Staenden hin und her (z. B. 57974/57975).
+// Kleine Rueckschritte (bis 0,2 mm) sind daher kein Zuruecksetzen: gezaehlt wird nur ueber den hoechsten
+// bisher gesehenen Stand hinaus (sonst zaehlte jedes Hin und Her erneut, bis 1.6.9).
+static constexpr int16_t MAX_JITTER = 20;
 
 void RainStatistics::setup(uint8_t windowMin, float minAmount, uint8_t stopDelayMin)
 {
@@ -37,11 +41,14 @@ void RainStatistics::feed(uint16_t rawCounter)
         return;
     }
 
-    const uint16_t delta = (uint16_t)(rawCounter - _lastRaw); // Ueberlauf-sicher
-    _lastRaw = rawCounter;
+    // Vorzeichenbehaftete Differenz zum hoechsten gesehenen Stand (Ueberlauf bei 65535 ergibt +1)
+    const int16_t delta = (int16_t)(uint16_t)(rawCounter - _lastRaw);
     if (delta == 0)
         return;
-    if (delta > MAX_PLAUSIBLE_DELTA)
+    if (delta < 0 && delta >= -MAX_JITTER)
+        return; // Wackeln um einen Stand: hoechsten Stand behalten, nichts zaehlen
+    _lastRaw = rawCounter;
+    if (delta < 0 || delta > MAX_PLAUSIBLE_DELTA)
     {
         logInfo("Weather", "Regenzaehler der Wetterstation zurueckgesetzt (%u)", rawCounter);
         return;
