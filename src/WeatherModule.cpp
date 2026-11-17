@@ -1510,7 +1510,8 @@ std::shared_ptr<const WebStatus::Snapshot> WeatherModule::buildStatusSnapshot()
             o["s"] = roundf(v.lastSent() * f) / f;
         else
             o["s"] = nullptr;
-        if (def.fmt != WxFmt::Number && def.fmt != WxFmt::Duration)
+        // Textform nur fuer echte Textwerte; die Mondphase 0-7 bleibt eine Zahl (der Text hat eine eigene Zeile)
+        if (def.fmt != WxFmt::Number && def.fmt != WxFmt::Duration && def.fmt != WxFmt::MoonPhase)
         {
             if (v.valid())
                 o["t"] = MeasuredValue::format(v.value(), &def, false, true);
